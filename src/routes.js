@@ -87,6 +87,8 @@ import EditCategory from 'views/admin/category/EditCategory';
 import EditBrand from 'views/admin/brand/EditBrand';
 import EditType from 'views/admin/productType/EditType';
 import EditVariant from 'views/admin/variants/EditVariant';
+import EditClinic from 'views/admin/clinics/EditClinic';
+import ShowClinic from 'views/admin/clinics/ShowClinic';
 
 
 const routes = [
@@ -250,6 +252,20 @@ const routes = [
     layout: '/admin',
     path: '/add-clinic',
     component: <AddClinic />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Clinic Management',
+    layout: '/admin',
+    path: '/edit-clinic/:id',
+    component: <EditClinic />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Clinic Management',
+    layout: '/admin',
+    path: '/show-clinic/:id',
+    component: <ShowClinic />,
     showInSidebar: false,
   },
   /* Start Clinics Routes */

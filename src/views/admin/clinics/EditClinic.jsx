@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -11,56 +11,91 @@ import {
 } from '@chakra-ui/react';
 import { FaTrash } from 'react-icons/fa6';
 import { IoMdArrowBack } from 'react-icons/io';
-import { useNavigate } from 'react-router-dom';
-import { useAddClinicMutation } from 'api/clinicSlice';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useUpdateClinicMutation, useGetClinicQuery } from 'api/clinicSlice';
 import Swal from 'sweetalert2';
 
-const AddClinic = () => {
+const EditClinic = () => {
+  const { id } = useParams();
+  const { data, isLoading,refetch } = useGetClinicQuery(id);
+  const clinicData = data?.data ?? {};
+  const [updateClinic, { isLoading: isUpdating }] = useUpdateClinicMutation();
+  
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [fromTime, setFromTime] = useState('');
   const [toTime, setToTime] = useState('');
   const [arabicName, setArabicName] = useState('');
-  const [addClinic, { isLoading }] = useAddClinicMutation();
-  const [locations, setLocations] = useState([
-    {
-      name: '',
-      arabicName: '',
-    },
-  ]);
+  const [locations, setLocations] = useState([]);
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const navigate = useNavigate();
 
+  // Initialize form with clinic data
+  useEffect(() => {
+    if (clinicData) {
+      setName(clinicData.name);
+      setEmail(clinicData.email);
+      setFromTime(formatTimeForInput(clinicData.fromTime));
+      setToTime(formatTimeForInput(clinicData.toTime));
+      
+      // Set Arabic name from translations
+      const arabicTranslation = clinicData.translations?.find(t => t.languageId === 'ar');
+      setArabicName(arabicTranslation?.name || '');
+      
+      // Set locations with their translations
+      if (clinicData.locations) {
+        setLocations(clinicData.locations.map(location => ({
+          id: location.id,
+          name: location.name,
+          arabicName: location.translations?.find(t => t.languageId === 'ar')?.name || '',
+          isActive: location.isActive
+        })));
+      }
+    }
+  }, [clinicData]);
+
+  useEffect(()=>{
+    refetch();
+  },[]);
+  // Convert AM/PM time to 24-hour format for input
+  const formatTimeForInput = (timeString) => {
+    if (!timeString) return '';
+    const [time, period] = timeString.split(' ');
+    let [hours, minutes] = time.split(':');
+    
+    if (period === 'PM' && hours !== '12') {
+      hours = parseInt(hours, 10) + 12;
+    } else if (period === 'AM' && hours === '12') {
+      hours = '00';
+    }
+    
+    return `${hours}:${minutes}`;
+  };
+
+  // Convert 24-hour format to AM/PM for API
+  const formatTimeForAPI = (timeString) => {
+    if (!timeString) return '';
+    const [hours, minutes] = timeString.split(':');
+    const hourNum = parseInt(hours, 10);
+    const ampm = hourNum >= 12 ? 'PM' : 'AM';
+    const twelveHour = hourNum % 12 || 12;
+    return `${twelveHour}:${minutes} ${ampm}`;
+  };
+
   const handleCancel = () => {
-    setName('');
-    setPassword('');
-    setFromTime('');
-    setToTime('');
-    setEmail('');
-    setArabicName('');
-    setLocations([{ name: '', arabicName: '' }]);
+    navigate('/admin/clinics');
   };
 
   const handleSend = async () => {
-    // Format time to AM/PM format
-    const formatTime = (timeString) => {
-      if (!timeString) return '';
-      const [hours, minutes] = timeString.split(':');
-      const hourNum = parseInt(hours, 10);
-      const ampm = hourNum >= 12 ? 'PM' : 'AM';
-      const twelveHour = hourNum % 12 || 12;
-      return `${twelveHour}:${minutes} ${ampm}`;
-    };
-
-    const clinicData = {
+    const clinicUpdateData = {
       name,
-      password,
-      fromTime: formatTime(fromTime),
-      toTime: formatTime(toTime),
       email,
-      isActive: true, // Automatically set to true
+      fromTime: formatTimeForAPI(fromTime),
+      toTime: formatTimeForAPI(toTime),
+      // Only include password if it's being changed
+      ...(password && { password }),
       translations: [
         {
           languageId: 'ar',
@@ -68,8 +103,9 @@ const AddClinic = () => {
         },
       ],
       locations: locations.map((location) => ({
+        ...(location.id && { id: location.id }), // Only include ID for existing locations
         name: location.name,
-        isActive: true, // Automatically set to true
+        isActive: true,
         translations: [
           {
             languageId: 'ar',
@@ -80,16 +116,13 @@ const AddClinic = () => {
     };
 
     try {
-      const response = await addClinic(clinicData).unwrap(); // Send data to the API
-      Swal.fire('Success!', 'Brand added successfully.', 'success');
-      navigate('/admin/clinics'); // Redirect to the brands page
+      const response = await updateClinic({ id, data: clinicUpdateData }).unwrap();
+      Swal.fire('Success!', 'Clinic updated successfully.', 'success');
+      navigate('/admin/clinics');
     } catch (error) {
       if (error.data?.errors) {
-        // Group errors by field for better display
         const errorMessages = {};
-
         error.data.errors.forEach((err) => {
-          // Map field names to more user-friendly labels
           const fieldMap = {
             name: 'English Name',
             'translations.0.name': 'Arabic Name',
@@ -101,14 +134,12 @@ const AddClinic = () => {
           };
 
           const fieldName = fieldMap[err.field] || err.field;
-
           if (!errorMessages[fieldName]) {
             errorMessages[fieldName] = [];
           }
           errorMessages[fieldName].push(err.message);
         });
 
-        // Format error messages for display
         let errorList = '';
         Object.entries(errorMessages).forEach(([field, messages]) => {
           errorList += `<strong>${field}:</strong><ul>`;
@@ -126,7 +157,7 @@ const AddClinic = () => {
       } else {
         Swal.fire(
           'Error!',
-          error.data?.message || 'Failed to add clinic.',
+          error.data?.message || 'Failed to update clinic.',
           'error',
         );
       }
@@ -134,7 +165,7 @@ const AddClinic = () => {
   };
 
   const handleAddLocation = () => {
-    setLocations([...locations, { name: '', arabicName: '' }]);
+    setLocations([...locations, { name: '', arabicName: '', isActive: true }]);
   };
 
   const handleLocationChange = (index, field, value) => {
@@ -144,11 +175,14 @@ const AddClinic = () => {
   };
 
   const handleDeleteLocation = (index) => {
-    if (locations.length > 1) {
-      const newLocations = locations.filter((_, i) => i !== index);
-      setLocations(newLocations);
-    }
+    const newLocations = [...locations];
+    newLocations.splice(index, 1);
+    setLocations(newLocations);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="container add-admin-container w-100">
@@ -161,7 +195,7 @@ const AddClinic = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Clinic
+            Edit Clinic
           </Text>
           <Button
             type="button"
@@ -208,6 +242,36 @@ const AddClinic = () => {
               />
             </Box>
 
+            {/* Email Field */}
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700">
+                Email
+                <span className="text-danger mx-1">*</span>
+              </Text>
+              <Input
+                type="email"
+                placeholder="Enter Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                mt={'8px'}
+              />
+            </Box>
+
+            {/* Password Field */}
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700">
+                Password (leave blank to keep current)
+              </Text>
+              <Input
+                type="password"
+                placeholder="Enter new password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                mt={'8px'}
+              />
+            </Box>
+
             {/* From Time Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
@@ -233,36 +297,6 @@ const AddClinic = () => {
                 type="time"
                 value={toTime}
                 onChange={(e) => setToTime(e.target.value)}
-                required
-                mt={'8px'}
-              />
-            </Box>
-            {/* Email Field */}
-            <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Email
-                <span className="text-danger mx-1">*</span>
-              </Text>
-              <Input
-                type="email"
-                placeholder="Enter Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                mt={'8px'}
-              />
-            </Box>
-            {/* Password Field */}
-            <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Password
-                <span className="text-danger mx-1">*</span>
-              </Text>
-              <Input
-                type="password"
-                placeholder="Enter Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 required
                 mt={'8px'}
               />
@@ -328,17 +362,15 @@ const AddClinic = () => {
                       alignItems="center"
                       gridColumn="1 / -1"
                     >
-                      {locations.length > 1 && (
-                        <Button
-                          leftIcon={<FaTrash />}
-                          colorScheme="red"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteLocation(index)}
-                        >
-                          Remove Location
-                        </Button>
-                      )}
+                      <Button
+                        leftIcon={<FaTrash />}
+                        colorScheme="red"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteLocation(index)}
+                      >
+                        Remove Location
+                      </Button>
                     </Box>
                   </Grid>
                 </Box>
@@ -351,7 +383,7 @@ const AddClinic = () => {
                 mt={2}
                 onClick={handleAddLocation}
               >
-                Add Another Location
+                Add New Location
               </Button>
             </Box>
           </Grid>
@@ -376,8 +408,10 @@ const AddClinic = () => {
               py="5px"
               onClick={handleSend}
               width="120px"
+              isLoading={isUpdating}
+              loadingText="Saving..."
             >
-              Save
+              Save Changes
             </Button>
           </Flex>
         </form>
@@ -386,4 +420,4 @@ const AddClinic = () => {
   );
 };
 
-export default AddClinic;
+export default EditClinic;
