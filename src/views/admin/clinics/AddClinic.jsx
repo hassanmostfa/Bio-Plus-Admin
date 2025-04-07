@@ -303,7 +303,7 @@ const AddClinic = () => {
             </Box>
             {/* Password Field */}
             <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              
               <Text color={textColor} fontSize="sm" fontWeight="700">
                 Password
                 <span className="text-danger mx-1">*</span>
