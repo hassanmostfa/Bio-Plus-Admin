@@ -14,10 +14,17 @@ import {
   Radio,
   RadioGroup,
   Stack,
+  Card,
+  CardHeader,
+  CardBody,
+  IconButton,
 } from "@chakra-ui/react";
-import { FaUpload } from "react-icons/fa6";
+import { FaUpload, FaTrash } from "react-icons/fa6";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import { useGetVarientsQuery } from 'api/varientSlice';
+import { useGetCategoriesQuery } from 'api/categorySlice';
+import { useGetBrandsQuery } from 'api/brandSlice';
 
 const AddProduct = () => {
   const [nameAr, setNameAr] = useState("");
@@ -30,11 +37,25 @@ const AddProduct = () => {
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [hasVariants, setHasVariants] = useState(false);
-  const [variants, setVariants] = useState([]);
   const [images, setImages] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
-  const [offerType, setOfferType] = useState(""); // State for radio button selection
-  const [percentage, setPercentage] = useState(""); // State for percentage input
+  const [offerType, setOfferType] = useState("");
+  const [percentage, setPercentage] = useState("");
+  const [selectedAttributes, setSelectedAttributes] = useState([]); // Array to store selected attributes with their data
+  const [page, setPage] = useState(1); // Current page
+  const [limit, setLimit] = useState(1000); // Items per page
+
+  // Fetch categories from the API
+  const { data: categoriesResponse } = useGetCategoriesQuery({ page, limit });
+  const categories = categoriesResponse?.data?.data || [];
+
+  // Fetch variants from the API
+  const { data: variantsResponse } = useGetVarientsQuery({ page: 1, limit: 1000 });
+  const variants = variantsResponse?.data || []; // Extract the `data` array from the response
+
+  // Fetch brands from the API
+  const { data: brandsResponse } = useGetBrandsQuery({ page: 1, limit: 1000 });
+  const brands = brandsResponse?.data || [];
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const navigate = useNavigate();
@@ -67,32 +88,35 @@ const AddProduct = () => {
     handleImageUpload(files);
   };
 
-  // Handle adding a variant
-  const handleAddVariant = () => {
-    setVariants([
-      ...variants,
-      {
-        id: variants.length + 1,
+  // Handle variant selection
+  const handleVariantSelect = (e) => {
+    const selectedVariantId = e.target.value;
+    const selectedVariant = variants.find(variant => variant.id === selectedVariantId);
+
+    if (selectedVariant) {
+      // Add the selected variant's attributes to the list with initial data
+      const newAttributes = selectedVariant.attributes.map(attr => ({
+        ...attr,
         cost: "",
         price: "",
         quantity: "",
         image: null,
-      },
-    ]);
+      }));
+      setSelectedAttributes([...selectedAttributes, ...newAttributes]);
+    }
   };
 
-  // Handle variant input change
-  const handleVariantChange = (index, field, value) => {
-    const updatedVariants = [...variants];
-    updatedVariants[index][field] = value;
-    setVariants(updatedVariants);
+  // Handle input changes for cost, price, quantity, and image
+  const handleAttributeChange = (attributeId, field, value) => {
+    const updatedAttributes = selectedAttributes.map(attr =>
+      attr.id === attributeId ? { ...attr, [field]: value } : attr
+    );
+    setSelectedAttributes(updatedAttributes);
   };
 
-  // Handle variant image upload
-  const handleVariantImageUpload = (index, file) => {
-    const updatedVariants = [...variants];
-    updatedVariants[index].image = file;
-    setVariants(updatedVariants);
+  // Handle deleting an attribute card
+  const handleDeleteAttribute = (attributeId) => {
+    setSelectedAttributes(selectedAttributes.filter(attr => attr.id !== attributeId));
   };
 
   // Handle form submission
@@ -108,10 +132,10 @@ const AddProduct = () => {
       price,
       quantity,
       hasVariants,
-      variants: hasVariants ? variants : [],
+      attributes: hasVariants ? selectedAttributes : [], // Include selected attributes
       images,
       offerType,
-      percentage: offerType === "Monthly offers" ? percentage : "", // Include percentage only if "Monthly offers" is selected
+      percentage: offerType === "Monthly offers" ? percentage : "",
     };
     console.log("Product Data:", productData);
     // You can send this data to an API or perform other actions
@@ -121,7 +145,7 @@ const AddProduct = () => {
   const handleRadioChange = (value) => {
     setOfferType(value);
     if (value !== "Monthly offers") {
-      setPercentage(""); // Clear percentage if not "Monthly offers"
+      setPercentage("");
     }
   };
 
@@ -220,9 +244,11 @@ const AddProduct = () => {
                 required
                 mt={2}
               >
-                <option value="electronics">Electronics</option>
-                <option value="clothing">Clothing</option>
-                <option value="home">Home & Kitchen</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.translations.find((t) => t.languageId === "en").name}
+                  </option>
+                ))}
               </Select>
             </Box>
             <Box>
@@ -236,10 +262,11 @@ const AddProduct = () => {
                 required
                 mt={2}
               >
-                <option value="nike">Nike</option>
-                <option value="adidas">Adidas</option>
-                <option value="puma">Puma</option>
-                <option value="reebok">Reebok</option>
+                {brands.map((brand) => (
+                  <option key={brand.id} value={brand.id}>
+                    {brand.name}
+                  </option>
+                ))}
               </Select>
             </Box>
           </SimpleGrid>
@@ -328,83 +355,109 @@ const AddProduct = () => {
             </Flex>
             {hasVariants && (
               <Box>
-                <Button onClick={handleAddVariant} mb={4}>
-                  Add Variant
-                </Button>
-                {variants.map((variant, index) => (
-                  <Box
-                    key={variant.id}
-                    mb={4}
-                    p={4}
-                    border="1px solid #ccc"
-                    borderRadius="md"
-                  >
-                    <Text fontSize="md" fontWeight="bold" mb={2}>
-                      Variant {index + 1}
-                    </Text>
-                    <SimpleGrid columns={3} spacing={4} mb={4}>
-                      <Box>
-                        <Text color={textColor} fontSize="sm" fontWeight="700">
-                          Cost <span className="text-danger">*</span>
-                        </Text>
-                        <Input
-                          type="number"
-                          placeholder="Enter Cost"
-                          value={variant.cost}
-                          onChange={(e) =>
-                            handleVariantChange(index, "cost", e.target.value)
-                          }
-                          required
-                          mt={2}
-                        />
-                      </Box>
-                      <Box>
-                        <Text color={textColor} fontSize="sm" fontWeight="700">
-                          Price <span className="text-danger">*</span>
-                        </Text>
-                        <Input
-                          type="number"
-                          placeholder="Enter Price"
-                          value={variant.price}
-                          onChange={(e) =>
-                            handleVariantChange(index, "price", e.target.value)
-                          }
-                          required
-                          mt={2}
-                        />
-                      </Box>
-                      <Box>
-                        <Text color={textColor} fontSize="sm" fontWeight="700">
-                          Quantity <span className="text-danger">*</span>
-                        </Text>
-                        <Input
-                          type="number"
-                          placeholder="Enter Quantity"
-                          value={variant.quantity}
-                          onChange={(e) =>
-                            handleVariantChange(index, "quantity", e.target.value)
-                          }
-                          required
-                          mt={2}
-                        />
-                      </Box>
-                    </SimpleGrid>
-                    <Box>
-                      <Text color={textColor} fontSize="sm" fontWeight="700">
-                        Variant Image <span className="text-danger">*</span>
-                      </Text>
-                      <Input
-                        className="form-control"
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) =>
-                          handleVariantImageUpload(index, e.target.files[0])
-                        }
-                        mt={2}
-                      />
-                    </Box>
-                  </Box>
-                ))}
+                <Select
+                  placeholder="Select Variant"
+                  onChange={handleVariantSelect}
+                  mb={4}
+                >
+                  {variants.map(variant => (
+                    <option key={variant.id} value={variant.id}>
+                      {variant.name}
+                    </option>
+                  ))}
+                </Select>
+
+                {/* Display selected attributes as cards */}
+                <SimpleGrid columns={2} spacing={4}>
+                  {selectedAttributes.map(attribute => (
+                    <Card key={attribute.id}>
+                      <CardHeader>
+                        <Flex justify="space-between" align="center">
+                          <Text fontSize="lg" fontWeight="bold">
+                            {attribute.value}
+                          </Text>
+                          <IconButton
+                            icon={<FaTrash />}
+                            aria-label="Delete Attribute"
+                            colorScheme="red"
+                            size="sm"
+                            onClick={() => handleDeleteAttribute(attribute.id)}
+                          />
+                        </Flex>
+                      </CardHeader>
+                      <CardBody>
+                        <Flex gap={2}>
+                          {/* Cost Input */}
+                          <Box mb={2}>
+                            <Text color={textColor} fontSize="sm" fontWeight="700">
+                              Cost <span className="text-danger">*</span>
+                            </Text>
+                            <Input
+                              type="number"
+                              placeholder="Enter Cost"
+                              value={attribute.cost}
+                              onChange={(e) =>
+                                handleAttributeChange(attribute.id, "cost", e.target.value)
+                              }
+                              required
+                              mt={2}
+                            />
+                          </Box>
+
+                          {/* Price Input */}
+                          <Box mb={2}>
+                            <Text color={textColor} fontSize="sm" fontWeight="700">
+                              Price <span className="text-danger">*</span>
+                            </Text>
+                            <Input
+                              type="number"
+                              placeholder="Enter Price"
+                              value={attribute.price}
+                              onChange={(e) =>
+                                handleAttributeChange(attribute.id, "price", e.target.value)
+                              }
+                              required
+                              mt={2}
+                            />
+                          </Box>
+
+                          {/* Quantity Input */}
+                          <Box mb={2}>
+                            <Text color={textColor} fontSize="sm" fontWeight="700">
+                              Quantity <span className="text-danger">*</span>
+                            </Text>
+                            <Input
+                              type="number"
+                              placeholder="Enter Quantity"
+                              value={attribute.quantity}
+                              onChange={(e) =>
+                                handleAttributeChange(attribute.id, "quantity", e.target.value)
+                              }
+                              required
+                              mt={2}
+                            />
+                          </Box>
+                        </Flex>
+
+                        {/* Image Upload */}
+                        <Box mb={2}>
+                          <Text color={textColor} fontSize="sm" fontWeight="700">
+                            Image <span className="text-danger">*</span>
+                          </Text>
+                          <Input
+                            className="form-control"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) =>
+                              handleAttributeChange(attribute.id, "image", e.target.files[0])
+                            }
+                            mt={2}
+                          />
+                        </Box>
+                      </CardBody>
+                    </Card>
+                  ))}
+                </SimpleGrid>
               </Box>
             )}
           </Box>

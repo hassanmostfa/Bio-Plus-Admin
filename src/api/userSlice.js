@@ -34,7 +34,10 @@ export const apiService = createApi({
       }),
     }),
     getAdmins: builder.query({
-      query: () => createRequest("/admin/admin-user"),
+      query: ({ page, limit }) => ({
+        url: '/admin/admin-user',
+        params: { page, limit }, // Pass page and limit as query parameters
+      }),
     }),
     // You can add more endpoints here as needed
     getUserProfile: builder.query({

@@ -207,7 +207,7 @@ const EditAdmin = () => {
           <Button
             variant="solid"
             colorScheme="brandScheme"
-            color={textColor}
+            color={"white"}
             fontSize="sm"
             fontWeight="500"
             borderRadius="70px"

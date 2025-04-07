@@ -31,8 +31,11 @@ const EditCategory = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedCategoryType, setSelectedCategoryType] = useState("Select Category Type");
 
-  const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+
+     const textColor = useColorModeValue('secondaryGray.900', 'white');
+      const cardBg = useColorModeValue('white', 'navy.700');
+      const inputBg = useColorModeValue('gray.100', 'gray.700');
 
   // Find the category to edit based on the ID
   const categoryToEdit = categoriesResponse?.data?.data.find(
@@ -128,7 +131,7 @@ const EditCategory = () => {
 
   return (
     <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -164,6 +167,7 @@ const EditCategory = () => {
               onChange={(e) => setEnName(e.target.value)}
               required
               mt={"8px"}
+              bg={inputBg}
             />
           </div>
 
@@ -181,6 +185,7 @@ const EditCategory = () => {
               onChange={(e) => setArName(e.target.value)}
               required
               mt={"8px"}
+              bg={inputBg}
             />
           </div>
 
@@ -195,7 +200,7 @@ const EditCategory = () => {
                 as={Button}
                 rightIcon={<IoIosArrowDown />}
                 width="100%"
-                bg="white"
+                bg={inputBg}
                 border="1px solid #ddd"
                 borderRadius="md"
                 _hover={{ bg: "gray.200" }}
@@ -240,6 +245,7 @@ const EditCategory = () => {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             mb={4}
+            bg={inputBg}
           >
             <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
             <Text color="gray.500" mb={2}>
@@ -316,7 +322,7 @@ const EditCategory = () => {
             </Button>
           </Flex>
         </form>
-      </div>
+      </Box>
     </div>
   );
 };

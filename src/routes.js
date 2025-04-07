@@ -211,25 +211,6 @@ const routes = [
     component: <AddBranch />,
     showInSidebar: false,
   },
-  /* Start Doctors Routes */
-  {
-    name: 'Doctor Management',
-    layout: '/admin',
-    path: '/doctors',
-    icon: (
-      <Icon as={MdMedicalServices} width="20px" height="20px" color="inherit" />
-    ),
-    component: <Doctors />,
-    showInSidebar: true,
-  },
-  {
-    name: 'Doctor Management',
-    layout: '/admin',
-    path: '/add/doctor',
-    component: <AddDoctor />,
-    showInSidebar: false,
-  },
-  /* End Doctors Routes */
 
   /* Start Clinics Routes */
   {
@@ -270,6 +251,26 @@ const routes = [
   },
   /* Start Clinics Routes */
 
+  /* Start Doctors Routes */
+  {
+    name: 'Doctor Management',
+    layout: '/admin',
+    path: '/doctors',
+    icon: (
+      <Icon as={MdMedicalServices} width="20px" height="20px" color="inherit" />
+    ),
+    component: <Doctors />,
+    showInSidebar: true,
+  },
+  {
+    name: 'Doctor Management',
+    layout: '/admin',
+    path: '/add/doctor',
+    component: <AddDoctor />,
+    showInSidebar: false,
+  },
+  /* End Doctors Routes */
+  
   {
     name: 'User Management',
     layout: '/admin',

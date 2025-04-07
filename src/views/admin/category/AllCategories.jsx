@@ -15,6 +15,7 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
+  Select,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -174,7 +175,7 @@ const AllCategories = () => {
       cell: (info) => (
         <img
           src={info.getValue()}
-          alt="Category Image"
+          alt="Category Img"
           width={70}
           height={70}
           style={{ borderRadius: '8px' }}
@@ -221,7 +222,6 @@ const AllCategories = () => {
             as={FaEye}
             cursor="pointer"
             onClick={() => navigate(`/admin/edit-category/${info.getValue()}`)}
-
           />
         </Flex>
       ),
@@ -390,15 +390,21 @@ const AllCategories = () => {
             <Text color={textColor} fontSize="sm" mr="10px">
               Rows per page:
             </Text>
-            <select
+            <Select
               value={limit}
               onChange={handleLimitChange}
-              style={{ padding: '5px', borderRadius: '5px', border: '1px solid #ddd' }}
+              width="100px"
+              size="sm"
+              variant="outline"
+              borderRadius="md"
+              borderColor="gray.200"
+              _hover={{ borderColor: 'gray.300' }}
+              _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
               <option value={50}>50</option>
-            </select>
+            </Select>
           </Flex>
           <Text color={textColor} fontSize="sm">
             Page {pagination.page} of {pagination.totalPages}

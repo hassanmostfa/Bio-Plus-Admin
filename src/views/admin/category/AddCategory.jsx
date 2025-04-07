@@ -25,10 +25,12 @@ const AddCategory = () => {
   const [isDragging, setIsDragging] = useState(false); // State for drag-and-drop
   const [selectedCategoryType, setSelectedCategoryType] = useState("Select Category Type"); // State for category type
   const [addCategory, { isLoading }] = useAddCategoryMutation(); // Mutation hook for adding a category
-  const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const navigate = useNavigate();
 
+   const textColor = useColorModeValue('secondaryGray.900', 'white');
+    const cardBg = useColorModeValue('white', 'navy.700');
+    const inputBg = useColorModeValue('gray.100', 'gray.700');
   // Handle image upload
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
@@ -107,7 +109,7 @@ const AddCategory = () => {
 
   return (
     <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -143,6 +145,7 @@ const AddCategory = () => {
               onChange={(e) => setEnName(e.target.value)}
               required
               mt={"8px"}
+              bg={inputBg}
             />
           </div>
 
@@ -160,6 +163,7 @@ const AddCategory = () => {
               onChange={(e) => setArName(e.target.value)}
               required
               mt={"8px"}
+              bg={inputBg}
             />
           </div>
 
@@ -174,7 +178,7 @@ const AddCategory = () => {
                 as={Button}
                 rightIcon={<IoIosArrowDown />}
                 width="100%"
-                bg="white"
+                bg={inputBg}
                 border="1px solid #ddd"
                 borderRadius="md"
                 _hover={{ bg: "gray.200" }}
@@ -219,6 +223,7 @@ const AddCategory = () => {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             mb={4}
+            bg={inputBg}
           >
             <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
             <Text color="gray.500" mb={2}>
@@ -280,7 +285,7 @@ const AddCategory = () => {
             </Button>
           </Flex>
         </form>
-      </div>
+      </Box>
     </div>
   );
 };

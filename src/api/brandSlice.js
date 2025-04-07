@@ -23,8 +23,12 @@ export const BrandApi = createApi({
 
   endpoints: (builder) => ({
     getBrands: builder.query({
-      query: () => '/admin/brands',
+      query: (params) => ({
+        url: '/admin/brands',
+        params: params, // Sends { page: 1, limit: 10 } as query params
+      }),
     }),
+    
     getBrand: builder.query({
       query: (id) => `/admin/brands/${id}`,
     }),

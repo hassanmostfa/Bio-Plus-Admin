@@ -208,39 +208,6 @@ const AddVariant = () => {
                   />
                 </Box>
               </SimpleGrid>
-
-              {/* Conditional Input Based on Selected Input Type */}
-              {inputType === "dropdown" && (
-                <Box mt={4}>
-                  <Text color={textColor} fontSize="sm" fontWeight="700">
-                    Dropdown Options <span className="text-danger">*</span>
-                  </Text>
-                  <Input
-                    type="text"
-                    placeholder="Enter dropdown options (comma-separated)"
-                    onChange={(e) =>
-                      handleAttributeChange(index, "options", e.target.value)
-                    }
-                    mt={2}
-                  />
-                </Box>
-              )}
-
-              {inputType === "radio" && (
-                <Box mt={4}>
-                  <Text color={textColor} fontSize="sm" fontWeight="700">
-                    Radio Options <span className="text-danger">*</span>
-                  </Text>
-                  <Input
-                    type="text"
-                    placeholder="Enter radio options (comma-separated)"
-                    onChange={(e) =>
-                      handleAttributeChange(index, "options", e.target.value)
-                    }
-                    mt={2}
-                  />
-                </Box>
-              )}
             </Box>
           ))}
 

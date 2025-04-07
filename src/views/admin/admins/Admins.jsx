@@ -15,6 +15,7 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
+  Select,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -37,7 +38,7 @@ const Admins = () => {
   const [page, setPage] = React.useState(1); // Current page
   const [limit, setLimit] = React.useState(10); // Items per page
   const [searchQuery, setSearchQuery] = React.useState(''); // Search query
-  const { data, refetch, isError, isLoading } = useGetAdminsQuery({ page, limit });
+  const { data, refetch, isError, isLoading } = useGetAdminsQuery({ page, limit }); // Pass page and limit here
   const [deleteUser, { isError: isDeleteError, isLoading: isDeleteLoading }] = useDeleteUserMutation();
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
@@ -49,7 +50,7 @@ const Admins = () => {
   const tableData = data?.data?.data || [];
   const pagination = data?.data?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
 
-  // Filter data based on search query
+  // Filter data based on search query (client-side)
   const filteredData = React.useMemo(() => {
     if (!searchQuery) return tableData; // Return all data if no search query
     return tableData.filter((item) =>
@@ -59,10 +60,12 @@ const Admins = () => {
     );
   }, [tableData, searchQuery]);
 
+  // Refetch data when page or limit changes
   React.useEffect(() => {
     refetch();
   }, [page, limit, refetch]);
 
+  // Columns definition
   const columns = [
     columnHelper.accessor('name', {
       id: 'name',
@@ -166,6 +169,7 @@ const Admins = () => {
     }),
   ];
 
+  // Table instance
   const table = useReactTable({
     data: filteredData, // Use filtered data
     columns,
@@ -258,8 +262,8 @@ const Admins = () => {
               <Input
                 variant="search"
                 fontSize="sm"
-                bg={useColorModeValue("secondaryGray.300", "gray.700")} // Light mode / Dark mode
-                color={useColorModeValue("gray.700", "white")} // Text color for light and dark mode
+                bg={useColorModeValue("secondaryGray.300", "gray.700")}
+                color={useColorModeValue("gray.700", "white")}
                 fontWeight="500"
                 _placeholder={{ color: "gray.400", fontSize: "14px" }}
                 borderRadius="30px"
@@ -269,19 +273,19 @@ const Admins = () => {
               />
             </InputGroup>
           </div>
-            <Button
-              variant='darkBrand'
-              color='white'
-              fontSize='sm'
-              fontWeight='500'
-              borderRadius='70px'
-              px='24px'
-              py='5px'
-              onClick={() => navigate('/admin/add-admin')}
-              width={'200px'}
-            >
-              Create New Admin
-            </Button>
+          <Button
+            variant='darkBrand'
+            color='white'
+            fontSize='sm'
+            fontWeight='500'
+            borderRadius='70px'
+            px='24px'
+            py='5px'
+            onClick={() => navigate('/admin/add-admin')}
+            width={'200px'}
+          >
+            Create New Admin
+          </Button>
         </Flex>
         <Box>
           <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -351,15 +355,21 @@ const Admins = () => {
             <Text color={textColor} fontSize="sm" mr="10px">
               Rows per page:
             </Text>
-            <select
+            <Select
               value={limit}
               onChange={handleLimitChange}
-              style={{ padding: '5px', borderRadius: '5px', border: '1px solid #ddd' }}
+              width="100px"
+              size="sm"
+              variant="outline"
+              borderRadius="md"
+              borderColor="gray.200"
+              _hover={{ borderColor: 'gray.300' }}
+              _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
               <option value={50}>50</option>
-            </select>
+            </Select>
           </Flex>
           <Text color={textColor} fontSize="sm">
             Page {pagination.page} of {pagination.totalPages}

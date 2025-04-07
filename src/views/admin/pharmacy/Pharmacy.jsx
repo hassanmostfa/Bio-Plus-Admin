@@ -15,6 +15,7 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
+  Select, // Import Select from Chakra UI
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -42,17 +43,20 @@ const Pharmacy = () => {
   const [searchQuery, setSearchQuery] = useState(''); // Search query
   const [page, setPage] = React.useState(1); // Current page
 
-   const bg = useColorModeValue("secondaryGray.300", "gray.700"); // Background color for light and dark mode
-  const color=useColorModeValue("gray.700", "white"); // Text color for light and dark mode
+  const bg = useColorModeValue('secondaryGray.300', 'gray.700'); // Background color for light and dark mode
+  const color = useColorModeValue('gray.700', 'white'); // Text color for light and dark mode
+
   // Fetch data from API
-  const { data: pharmacyData,refetch, isLoading, isError } = useGetPharmaciesQuery({
+  const { data: pharmacyData, refetch, isLoading, isError } = useGetPharmaciesQuery({
     page: currentPage,
-    limit,
+    limit, search: searchQuery
   });
   const [deletePharmacy, { isError: isDeleteError, isLoading: isDeleteLoading }] = useDeletePharmacyMutation();
-    React.useEffect(() => {
-      refetch();
-    }, [page, limit, refetch]);
+
+  React.useEffect(() => {
+    refetch();
+  }, [page, limit, refetch]);
+
   const deletePharmacyHandler = async (id) => {
     try {
       Swal.fire({
@@ -69,14 +73,15 @@ const Pharmacy = () => {
           refetch();
           Swal.fire('Deleted!', 'The pharmacy has been deleted.', 'success');
         }
-      })
+      });
     } catch (error) {
       Swal.fire('Error!', 'Failed to delete the pharmacy.' + error.data.message, 'error');
     }
-  }
- 
+  };
+
   const handleLimitChange = (e) => {
     setLimit(Number(e.target.value));
+    setCurrentPage(1); // Reset to the first page when changing the limit
   };
 
   const handlePreviousPage = () => {
@@ -114,7 +119,7 @@ const Pharmacy = () => {
     return tableData.filter((item) =>
       Object.values(item).some((value) =>
         String(value).toLowerCase().includes(searchQuery.toLowerCase())
-    )
+      )
     );
   }, [tableData, searchQuery]);
 
@@ -200,16 +205,6 @@ const Pharmacy = () => {
     debugTable: true,
   });
 
-  // Handle page change
-  const changePage = (page) => {
-    setCurrentPage(page);
-  };
-
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -236,54 +231,49 @@ const Pharmacy = () => {
             All Pharmacies
           </Text>
 
-            <InputGroup w={{ base: "100%", md: "400px" }}>
-              <InputLeftElement>
-                <IconButton
-                  bg='inherit'
-                  borderRadius='inherit'
-                  _hover='none'
-                  _active={{
-                    bg: "inherit",
-                    transform: "none",
-                    borderColor: "transparent",
-                  }}
-                  _focus={{
-                    boxShadow: "none",
-                  }}
-                  icon={
-                    <SearchIcon
-                      w='15px'
-                      h='15px'
-                    />
-                  }
-                />
-              </InputLeftElement>
-              <Input
-                variant='search'
-                fontSize='sm'
-                bg={bg}
-                color={textColor}
-                fontWeight='500'
-                _placeholder={{ color: "gray.400", fontSize: "14px" }}
-                borderRadius='30px' // Default value
-                placeholder='Search...' // Default value
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+          <InputGroup w={{ base: '100%', md: '400px' }}>
+            <InputLeftElement>
+              <IconButton
+                bg="inherit"
+                borderRadius="inherit"
+                _hover="none"
+                _active={{
+                  bg: 'inherit',
+                  transform: 'none',
+                  borderColor: 'transparent',
+                }}
+                _focus={{
+                  boxShadow: 'none',
+                }}
+                icon={<SearchIcon w="15px" h="15px" />}
               />
-            </InputGroup>
-            <Button
-              variant='darkBrand'
-              color='white'
-              fontSize='sm'
-              fontWeight='500'
-              borderRadius='70px'
-              px='24px'
-              py='5px'
-              onClick={() => navigate('/admin/add-pharmacy')}
-              width={'200px'}
-            >
-              Create New Pharmacy
-            </Button>
+            </InputLeftElement>
+            <Input
+              variant="search"
+              fontSize="sm"
+              bg={bg}
+              color={textColor}
+              fontWeight="500"
+              _placeholder={{ color: 'gray.400', fontSize: '14px' }}
+              borderRadius="30px"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </InputGroup>
+          <Button
+            variant="darkBrand"
+            color="white"
+            fontSize="sm"
+            fontWeight="500"
+            borderRadius="70px"
+            px="24px"
+            py="5px"
+            onClick={() => navigate('/admin/add-pharmacy')}
+            width={'200px'}
+          >
+            Create New Pharmacy
+          </Button>
         </Flex>
         <Box>
           <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -345,21 +335,29 @@ const Pharmacy = () => {
               })}
             </Tbody>
           </Table>
-   {/* Pagination Controls */}
+        </Box>
+
+        {/* Pagination Controls */}
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
               Rows per page:
             </Text>
-            <select
+            <Select
               value={limit}
               onChange={handleLimitChange}
-              style={{ padding: '5px', borderRadius: '5px', border: '1px solid #ddd' }}
+              width="100px"
+              size="sm"
+              variant="outline"
+              borderRadius="md"
+              borderColor="gray.200"
+              _hover={{ borderColor: 'gray.300' }}
+              _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
               <option value={50}>50</option>
-            </select>
+            </Select>
           </Flex>
           <Text color={textColor} fontSize="sm">
             Page {pagination.page} of {pagination.totalPages}
@@ -367,7 +365,7 @@ const Pharmacy = () => {
           <Flex>
             <Button
               onClick={handlePreviousPage}
-              disabled={page === 1}
+              disabled={currentPage === 1}
               variant="outline"
               size="sm"
               mr="10px"
@@ -377,7 +375,7 @@ const Pharmacy = () => {
             </Button>
             <Button
               onClick={handleNextPage}
-              disabled={page === pagination.totalPages}
+              disabled={currentPage === pagination.totalPages}
               variant="outline"
               size="sm"
             >
@@ -386,7 +384,6 @@ const Pharmacy = () => {
             </Button>
           </Flex>
         </Flex>
-        </Box>
       </Card>
     </div>
   );

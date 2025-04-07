@@ -138,6 +138,7 @@ const AddClinic = () => {
   };
 
   const handleLocationChange = (index, field, value) => {
+  const handleLocationChange = (index, field, value) => {
     const newLocations = [...locations];
     newLocations[index][field] = value;
     setLocations(newLocations);
@@ -222,6 +223,54 @@ const AddClinic = () => {
                 mt={'8px'}
               />
             </Box>
+            {/* Ar Name Field */}
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700">
+                Ar-Name
+                <span className="text-danger mx-1">*</span>
+              </Text>
+              <Input
+                type="text"
+                id="name"
+                placeholder="Enter Clinic Name"
+                value={ar_name}
+                onChange={(e) => setArName(e.target.value)}
+                required
+                mt={'8px'}
+              />
+            </Box>
+
+            {/* Arabic Name Field */}
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700">
+                Arabic Name
+                <span className="text-danger mx-1">*</span>
+              </Text>
+              <Input
+                type="text"
+                placeholder="أدخل اسم العيادة"
+                value={arabicName}
+                onChange={(e) => setArabicName(e.target.value)}
+                required
+                mt={'8px'}
+                dir="rtl"
+              />
+            </Box>
+
+            {/* From Time Field */}
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700">
+                Opening Time
+                <span className="text-danger mx-1">*</span>
+              </Text>
+              <Input
+                type="time"
+                value={fromTime}
+                onChange={(e) => setFromTime(e.target.value)}
+                required
+                mt={'8px'}
+              />
+            </Box>
 
             {/* To Time Field */}
             <Box>
@@ -254,6 +303,7 @@ const AddClinic = () => {
             </Box>
             {/* Password Field */}
             <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700">
               <Text color={textColor} fontSize="sm" fontWeight="700">
                 Password
                 <span className="text-danger mx-1">*</span>
@@ -367,6 +417,13 @@ const AddClinic = () => {
               Cancel
             </Button>
             <Button
+              variant="darkBrand"
+              color="white"
+              fontSize="sm"
+              fontWeight="500"
+              borderRadius="70px"
+              px="24px"
+              py="5px"
               variant="darkBrand"
               color="white"
               fontSize="sm"

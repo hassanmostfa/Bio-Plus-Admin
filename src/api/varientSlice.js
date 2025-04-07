@@ -23,8 +23,13 @@ export const VarientApi = createApi({
 
   endpoints: (builder) => ({
     getVarients: builder.query({
-      query: () => '/admin/product-variants',
+      query: (params) => ({
+        url: '/admin/product-variants',
+        params: params, // Automatically appends ?page=1&limit=10
+      }),
     }),
+    
+    
     getVarient: builder.query({
       query: (id) => `/admin/product-variants/${id}`,
     }),

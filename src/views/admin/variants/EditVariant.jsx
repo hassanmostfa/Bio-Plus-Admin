@@ -44,7 +44,6 @@ const EditVariant = () => {
           id: attr.id, // Include the attribute ID for updates
           enName: attr.value,
           arName: attr.translations.find((t) => t.languageId === "ar")?.value || "",
-          options: attr.options || "", // Handle options if they exist
         }))
       );
     }
@@ -89,11 +88,6 @@ const EditVariant = () => {
     for (let i = 0; i < attributes.length; i++) {
       if (!attributes[i].enName || !attributes[i].arName) {
         Swal.fire("Error!", `Attribute ${i + 1} names in English and Arabic are required.`, "error");
-        return false;
-      }
-
-      if (inputType !== "text" && !attributes[i].options) {
-        Swal.fire("Error!", `Attribute ${i + 1} options are required for ${inputType}.`, "error");
         return false;
       }
     }
@@ -283,25 +277,6 @@ const EditVariant = () => {
                   />
                 </Box>
               </SimpleGrid>
-
-              {/* Conditional Input Based on Selected Input Type */}
-              {inputType !== "text" && (
-                <Box mt={4}>
-                  <Text color={textColor} fontSize="sm" fontWeight="700">
-                    {inputType === "dropdown" ? "Dropdown Options" : "Radio Options"} <span className="text-danger">*</span>
-                  </Text>
-                  <Input
-                    type="text"
-                    placeholder={`Enter ${inputType} options (comma-separated)`}
-                    value={attr.options || ""}
-                    onChange={(e) =>
-                      handleAttributeChange(index, "options", e.target.value)
-                    }
-                    required
-                    mt={2}
-                  />
-                </Box>
-              )}
             </Box>
           ))}
 
