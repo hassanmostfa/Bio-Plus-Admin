@@ -90,6 +90,7 @@ import EditVariant from 'views/admin/variants/EditVariant';
 import EditClinic from 'views/admin/clinics/EditClinic';
 import ShowClinic from 'views/admin/clinics/ShowClinic';
 import EditPromoCode from 'views/admin/promoCodes/EditPromoCode';
+import EditTag from 'views/admin/tags/EditTag';
 
 
 const routes = [
@@ -619,6 +620,14 @@ const routes = [
     path: '/add-tag',
     icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
     component: <AddTag />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Add tag',
+    layout: '/admin',
+    path: '/edit-tag/:id',
+    icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
+    component: <EditTag />,
     showInSidebar: false,
   },
   {

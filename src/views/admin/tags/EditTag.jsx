@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -7,53 +7,88 @@ import {
   Input,
   Text,
   useColorModeValue,
-  useToast,
+  Spinner,
 } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
-import { useAddTagMutation } from "api/tagSlice";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useUpdateTagMutation, useGetTagsQuery } from "api/tagSlice";
 import Swal from "sweetalert2";
 
-const AddTag = () => {
-  const [name, setName] = useState("");
-  const [arabicName, setArabicName] = useState("");
-  const textColor = useColorModeValue("secondaryGray.900", "white");
+const EditTag = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const toast = useToast();
-  const [addTag, { isLoading }] = useAddTagMutation();
+  const location = useLocation();
+  const textColor = useColorModeValue("secondaryGray.900", "white");
+
+  // Get all tags to find the one we're editing
+  const { data: tagsResponse, isLoading: isFetching } = useGetTagsQuery({});
+  const [updateTag, { isLoading: isUpdating }] = useUpdateTagMutation();
+
+  // State for the tag being edited
+  const [formData, setFormData] = useState({
+    name: "",
+    arabicName: ""
+  });
+
+  // Find and initialize the tag data
+  useEffect(() => {
+    if (tagsResponse?.data) {
+      const tagToEdit = tagsResponse.data.find(tag => tag.id === id);
+      if (tagToEdit) {
+        const arabicTranslation = tagToEdit.translations?.find(t => t.languageId === 'ar');
+        setFormData({
+          name: tagToEdit.name,
+          arabicName: arabicTranslation?.name || ""
+        });
+      } else {
+        Swal.fire('Error!', 'Tag not found.', 'error');
+        navigate('/admin/tags');
+      }
+    }
+  }, [tagsResponse, id, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     const tagData = {
-      name,
+      name: formData.name,
       translations: [
         {
           languageId: "ar",
-          name: arabicName
+          name: formData.arabicName
         }
       ]
     };
 
     try {
-      const response = await addTag(tagData).unwrap();
-      Swal.fire('Success!', 'Tag created successfully.', 'success');
+      await updateTag({ id, data: tagData }).unwrap();
+      Swal.fire('Success!', 'Tag updated successfully.', 'success');
       navigate('/admin/undefined/tags');
     } catch (error) {
-      console.error('Failed to add tag:', error);
+      console.error('Failed to update tag:', error);
       Swal.fire(
         'Error!',
-        error.data?.message || 'Failed to create tag.',
+        error.data?.message || 'Failed to update tag.',
         'error'
       );
     }
   };
 
-  const handleCancel = () => {
-    setName("");
-    setArabicName("");
-    navigate('/admin/tags');
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
+
+  if (isFetching) {
+    return (
+      <Flex justify="center" align="center" height="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
 
   return (
     <div className="container add-admin-container w-100">
@@ -66,7 +101,7 @@ const AddTag = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Tag
+            Edit Tag
           </Text>
           <Button
             type="button"
@@ -88,9 +123,10 @@ const AddTag = () => {
               </Text>
               <Input
                 type="text"
+                name="name"
                 placeholder="Enter English Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={formData.name}
+                onChange={handleInputChange}
                 required
                 mt={"8px"}
               />
@@ -104,9 +140,10 @@ const AddTag = () => {
               </Text>
               <Input
                 type="text"
+                name="arabicName"
                 placeholder="ادخل الاسم بالعربية"
-                value={arabicName}
-                onChange={(e) => setArabicName(e.target.value)}
+                value={formData.arabicName}
+                onChange={handleInputChange}
                 required
                 mt={"8px"}
                 dir="rtl"
@@ -119,7 +156,7 @@ const AddTag = () => {
             <Button
               variant="outline"
               colorScheme="red"
-              onClick={handleCancel}
+              onClick={() => navigate('/admin/tags')}
               width="120px"
             >
               Cancel
@@ -133,11 +170,11 @@ const AddTag = () => {
               px='24px'
               py='5px'
               type="submit"
-              isLoading={isLoading}
-              loadingText="Submitting..."
+              isLoading={isUpdating}
+              loadingText="Saving..."
               width="120px"
             >
-              Create Tag
+              Save Changes
             </Button>
           </Flex>
         </form>
@@ -146,4 +183,4 @@ const AddTag = () => {
   );
 };
 
-export default AddTag;
+export default EditTag;
