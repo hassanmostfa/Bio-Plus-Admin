@@ -89,6 +89,7 @@ import EditType from 'views/admin/productType/EditType';
 import EditVariant from 'views/admin/variants/EditVariant';
 import EditClinic from 'views/admin/clinics/EditClinic';
 import ShowClinic from 'views/admin/clinics/ShowClinic';
+import EditPromoCode from 'views/admin/promoCodes/EditPromoCode';
 
 
 const routes = [
@@ -526,6 +527,13 @@ const routes = [
     layout: '/admin',
     path: '/add-promo-code',
     component: <AddPromoCode />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Promo Codes',
+    layout: '/admin',
+    path: '/edit-promo-code/:id',
+    component: <EditPromoCode />,
     showInSidebar: false,
   },
   {

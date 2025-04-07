@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Grid,
   Box,
@@ -14,83 +14,115 @@ import {
   Switch,
   Text,
   useColorModeValue,
+  Spinner,
+  Badge,
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
-import { useNavigate } from 'react-router-dom';
-import { useAddPromocodeMutation } from 'api/promocodeSlice';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useGetPromocodesQuery, useUpdatePromocodeMutation } from 'api/promocodeSlice';
 import Swal from 'sweetalert2';
 import { IoMdArrowBack } from 'react-icons/io';
 
-const AddPromoCode = () => {
-  const textColor = useColorModeValue('secondaryGray.900', 'white');
+const EditPromoCode = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [addPromocode, { isLoading }] = useAddPromocodeMutation();
+  const textColor = useColorModeValue('secondaryGray.900', 'white');
+  
+  // Fetch all promo codes
+  const { data: promocodesResponse, isLoading: isFetching } = useGetPromocodesQuery({});
+  const [updatePromocode, { isLoading: isUpdating }] = useUpdatePromocodeMutation();
 
-  // Form state
+  // State for the promo code being edited
+  const [promoCode, setPromoCode] = useState(null);
   const [formData, setFormData] = useState({
     code: '',
     amount: '',
-    type: 'FIXED', // Default to FIXED
+    type: 'FIXED',
     endDate: '',
     maxUsage: '',
     isActive: true,
   });
 
-  // Handle input changes
+  // Find the specific promo code when data loads
+  useEffect(() => {
+    if (promocodesResponse?.data) {
+      const foundPromo = promocodesResponse.data.find(p => p.id === id);
+      if (foundPromo) {
+        setPromoCode(foundPromo);
+        setFormData({
+          code: foundPromo.code,
+          amount: foundPromo.amount,
+          type: foundPromo.type,
+          endDate: foundPromo.endDate.split('T')[0], // Remove time portion
+          maxUsage: foundPromo.maxUsage,
+          isActive: foundPromo.isActive,
+        });
+      } else {
+        Swal.fire('Error!', 'Promo code not found.', 'error');
+        navigate('/admin/promo-codes');
+      }
+    }
+  }, [promocodesResponse, id, navigate]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   };
 
-  // Handle type selection
   const handleSelectType = (type) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      type: type.toUpperCase(),
+      type: type.toUpperCase()
     }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Format the end date to include time
-    const formattedEndDate = formData.endDate
-      ? `${formData.endDate}T23:59:59.999Z`
-      : '';
-
+    
     try {
-      const response = await addPromocode({
-        ...formData,
-        amount: Number(formData.amount),
-        maxUsage: Number(formData.maxUsage),
-        endDate: formattedEndDate,
+      await updatePromocode({
+        id,
+        data: {
+          ...formData,
+          amount: Number(formData.amount),
+          maxUsage: Number(formData.maxUsage),
+          endDate: `${formData.endDate}T23:59:59.999Z` // Add time portion
+        }
       }).unwrap();
 
-      Swal.fire('Success!', 'Promo code created successfully.', 'success');
+      Swal.fire('Success!', 'Promo code updated successfully.', 'success');
       navigate('/admin/promo-codes');
     } catch (error) {
-      console.error('Failed to add promo code:', error);
+      console.error('Failed to update promo code:', error);
       Swal.fire(
         'Error!',
-        error.data?.message || 'Failed to create promo code.',
-        'error',
+        error.data?.message || 'Failed to update promo code.',
+        'error'
       );
     }
   };
 
+  if (isFetching) {
+    return (
+      <Flex justify="center" align="center" height="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (!promoCode) {
+    return null; // or show a "not found" message
+  }
+
   return (
-    <div className="container add-promo-container w-100 ">
-      <div
-        className="add-promo-card shadow p-4 bg-white w-100"
-        style={{ borderRadius: '15px' }}
-      >
+    <div className="container add-promo-container w-100">
+      <div className="add-promo-card shadow p-4 bg-white w-100" style={{ borderRadius: '15px' }}>
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Add New PromoCode
+            Edit Promo Code: {promoCode.code}
           </Text>
           <Button
             type="button"
@@ -116,7 +148,6 @@ const AddPromoCode = () => {
                 name="code"
                 value={formData.code}
                 onChange={handleInputChange}
-                placeholder="Enter promo code"
                 required
                 mt={'8px'}
               />
@@ -133,7 +164,6 @@ const AddPromoCode = () => {
                 name="amount"
                 value={formData.amount}
                 onChange={handleInputChange}
-                placeholder="Enter amount"
                 required
                 mt={'8px'}
               />
@@ -176,8 +206,25 @@ const AddPromoCode = () => {
               </Menu>
             </FormControl>
 
-            {/* Status Switch */}
-          
+            {/* Status Field (Final) */}
+            {/* <FormControl>
+              <FormLabel color={textColor} fontSize="sm" fontWeight="700">
+                Status
+              </FormLabel>
+              <Box mt={2}>
+                <Text fontSize="md" fontWeight="600">
+                  {formData.isActive ? (
+                    <Badge colorScheme="green" px={2} py={1} borderRadius="md">
+                      Active
+                    </Badge>
+                  ) : (
+                    <Badge colorScheme="red" px={2} py={1} borderRadius="md">
+                      Inactive
+                    </Badge>
+                  )}
+                </Text>
+              </Box>
+            </FormControl> */}
 
             {/* End Date Field */}
             <FormControl>
@@ -207,38 +254,20 @@ const AddPromoCode = () => {
                 name="maxUsage"
                 value={formData.maxUsage}
                 onChange={handleInputChange}
-                placeholder="Enter maximum usage"
                 required
                 mt={'8px'}
                 min="1"
               />
             </FormControl>
-            {/* <FormControl display="flex" alignItems="center">
-              <FormLabel htmlFor="is-active" mb="0" mt="30px">
-                Active Status
-              </FormLabel>
-              <Switch
-                id="is-active"
-                isChecked={formData.isActive}
-                onChange={() =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    isActive: !prev.isActive,
-                  }))
-                }
-                colorScheme="green"
-                mt={'8px'}
-              />
-            </FormControl> */}
           </Grid>
 
-          {/* Submit Button */}
-          <Flex justify="center" mt={8}>
+          {/* Action Buttons */}
+          <Flex justify="center" mt={8} gap={4}>
             <Button
               variant="outline"
               colorScheme="red"
-              mr={2}
               onClick={() => navigate(-1)}
+              width="120px"
             >
               Cancel
             </Button>
@@ -251,10 +280,11 @@ const AddPromoCode = () => {
               px="24px"
               py="5px"
               type="submit"
-              isLoading={isLoading}
-              loadingText="Submitting..."
+              isLoading={isUpdating}
+              loadingText="Saving..."
+              width="120px"
             >
-              Create Promo Code
+              Save Changes
             </Button>
           </Flex>
         </form>
@@ -263,4 +293,4 @@ const AddPromoCode = () => {
   );
 };
 
-export default AddPromoCode;
+export default EditPromoCode;

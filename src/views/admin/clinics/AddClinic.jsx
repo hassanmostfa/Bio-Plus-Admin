@@ -223,55 +223,8 @@ const AddClinic = () => {
                 mt={'8px'}
               />
             </Box>
-            {/* Ar Name Field */}
-            <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Ar-Name
-                <span className="text-danger mx-1">*</span>
-              </Text>
-              <Input
-                type="text"
-                id="name"
-                placeholder="Enter Clinic Name"
-                value={ar_name}
-                onChange={(e) => setArName(e.target.value)}
-                required
-                mt={'8px'}
-              />
-            </Box>
-
-            {/* Arabic Name Field */}
-            <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Arabic Name
-                <span className="text-danger mx-1">*</span>
-              </Text>
-              <Input
-                type="text"
-                placeholder="أدخل اسم العيادة"
-                value={arabicName}
-                onChange={(e) => setArabicName(e.target.value)}
-                required
-                mt={'8px'}
-                dir="rtl"
-              />
-            </Box>
-
-            {/* From Time Field */}
-            <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Opening Time
-                <span className="text-danger mx-1">*</span>
-              </Text>
-              <Input
-                type="time"
-                value={fromTime}
-                onChange={(e) => setFromTime(e.target.value)}
-                required
-                mt={'8px'}
-              />
-            </Box>
-
+            
+           
             {/* To Time Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
