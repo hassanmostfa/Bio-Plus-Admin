@@ -137,7 +137,7 @@ const AddClinic = () => {
     setLocations([...locations, { name: '', arabicName: '' }]);
   };
 
-  const handleLocationChange = (index, field, value) => {
+ 
   const handleLocationChange = (index, field, value) => {
     const newLocations = [...locations];
     newLocations[index][field] = value;
@@ -424,13 +424,8 @@ const AddClinic = () => {
               borderRadius="70px"
               px="24px"
               py="5px"
-              variant="darkBrand"
-              color="white"
-              fontSize="sm"
-              fontWeight="500"
-              borderRadius="70px"
-              px="24px"
-              py="5px"
+            
+              
               onClick={handleSend}
               width="120px"
             >
