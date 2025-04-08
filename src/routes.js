@@ -91,6 +91,8 @@ import EditClinic from 'views/admin/clinics/EditClinic';
 import ShowClinic from 'views/admin/clinics/ShowClinic';
 import EditPromoCode from 'views/admin/promoCodes/EditPromoCode';
 import EditTag from 'views/admin/tags/EditTag';
+import EditReturn from 'views/admin/return/EditReturn';
+import ShowReturn from 'views/admin/return/ShowReturn';
 
 
 const routes = [
@@ -674,6 +676,20 @@ const routes = [
     layout: '/admin', 
     path: '/cms/add-return',
     component: <AddReturn />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Add Return',
+    layout: '/admin', 
+    path: '/cms/edit-return/:id',
+    component: <EditReturn />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Add Return',
+    layout: '/admin', 
+    path: '/cms/show-return/:id',
+    component: <ShowReturn />,
     showInSidebar: false,
   },
 

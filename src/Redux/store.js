@@ -5,7 +5,9 @@ import { BrandApi } from "api/brandSlice";
 import { CategoryApi } from "api/categorySlice";
 import { clinicApi } from "api/clinicSlice";
 import { pharmacyApi } from "api/pharmacySlice";
+import { privacyApi } from "api/privacySlice";
 import { PromocodeApi } from "api/promocodeSlice";
+import { retrurnApi } from "api/returnSlice";
 import { roleApi } from "api/roleSlice";
 import { tagApi } from "api/tagSlice";
 import { TypeApi } from "api/typeSlice";
@@ -27,6 +29,8 @@ export const store = configureStore({
     [PromocodeApi.reducerPath]:PromocodeApi.reducer,
     [tagApi.reducerPath]:tagApi.reducer,
     [aboutApi.reducerPath]:aboutApi.reducer,
+    [privacyApi.reducerPath]:privacyApi.reducer,
+    [retrurnApi.reducerPath]:retrurnApi.reducer,
 
   },
   middleware: (getDefaultMiddleware) =>
@@ -42,6 +46,8 @@ export const store = configureStore({
       PromocodeApi.middleware,
       tagApi.middleware,
       aboutApi.middleware,
+      privacyApi.middleware,
+      retrurnApi.middleware,
     ),
 });
 

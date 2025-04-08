@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -6,20 +6,19 @@ import {
   Input,
   Text,
   useColorModeValue,
-  Grid,
-  GridItem,
   Textarea,
   Icon,
   useToast,
+  IconButton,
 } from '@chakra-ui/react';
 import { IoMdArrowBack } from 'react-icons/io';
-import { useNavigate } from 'react-router-dom';
-import { FaUpload } from 'react-icons/fa6';
-import { useAddReturnMutation } from 'api/returnSlice';
+import { useNavigate, useParams } from 'react-router-dom';
+import { FaUpload, FaTrash } from 'react-icons/fa6';
+import { useUpdateReturnMutation } from 'api/returnSlice';
+import { useGetReturnQuery } from 'api/returnSlice';
 import Swal from 'sweetalert2';
 
-
-const AddReturn = () => {
+const EditReturn = () => {
   const [formData, setFormData] = useState({
     contentEn: '',
     contentAr: '',
@@ -27,6 +26,7 @@ const AddReturn = () => {
   });
 
   const [image, setImage] = useState(null);
+  const [existingImage, setExistingImage] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const cardBg = useColorModeValue('white', 'navy.700');
@@ -34,9 +34,28 @@ const AddReturn = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const [error, setError] = useState(null);
+  const { id } = useParams();
 
-  // Mutation hook for creating return policy
-  const [createReturnPolicy, { isLoading }] = useAddReturnMutation();
+  // API hooks
+  const [updateReturnPolicy, { isLoading }] = useUpdateReturnMutation();
+  const { data: returnData, isLoading: isFetching } = useGetReturnQuery(id);
+
+  // Set initial data when fetched
+  useEffect(() => {
+    if (returnData?.data) {
+      setFormData({
+        contentEn: returnData.data.contentEn || '',
+        contentAr: returnData.data.contentAr || '',
+        imageKey: returnData.data.image || '',
+      });
+      if (returnData.image) {
+        setExistingImage({
+          name: returnData.image,
+          url: `${process.env.REACT_APP_API_URL}/uploads/${returnData.image}` // Adjust based on your API
+        });
+      }
+    }
+  }, [returnData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,9 +67,20 @@ const AddReturn = () => {
       setImage(files[0]);
       setFormData((prevData) => ({
         ...prevData,
-        imageKey: files[0].name, // Or your actual image key logic
+        imageKey: files[0].name,
       }));
+      // Clear existing image when new one is uploaded
+      setExistingImage(null);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setImage(null);
+    setExistingImage(null);
+    setFormData(prev => ({ ...prev, imageKey: '' }));
+    // Clear file input
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) fileInput.value = '';
   };
 
   const handleDragOver = (e) => {
@@ -74,48 +104,50 @@ const AddReturn = () => {
     handleImageUpload(files);
   };
 
-  const handleSend = async () => {
+  const handleSubmit = async () => {
     try {
-      // Prepare the payload in the required format
+      // Prepare the payload as a raw JSON object
       const payload = {
         contentEn: formData.contentEn,
         contentAr: formData.contentAr,
-        image: formData.imageKey, // Or your actual image handling logic
+        image: formData.imageKey // Send just the image filename as string
       };
-
-      // Send the data to the API
-      const response = await createReturnPolicy(payload).unwrap();
-
-      // Show success message
+  
+      // Update the policy with raw JSON data
+      const response = await updateReturnPolicy({
+        id,
+        data: payload // Send as plain JavaScript object
+      }).unwrap();
+  
       Swal.fire({
-        title: 'Success',
-        description: 'Return policy created successfully',
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
+        title: 'Success!',
+        text: 'Return policy updated successfully',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        navigate('/admin/undefined/cms/returned');
       });
-
-      // Navigate back or to another page
-      navigate('/admin/undefined/cms/returned');
     } catch (error) {
       setError(error.data);
-      // Show error message
       Swal.fire({
-        title: 'Error',
-        description: error.data?.message || 'Failed to create return policy',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
+        title: 'Error!',
+        text: error.data?.message || 'Failed to update return policy',
+        icon: 'error',
+        confirmButtonText: 'OK'
       });
     }
   };
 
+  if (isFetching) {
+    return <Box>Loading...</Box>;
+  }
+
   return (
-    <Box w={"100%"} className="container add-admin-container w-100">
+    <Box w="100%" className="container add-admin-container w-100">
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Add Return Policy
+            Edit Return Policy
           </Text>
           <Button
             type="button"
@@ -213,22 +245,29 @@ const AddReturn = () => {
                 onChange={handleFileInputChange}
               />
             </Button>
-            {image && (
-              <Box
-                mt={4}
-                display={'flex'}
-                justifyContent="center"
-                alignItems="center"
-              >
+
+            {/* Display existing or new image with delete option */}
+            {(existingImage || image) && (
+              <Box mt={4} position="relative">
                 <img
-                  src={URL.createObjectURL(image)}
-                  alt={image.name}
-                  width={80}
-                  height={80}
-                  borderRadius="md"
+                  src={image ? URL.createObjectURL(image) : existingImage.url}
+                  alt={image ? image.name : existingImage.name}
+                  width="100%"
+                  maxHeight="200px"
+                  style={{ objectFit: 'contain', borderRadius: 'md' }}
                 />
-                <Text ml={2} color={textColor}>
-                  {image.name}
+                <IconButton
+                  icon={<FaTrash />}
+                  aria-label="Remove image"
+                  position="absolute"
+                  top={2}
+                  right={2}
+                  colorScheme="red"
+                  size="sm"
+                  onClick={handleRemoveImage}
+                />
+                <Text mt={2} color={textColor}>
+                  {image ? image.name : existingImage.name}
                 </Text>
               </Box>
             )}
@@ -247,10 +286,11 @@ const AddReturn = () => {
               borderRadius="70px"
               px="24px"
               py="5px"
-              onClick={handleSend}
+              onClick={handleSubmit}
               isLoading={isLoading}
+              disabled={isLoading}
             >
-              Save Policy
+              Update Policy
             </Button>
           </Flex>
         </form>
@@ -259,4 +299,4 @@ const AddReturn = () => {
   );
 };
 
-export default AddReturn;
+export default EditReturn;
