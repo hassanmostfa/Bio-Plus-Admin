@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
+import { aboutApi } from "api/aboutSlice";
 import { BrandApi } from "api/brandSlice";
 import { CategoryApi } from "api/categorySlice";
 import { clinicApi } from "api/clinicSlice";
@@ -25,6 +26,7 @@ export const store = configureStore({
     [clinicApi.reducerPath]:clinicApi.reducer,
     [PromocodeApi.reducerPath]:PromocodeApi.reducer,
     [tagApi.reducerPath]:tagApi.reducer,
+    [aboutApi.reducerPath]:aboutApi.reducer,
 
   },
   middleware: (getDefaultMiddleware) =>
@@ -39,6 +41,7 @@ export const store = configureStore({
       clinicApi.middleware,
       PromocodeApi.middleware,
       tagApi.middleware,
+      aboutApi.middleware,
     ),
 });
 

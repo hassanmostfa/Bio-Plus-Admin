@@ -595,14 +595,14 @@ const routes = [
         name: 'About Us',
         path: '/cms/about-us',
         icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
-        component: <About />,
+        component: <AddAbout />,
         showInSidebar: true,
       },
       {
         name: 'Privacy & Policy',
         path: '/cms/privacy-and-policy',
         icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
-        component: <PrivcyAndPolicy />,
+        component: <AddPrivcy />,
         showInSidebar: true,
       },
       {

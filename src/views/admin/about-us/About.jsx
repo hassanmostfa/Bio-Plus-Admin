@@ -26,10 +26,14 @@ import Menu from 'components/menu/MainMenu';
 import { EditIcon, PlusSquareIcon } from '@chakra-ui/icons';
 import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
+import { useGetAboutQuery } from 'api/aboutSlice';
 
 const columnHelper = createColumnHelper();
 
 const About = () => {
+  const {data:about} = useGetAboutQuery();
+  console.log(about);
+  
   const [data, setData] = React.useState([
     {
       id: 1,
