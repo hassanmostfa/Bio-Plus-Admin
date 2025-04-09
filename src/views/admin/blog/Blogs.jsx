@@ -277,7 +277,7 @@ const Blogs = () => {
             as={EditIcon}
             cursor="pointer"
             onClick={() =>
-              navigate(`/admin/edit-pharmacy/${info.row.original.id}`)
+              navigate(`/admin/edit-blogs/${info.row.original.id}`)
             }
           />
           <Icon
@@ -288,7 +288,7 @@ const Blogs = () => {
             as={FaEye}
             cursor="pointer"
             onClick={() =>
-              navigate(`/admin/pharmacy-branches/${info.row.original.id}`)
+              navigate(`/admin/edit-blogs/${info.row.original.id}`)
             }
           />
         </Flex>

@@ -93,6 +93,8 @@ import EditPromoCode from 'views/admin/promoCodes/EditPromoCode';
 import EditTag from 'views/admin/tags/EditTag';
 import EditReturn from 'views/admin/return/EditReturn';
 import ShowReturn from 'views/admin/return/ShowReturn';
+import EditBlog from 'views/admin/blog/EditBlog';
+import EditBanner from 'views/admin/banner/EditBanner';
 
 
 const routes = [
@@ -641,6 +643,14 @@ const routes = [
     showInSidebar: false,
   },
   {
+    name: 'Edit blog',
+    layout: '/admin',
+    path: '/edit-blogs/:id',
+    icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
+    component: <EditBlog />,
+    showInSidebar: false,
+  },
+  {
     name: 'Add ads',
     layout: '/admin', 
     path: '/cms/add-ads',
@@ -654,6 +664,14 @@ const routes = [
     path: '/cms/add-banner',
     icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
     component: <AddBanner />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Add Banner',
+    layout: '/admin', 
+    path: '/cms/edit-banner/:id',
+    icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
+    component: <EditBanner />,
     showInSidebar: false,
   },
   {

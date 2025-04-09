@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { aboutApi } from "api/aboutSlice";
+import { BannerApi } from "api/bannerSlice";
 import { blogApi } from "api/blogSlice";
 import { BrandApi } from "api/brandSlice";
 import { CategoryApi } from "api/categorySlice";
@@ -33,6 +34,7 @@ export const store = configureStore({
     [privacyApi.reducerPath]:privacyApi.reducer,
     [retrurnApi.reducerPath]:retrurnApi.reducer,
     [blogApi.reducerPath]:blogApi.reducer,
+    [BannerApi.reducerPath]:BannerApi.reducer,
 
   },
   middleware: (getDefaultMiddleware) =>
@@ -51,6 +53,7 @@ export const store = configureStore({
       privacyApi.middleware,
       retrurnApi.middleware,
       blogApi.middleware,
+      BannerApi.middleware,
     ),
 });
 

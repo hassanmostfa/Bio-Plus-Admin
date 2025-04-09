@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -12,17 +12,20 @@ import {
   FormControl,
   FormLabel,
   useToast,
-  Textarea,
   Image,
+  Skeleton,
 } from "@chakra-ui/react";
 import { FaUpload } from "react-icons/fa6";
 import { IoMdArrowBack } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
-import { useAddBannerMutation } from "api/bannerSlice";
+import { useNavigate, useParams } from "react-router-dom";
+import { useUpdateBannerMutation, useGetBannerQuery } from "api/bannerSlice";
 import Swal from "sweetalert2";
 
-
-const AddBanner = () => {
+const EditBanner = () => {
+  const { id } = useParams();
+  const { data: banner, isLoading: isFetching, error } = useGetBannerQuery(id);
+  const [updateBanner, { isLoading }] = useUpdateBannerMutation();
+  
   const [formData, setFormData] = useState({
     title: "",
     arTitle: "",
@@ -32,13 +35,30 @@ const AddBanner = () => {
     order: 1,
     isActive: true,
   });
+  
   const [image, setImage] = useState(null);
+  const [existingImage, setExistingImage] = useState("");
   const [isDragging, setIsDragging] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const navigate = useNavigate();
   const toast = useToast();
-  const [createBanner] = useAddBannerMutation();
+
+  // Populate form with existing data when banner is fetched
+  useEffect(() => {
+    if (banner?.data) {
+      const bannerData = banner.data;
+      setFormData({
+        title: bannerData.title,
+        arTitle: bannerData.translations?.[0]?.title || "",
+        link: bannerData.link,
+        linkType: bannerData.linkType,
+        linkId: bannerData.linkId,
+        order: bannerData.order,
+        isActive: bannerData.isActive,
+      });
+      setExistingImage(bannerData.imageKey);
+    }
+  }, [banner]);
 
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
@@ -84,25 +104,11 @@ const AddBanner = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    if (!image) {
-      toast({
-        title: "Error",
-        description: "Please upload an image",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-      setIsLoading(false);
-      return;
-    }
 
     try {
       // Prepare the data in the required format
       const bannerData = {
         title: formData.title,
-        imageKey: image.name,
         link: formData.link,
         linkType: formData.linkType,
         linkId: formData.linkId,
@@ -116,22 +122,76 @@ const AddBanner = () => {
         ]
       };
 
-      // Create FormData for file upload
-      // const formDataToSend = new FormData();
-      // formDataToSend.append("image", image);
-      // formDataToSend.append("data", JSON.stringify(bannerData));
+      // Create FormData if new image is uploaded
+      let formDataToSend;
+      if (image) {
+        formDataToSend = new FormData();
+        formDataToSend.append("image", image);
+        formDataToSend.append("data", JSON.stringify(bannerData));
+      } else {
+        formDataToSend = bannerData;
+        // Keep existing image if no new image is uploaded
+        if (existingImage) {
+          formDataToSend.imageKey = existingImage;
+        }
+      }
 
       // Call the API
-      await createBanner(bannerData).unwrap();
+      await updateBanner({ id, data: formDataToSend }).unwrap();
 
-      Swal.fire('Created!', 'The Banner has been Created.', 'success');
-      navigate("/admin/undefined/cms/banners");
+      Swal.fire({
+        title: 'Success!',
+        text: 'Banner updated successfully',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        navigate("/admin/undefined/cms/banners");
+      });
     } catch (error) {
-      Swal.fire('Error!', error.message || 'Failed to Create Banner', 'error');
-    } finally {
-      setIsLoading(false);
+      Swal.fire({
+        title: 'Error!',
+        text: error.data?.message || 'Failed to update banner',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     }
   };
+
+  if (isFetching) {
+    return (
+      <Box className="container add-admin-container w-100">
+        <Box className="add-admin-card shadow p-4 bg-white w-100">
+          <Skeleton height="40px" mb={6} />
+          <Skeleton height="20px" mb={4} />
+          <Skeleton height="20px" mb={4} />
+          <Skeleton height="20px" mb={4} />
+          <Skeleton height="20px" mb={4} />
+          <Skeleton height="20px" mb={4} />
+          <Skeleton height="20px" mb={4} />
+          <Skeleton height="100px" mb={4} />
+          <Flex justify="center" gap={4}>
+            <Skeleton height="40px" width="100px" />
+            <Skeleton height="40px" width="100px" />
+          </Flex>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box className="container add-admin-container w-100">
+        <Box className="add-admin-card shadow p-4 bg-white w-100">
+          <Text color="red.500" mb={4}>
+            Error loading banner: {error.data?.message || error.message}
+          </Text>
+          <Button onClick={() => navigate(-1)} colorScheme="blue">
+            Go Back
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box className="container add-admin-container w-100">
@@ -144,7 +204,7 @@ const AddBanner = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Banner
+            Edit Banner
           </Text>
           <Button
             onClick={() => navigate(-1)}
@@ -269,7 +329,7 @@ const AddBanner = () => {
           {/* Image Upload */}
           <FormControl mb={4}>
             <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Banner Image <span style={{ color: "red" }}>*</span>
+              Banner Image
             </FormLabel>
             <Box
               border="1px dashed"
@@ -298,10 +358,11 @@ const AddBanner = () => {
                 accept="image/*"
                 onChange={handleFileInputChange}
               />
-              {image && (
+              
+              {image ? (
                 <Box mt={4}>
                   <Text fontSize="sm" color="green.500" mb={2}>
-                    Selected: {image.name}
+                    New Image: {image.name}
                   </Text>
                   <Image
                     src={URL.createObjectURL(image)}
@@ -311,7 +372,22 @@ const AddBanner = () => {
                     borderRadius="md"
                   />
                 </Box>
-              )}
+              ) : existingImage ? (
+                <Box mt={4}>
+                  <Text fontSize="sm" color="blue.500" mb={2}>
+                    Current Image: {existingImage.split('/').pop()}
+                  </Text>
+                  <Image
+                    src={existingImage.startsWith('http') ? existingImage : 
+                         `${process.env.REACT_APP_API_URL}/${existingImage}`}
+                    alt="Current Banner"
+                    maxH="150px"
+                    mx="auto"
+                    borderRadius="md"
+                    fallbackSrc="https://via.placeholder.com/150"
+                  />
+                </Box>
+              ) : null}
             </Box>
           </FormControl>
 
@@ -329,9 +405,9 @@ const AddBanner = () => {
               type="submit"
               colorScheme="blue"
               isLoading={isLoading}
-              loadingText="Creating..."
+              loadingText="Updating..."
             >
-              Save Banner
+              Update Banner
             </Button>
           </Flex>
         </form>
@@ -340,4 +416,4 @@ const AddBanner = () => {
   );
 };
 
-export default AddBanner;
+export default EditBanner;
