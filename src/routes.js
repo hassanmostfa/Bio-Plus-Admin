@@ -95,6 +95,9 @@ import EditReturn from 'views/admin/return/EditReturn';
 import ShowReturn from 'views/admin/return/ShowReturn';
 import EditBlog from 'views/admin/blog/EditBlog';
 import EditBanner from 'views/admin/banner/EditBanner';
+import Specialization from 'views/admin/doctorSpecializations/Specialization';
+import AddSpecialize from 'views/admin/doctorSpecializations/AddSpecialize';
+import EditSpecialization from 'views/admin/doctorSpecializations/EditSpecialization';
 
 
 const routes = [
@@ -273,6 +276,36 @@ const routes = [
     layout: '/admin',
     path: '/add/doctor',
     component: <AddDoctor />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Doctor Specializations',
+    layout: '/admin',
+    path: '/doctors-specializations',
+    icon: (
+      <Icon as={MdMedicalServices} width="20px" height="20px" color="inherit" />
+    ),
+    component: <Specialization />,
+    showInSidebar: true,
+  },
+  {
+    name: 'create Doctor Specializations',
+    layout: '/admin',
+    path: '/add-specialization',
+    icon: (
+      <Icon as={MdMedicalServices} width="20px" height="20px" color="inherit" />
+    ),
+    component: <AddSpecialize />,
+    showInSidebar: false,
+  },
+  {
+    name: 'edit Doctor Specializations',
+    layout: '/admin',
+    path: '/edit-specialization/:id',
+    icon: (
+      <Icon as={MdMedicalServices} width="20px" height="20px" color="inherit" />
+    ),
+    component: <EditSpecialization />,
     showInSidebar: false,
   },
   /* End Doctors Routes */

@@ -1,0 +1,18 @@
+.container{
+    display: flex ;
+    justify-content: center;
+    align-items: center;
+    margin-top: 100px;
+    padding: 10px;
+}
+
+.add-admin-container{
+    margin-top: 90px;
+}
+
+.add-admin-card{
+    border-radius: 15px;
+}
+.pr-0{
+    padding-right: 0px !important;
+}

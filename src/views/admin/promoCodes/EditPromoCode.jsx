@@ -78,6 +78,14 @@ const EditPromoCode = () => {
       type: type.toUpperCase()
     }));
   };
+  const handleSelectStatus = (status) => {
+    console.log(status);
+    
+    setFormData(prev => ({
+      ...prev,
+      isActive: status
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -258,6 +266,41 @@ const EditPromoCode = () => {
                 mt={'8px'}
                 min="1"
               />
+            </FormControl>
+            <FormControl>
+              <FormLabel color={textColor} fontSize="sm" fontWeight="700">
+                Status
+                <span className="text-danger mx-1">*</span>
+              </FormLabel>
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  width="100%"
+                  bg="white"
+                  border="1px solid #ddd"
+                  borderRadius="md"
+                  _hover={{ bg: 'gray.200' }}
+                  textAlign="left"
+                  mt={'8px'}
+                >
+                  {formData.isActive == true ? 'Active' : 'InActive'}
+                </MenuButton>
+                <MenuList width="100%">
+                  <MenuItem
+                    onClick={() => handleSelectStatus(true)}
+                    bg={formData.isActive == 'false' ? 'blue.100' : 'white'}
+                  >
+                    Active
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => handleSelectStatus(false)}
+                    bg={formData.isActive == 'true' ? 'blue.100' : 'white'}
+                  >
+                    InActive
+                  </MenuItem>
+                </MenuList>
+              </Menu>
             </FormControl>
           </Grid>
 

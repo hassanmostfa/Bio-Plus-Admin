@@ -6,6 +6,7 @@ import { blogApi } from "api/blogSlice";
 import { BrandApi } from "api/brandSlice";
 import { CategoryApi } from "api/categorySlice";
 import { clinicApi } from "api/clinicSlice";
+import { specializationApi } from "api/doctorSpecializationSlice";
 import { pharmacyApi } from "api/pharmacySlice";
 import { privacyApi } from "api/privacySlice";
 import { PromocodeApi } from "api/promocodeSlice";
@@ -35,6 +36,7 @@ export const store = configureStore({
     [retrurnApi.reducerPath]:retrurnApi.reducer,
     [blogApi.reducerPath]:blogApi.reducer,
     [BannerApi.reducerPath]:BannerApi.reducer,
+    [specializationApi.reducerPath]:specializationApi.reducer,
 
   },
   middleware: (getDefaultMiddleware) =>
@@ -54,6 +56,7 @@ export const store = configureStore({
       retrurnApi.middleware,
       blogApi.middleware,
       BannerApi.middleware,
+      specializationApi.middleware,
     ),
 });
 
