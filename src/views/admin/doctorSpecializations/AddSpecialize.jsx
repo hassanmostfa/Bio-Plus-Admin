@@ -138,7 +138,7 @@ const AddSpecialize = () => {
               loadingText="Submitting..."
               width="120px"
             >
-              Create Specialization
+              Create
             </Button>
           </Flex>
         </form>
