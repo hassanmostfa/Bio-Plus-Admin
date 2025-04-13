@@ -23,12 +23,11 @@ import { LiaClinicMedicalSolid } from 'react-icons/lia';
 import { IoNotificationsOutline } from 'react-icons/io5';
 import { CiDiscount1 } from 'react-icons/ci';
 import { BsEnvelopeArrowUpFill } from "react-icons/bs";
-
+import { FaIdCard } from "react-icons/fa6";
 
 // Admin Imports
 import MainDashboard from 'views/admin/default';
 import NFTMarketplace from 'views/admin/marketplace';
-import Profile from 'views/admin/profile';
 import Admins from 'views/admin/admins/Admins';
 import AddAdmin from 'views/admin/admins/AddAdmin';
 import Roles from 'views/admin/roles/Roles';
@@ -279,11 +278,11 @@ const routes = [
     showInSidebar: false,
   },
   {
-    name: 'Doctor Specializations',
+    name: 'Doctors Specializations',
     layout: '/admin',
-    path: '/doctors-specializations',
+    path: '/specializations',
     icon: (
-      <Icon as={MdMedicalServices} width="20px" height="20px" color="inherit" />
+      <Icon as={FaIdCard} width="20px" height="20px" color="inherit" />
     ),
     component: <Specialization />,
     showInSidebar: true,
