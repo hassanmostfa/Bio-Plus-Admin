@@ -97,6 +97,7 @@ import EditBanner from 'views/admin/banner/EditBanner';
 import Specialization from 'views/admin/doctorSpecializations/Specialization';
 import AddSpecialize from 'views/admin/doctorSpecializations/AddSpecialize';
 import EditSpecialization from 'views/admin/doctorSpecializations/EditSpecialization';
+import ShowDoctor from 'views/admin/doctors/ShowDoctor';
 
 
 const routes = [
@@ -275,6 +276,13 @@ const routes = [
     layout: '/admin',
     path: '/add/doctor',
     component: <AddDoctor />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Doctor Management',
+    layout: '/admin',
+    path: '/doctor/:id',
+    component: <ShowDoctor />,
     showInSidebar: false,
   },
   {

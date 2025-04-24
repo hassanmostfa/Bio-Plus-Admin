@@ -20,6 +20,9 @@ import {
   ModalCloseButton,
   useDisclosure,
   Checkbox,
+  Spinner,
+  useToast,
+  Badge,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -34,94 +37,109 @@ import Card from 'components/card/Card';
 import { EditIcon } from '@chakra-ui/icons';
 import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
+import { useGetDoctorsQuery, useDeleteDoctorMutation, useAssignDoctorMutation } from 'api/doctorSlice';
+import Swal from 'sweetalert2';
 
 const columnHelper = createColumnHelper();
 
 const Doctors = () => {
-  const [data, setData] = React.useState([
-    {
-      id: 1,
-      first_name: 'John',
-      last_name: 'Doe',
-      certifications: 'MD, PhD',
-      languages: 'English, Arabic',
-      about: {
-        en: 'Experienced doctor with over 10 years of practice.',
-        ar: 'طبيب ذو خبرة تزيد عن 10 سنوات في الممارسة.',
-      },
-      phones: ['+1234567890', '+0987654321'],
-      email: 'john.doe@example.com',
-      password: '********', // Masked for security
-      fees: 100,
-    },
-    {
-      id: 2,
-      first_name: 'Jane',
-      last_name: 'Smith',
-      certifications: 'MBBS, MS',
-      languages: 'English, French',
-      about: {
-        en: 'Specialist in cardiology and internal medicine.',
-        ar: 'أخصائي في أمراض القلب والطب الباطني.',
-      },
-      phones: ['+1122334455'],
-      email: 'jane.smith@example.com',
-      password: '********', // Masked for security
-      fees: 150,
-    },
-    {
-      id: 3,
-      first_name: 'Ahmed',
-      last_name: 'Ali',
-      certifications: 'BDS, MDS',
-      languages: 'Arabic, English',
-      about: {
-        en: 'Dental surgeon with expertise in orthodontics.',
-        ar: 'جراح أسنان متخصص في تقويم الأسنان.',
-      },
-      phones: ['+9988776655'],
-      email: 'ahmed.ali@example.com',
-      password: '********', // Masked for security
-      fees: 200,
-    },
-  ]);
-
-  const [selectedDoctorId, setSelectedDoctorId] = React.useState(null); // Track the selected doctor ID
-  const [selectedClinics, setSelectedClinics] = React.useState([]); // Track selected clinics for assignment
-  const { isOpen, onOpen, onClose } = useDisclosure(); // Modal state
+  const { data: doctorsData, isLoading, isError, refetch } = useGetDoctorsQuery();
+  const [deleteDoctor] = useDeleteDoctorMutation();
+  const [assignDoctor] = useAssignDoctorMutation();
+  const toast = useToast();
+  
+  const doctors = doctorsData?.data || [];
+  
+  const [selectedDoctorId, setSelectedDoctorId] = React.useState(null);
+  const [selectedClinics, setSelectedClinics] = React.useState([]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
-  // Example list of clinics
+  // Example list of clinics - you might want to fetch this from an API
   const clinics = [
-    { id: 1, name: 'Clinic A' },
-    { id: 2, name: 'Clinic B' },
-    { id: 3, name: 'Clinic C' },
+    { id: "3c50873a-c692-4c7d-846e-f5576ae54203", name: 'Clinic A' },
+    { id: "75edd202-5b91-4dfa-8c05-aa712b74e454", name: 'Clinic B' },
+    { id: "85edd202-5b91-4dfa-8c05-aa712b74e455", name: 'Clinic C' },
   ];
 
-  // Open modal and set the selected doctor ID
   const handleAssignClick = (doctorId) => {
     setSelectedDoctorId(doctorId);
     onOpen();
   };
 
-  // Handle clinic selection
   const handleClinicSelection = (clinicId) => {
-    if (selectedClinics.includes(clinicId)) {
-      setSelectedClinics(selectedClinics.filter((id) => id !== clinicId)); // Deselect
-    } else {
-      setSelectedClinics([...selectedClinics, clinicId]); // Select
+    setSelectedClinics(prev => 
+      prev.includes(clinicId) 
+        ? prev.filter(id => id !== clinicId) 
+        : [...prev, clinicId]
+    );
+  };
+
+  const handleAssignClinics = async () => {
+    try {
+      await assignDoctor({
+        doctorId: selectedDoctorId,
+        clinicIds: selectedClinics
+      }).unwrap();
+      
+      toast({
+        title: 'Success',
+        description: 'Clinics assigned successfully',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+      
+      refetch();
+      onClose();
+      setSelectedClinics([]);
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: err.data?.message || 'Failed to assign clinics',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
-  // Assign selected clinics to the doctor
-  const handleAssignClinics = () => {
-    console.log(`Assigning clinics ${selectedClinics.join(', ')} to doctor ${selectedDoctorId}`);
-    onClose(); // Close the modal
-    setSelectedClinics([]); // Reset selected clinics
+  const handleDeleteDoctor = async (doctorId) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+    
+    if (result.isConfirmed) {
+      try {
+        await deleteDoctor(doctorId).unwrap();
+        toast({
+          title: 'Deleted!',
+          description: 'Doctor has been deleted.',
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+        refetch();
+      } catch (err) {
+        toast({
+          title: 'Error',
+          description: err.data?.message || 'Failed to delete doctor',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    }
   };
 
   const columns = [
@@ -139,14 +157,14 @@ const Doctors = () => {
       ),
       cell: (info) => (
         <Flex align="center">
-          <Text color={textColor}>
-            {info.getValue()}
+          <Text color={textColor} fontSize="sm">
+            {info.getValue().substring(0, 8)}...
           </Text>
         </Flex>
       ),
     }),
-    columnHelper.accessor('first_name', {
-      id: 'first_name',
+    columnHelper.accessor('firstName', {
+      id: 'firstName',
       header: () => (
         <Text
           justifyContent="space-between"
@@ -158,13 +176,13 @@ const Doctors = () => {
         </Text>
       ),
       cell: (info) => (
-        <Text color={textColor}>
+        <Text color={textColor} fontSize="sm">
           {info.getValue()}
         </Text>
       ),
     }),
-    columnHelper.accessor('last_name', {
-      id: 'last_name',
+    columnHelper.accessor('lastName', {
+      id: 'lastName',
       header: () => (
         <Text
           justifyContent="space-between"
@@ -176,13 +194,13 @@ const Doctors = () => {
         </Text>
       ),
       cell: (info) => (
-        <Text color={textColor}>
+        <Text color={textColor} fontSize="sm">
           {info.getValue()}
         </Text>
       ),
     }),
-    columnHelper.accessor('certifications', {
-      id: 'certifications',
+    columnHelper.accessor('specialization', {
+      id: 'specialization',
       header: () => (
         <Text
           justifyContent="space-between"
@@ -190,17 +208,17 @@ const Doctors = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Certifications
+          Specialization
         </Text>
       ),
       cell: (info) => (
-        <Text color={textColor}>
-          {info.getValue()}
+        <Text color={textColor} fontSize="sm">
+          {info.getValue() || 'N/A'}
         </Text>
       ),
     }),
-    columnHelper.accessor('languages', {
-      id: 'languages',
+    columnHelper.accessor('isActive', {
+      id: 'isActive',
       header: () => (
         <Text
           justifyContent="space-between"
@@ -208,71 +226,18 @@ const Doctors = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Languages
+          Status
         </Text>
       ),
       cell: (info) => (
-        <Text color={textColor}>
-          {info.getValue()}
-        </Text>
-      ),
-    }),
-    columnHelper.accessor('phones', {
-      id: 'phones',
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
+        <Badge
+          variant="solid"
+          colorScheme={info.getValue() ? 'green' : 'red'}
+          fontSize="sm"
+          borderRadius="8px"
         >
-          Phones
-        </Text>
-      ),
-      cell: (info) => (
-        <Box>
-          {info.getValue().map((phone, index) => (
-            <Text key={index} color={textColor}>
-              {phone}
-            </Text>
-          ))}
-        </Box>
-      ),
-    }),
-    columnHelper.accessor('email', {
-      id: 'email',
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          Email
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor}>
-          {info.getValue()}
-        </Text>
-      ),
-    }),
-    columnHelper.accessor('fees', {
-      id: 'fees',
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          Fees
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor}>
-          ${info.getValue()}
-        </Text>
+          {info.getValue() ? 'Active' : 'Inactive'}
+        </Badge>
       ),
     }),
     columnHelper.accessor('actions', {
@@ -296,6 +261,7 @@ const Doctors = () => {
             color="red.500"
             as={FaTrash}
             cursor="pointer"
+            onClick={() => handleDeleteDoctor(info.row.original.id)}
           />
           <Icon
             w="18px"
@@ -304,6 +270,7 @@ const Doctors = () => {
             color="green.500"
             as={EditIcon}
             cursor="pointer"
+            onClick={() => navigate(`/admin/edit/doctor/${info.row.original.id}`)}
           />
           <Icon
             w="18px"
@@ -312,8 +279,9 @@ const Doctors = () => {
             color="blue.500"
             as={FaEye}
             cursor="pointer"
+            onClick={() => navigate(`/admin/doctor/${info.row.original.id}`)}
           />
-          <Icon
+          {/* <Icon
             w="18px"
             h="18px"
             me="10px"
@@ -321,15 +289,15 @@ const Doctors = () => {
             as={CgAssign}
             cursor="pointer"
             title="Assign to clinic"
-            onClick={() => handleAssignClick(info.row.original.id)} // Open modal on click
-          />
+            onClick={() => handleAssignClick(info.row.original.id)}
+          /> */}
         </Flex>
       ),
     }),
   ];
 
   const table = useReactTable({
-    data,
+    data: doctors,
     columns,
     state: {
       sorting,
@@ -339,6 +307,22 @@ const Doctors = () => {
     getSortedRowModel: getSortedRowModel(),
     debugTable: true,
   });
+
+  if (isLoading) {
+    return (
+      <Flex justify="center" align="center" h="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Flex justify="center" align="center" h="100vh">
+        <Text>Error loading doctors. Please try again.</Text>
+      </Flex>
+    );
+  }
 
   return (
     <div className="container">
@@ -408,30 +392,27 @@ const Doctors = () => {
               ))}
             </Thead>
             <Tbody>
-              {table
-                .getRowModel()
-                .rows.slice(0, 11)
-                .map((row) => {
-                  return (
-                    <Tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => {
-                        return (
-                          <Td
-                            key={cell.id}
-                            fontSize={{ sm: '14px' }}
-                            minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                            borderColor="transparent"
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </Td>
-                        );
-                      })}
-                    </Tr>
-                  );
-                })}
+              {table.getRowModel().rows.map((row) => {
+                return (
+                  <Tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => {
+                      return (
+                        <Td
+                          key={cell.id}
+                          fontSize={{ sm: '14px' }}
+                          minW={{ sm: '150px', md: '200px', lg: 'auto' }}
+                          borderColor="transparent"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </Td>
+                      );
+                    })}
+                  </Tr>
+                );
+              })}
             </Tbody>
           </Table>
         </Box>
@@ -458,18 +439,23 @@ const Doctors = () => {
           </ModalBody>
           <ModalFooter>
             <Button
-             variant="darkBrand"
-             color="white"
-             fontSize="sm"
-             fontWeight="500"
-             borderRadius="70px"
-             px="24px"
-             py="5px"
+              variant="darkBrand"
+              color="white"
+              fontSize="sm"
+              fontWeight="500"
+              borderRadius="70px"
+              px="24px"
+              py="5px"
               mr={3}
-              onClick={handleAssignClinics}>
+              onClick={handleAssignClinics}
+            >
               Assign
             </Button>
-            <Button bg={useColorModeValue('gray.200', 'gray.600')} mr={3} onClick={onClose}>
+            <Button 
+              bg='gray.200'
+              mr={3} 
+              onClick={onClose}
+            >
               Cancel
             </Button>
           </ModalFooter>
