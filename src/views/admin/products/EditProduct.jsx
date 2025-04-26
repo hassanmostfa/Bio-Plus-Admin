@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Image,
@@ -23,52 +23,104 @@ import {
   useToast,
   FormControl,
   FormLabel,
+  Spinner,
 } from "@chakra-ui/react";
 import { FaUpload, FaTrash } from "react-icons/fa6";
 import { IoMdArrowBack } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useGetVarientsQuery } from 'api/varientSlice';
 import { useGetCategoriesQuery } from 'api/categorySlice';
 import { useGetBrandsQuery } from 'api/brandSlice';
-import { useAddProductMutation } from "api/productSlice";
-import Swal from "sweetalert2";
 import { useGetPharmaciesQuery } from "api/pharmacySlice";
+import { useGetProductQuery, useUpdateProductMutation } from "api/productSlice";
+import Swal from "sweetalert2";
 
-const AddProduct = () => {
+const EditProduct = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const toast = useToast();
+  
+  // State for form fields
   const [nameEn, setNameEn] = useState("");
   const [nameAr, setNameAr] = useState("");
   const [descriptionEn, setDescriptionEn] = useState("");
   const [descriptionAr, setDescriptionAr] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [brandId, setBrandId] = useState("");
-  const [pharmacyId, setPharmacyId] = useState(""); // You'll need to get this from your auth context or API
+  const [pharmacyId, setPharmacyId] = useState("");
   const [cost, setCost] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [offerType, setOfferType] = useState("");
-  const [offerPercentage, setOfferPercentage] = useState(null);
+  const [offerPercentage, setOfferPercentage] = useState("");
   const [hasVariants, setHasVariants] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [isPublished, setIsPublished] = useState(false);
   const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const [selectedAttributes, setSelectedAttributes] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
 
-  const [addProduct, { isLoading }] = useAddProductMutation();
-  const toast = useToast();
-  const navigate = useNavigate();
-
-  // Fetch data
+  // API queries
+  const { data: productResponse, isLoading: isProductLoading } = useGetProductQuery(id);
   const { data: categoriesResponse } = useGetCategoriesQuery({ page: 1, limit: 1000 });
   const { data: variantsResponse } = useGetVarientsQuery({ page: 1, limit: 1000 });
   const { data: brandsResponse } = useGetBrandsQuery({ page: 1, limit: 1000 });
-  const {data:PharmacyResponse} = useGetPharmaciesQuery({ page: 1, limit: 1000 });
+  const { data: pharmaciesResponse } = useGetPharmaciesQuery({ page: 1, limit: 1000 });
+  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+
+  // Extract data from responses
+  const product = productResponse?.data;
   const categories = categoriesResponse?.data?.data || [];
   const variants = variantsResponse?.data || [];
   const brands = brandsResponse?.data || [];
-  const pharmacies = PharmacyResponse?.data?.items || []
+  const pharmacies = pharmaciesResponse?.data?.items || [];
   const textColor = useColorModeValue("secondaryGray.900", "white");
+
+  // Initialize form with product data
+  useEffect(() => {
+    if (product) {
+      setNameEn(product.name || "");
+      setNameAr(product.translations?.find(t => t.languageId === "ar")?.name || "");
+      setDescriptionEn(product.description || "");
+      setDescriptionAr(product.translations?.find(t => t.languageId === "ar")?.description || "");
+      setCategoryId(product.categoryId || "");
+      setBrandId(product.brandId || "");
+      setPharmacyId(product.pharmacyId || "");
+      setCost(product.cost || "");
+      setPrice(product.price || "");
+      setQuantity(product.quantity || "");
+      setOfferType(product.offerType || "");
+      setOfferPercentage(product.offerPercentage || "");
+      setHasVariants(product.hasVariants || false);
+      setIsActive(product.isActive ?? true);
+      setIsPublished(product.isPublished ?? false);
+      
+      // Set existing images
+      if (product.images?.length > 0) {
+        setExistingImages(product.images);
+        const mainIndex = product.images.findIndex(img => img.isMain);
+        setMainImageIndex(mainIndex >= 0 ? mainIndex : 0);
+      }
+
+      // Set variants if they exist
+      if (product.variants?.length > 0) {
+        const attributes = product.variants.map(variant => ({
+          variantId: variant.variantId,
+          variantName: variant.variantName || "Variant",
+          attributeId: variant.attributeId,
+          attributeValue: variant.attributeValue || "",
+          cost: variant.cost || "",
+          price: variant.price || "",
+          quantity: variant.quantity || "",
+          image: variant.imageKey ? { name: variant.imageKey.split('/').pop() } : null,
+          isActive: variant.isActive ?? true
+        }));
+        setSelectedAttributes(attributes);
+      }
+    }
+  }, [product]);
 
   // Image handling
   const handleImageUpload = (files) => {
@@ -76,23 +128,42 @@ const AddProduct = () => {
       const newImages = Array.from(files).map(file => ({
         file,
         preview: URL.createObjectURL(file),
-        isMain: images.length === 0 && mainImageIndex === 0 // First image is main by default
+        isMain: images.length === 0 && existingImages.length === 0 && mainImageIndex === 0
       }));
       setImages([...images, ...newImages]);
     }
   };
 
-  const handleSetMainImage = (index) => {
-    setMainImageIndex(index);
+  const handleSetMainImage = (index, isExisting) => {
+    if (isExisting) {
+      setMainImageIndex(index);
+      // Mark all existing images as not main except the selected one
+      setExistingImages(existingImages.map((img, i) => ({
+        ...img,
+        isMain: i === index
+      })));
+    } else {
+      setMainImageIndex(index + existingImages.length);
+    }
   };
 
-  const handleRemoveImage = (index) => {
-    const newImages = images.filter((_, i) => i !== index);
-    setImages(newImages);
-    if (mainImageIndex === index) {
-      setMainImageIndex(0);
-    } else if (mainImageIndex > index) {
-      setMainImageIndex(mainImageIndex - 1);
+  const handleRemoveImage = (index, isExisting) => {
+    if (isExisting) {
+      setExistingImages(existingImages.filter((_, i) => i !== index));
+      if (mainImageIndex === index) {
+        setMainImageIndex(0);
+      } else if (mainImageIndex > index) {
+        setMainImageIndex(mainImageIndex - 1);
+      }
+    } else {
+      const newIndex = index - existingImages.length;
+      const newImages = images.filter((_, i) => i !== newIndex);
+      setImages(newImages);
+      if (mainImageIndex === index) {
+        setMainImageIndex(0);
+      } else if (mainImageIndex > index) {
+        setMainImageIndex(mainImageIndex - 1);
+      }
     }
   };
 
@@ -164,68 +235,66 @@ const AddProduct = () => {
         });
       }
 
-      // Prepare images
-      const imageData = images.map((img, index) => ({
-        imageKey: `products/${nameEn.toLowerCase().replace(/\s+/g, '-')}/${img.file.name}`,
-        order: index,
-        isMain: index === mainImageIndex
-      }));
-    
+      // Prepare images data
+      const imageData = [
+        ...existingImages.map((img, index) => ({
+          id: img.id,
+          imageKey: img.imageKey,
+          order: index,
+          isMain: img.isMain || index === mainImageIndex
+        })),
+        ...images.map((img, index) => ({
+          imageKey: `products/${nameEn.toLowerCase().replace(/\s+/g, '-')}/${img.file.name}`,
+          order: existingImages.length + index,
+          isMain: existingImages.length + index === mainImageIndex
+        }))
+      ];
 
-        const variantsData = selectedAttributes.map(attr => {
-          if (!attr.price) {
-            throw new Error("Price is required for each variant.");
-          }
-          return {
-            variantId: attr.variantId,
-            attributeId: attr.attributeId,
-            cost: attr.cost ? parseFloat(attr.cost) : 0,
-            price: parseFloat(attr.price),
-            quantity: attr.quantity ? parseInt(attr.quantity) : 0,
-            imageKey: attr.image ? `products/${nameEn.toLowerCase().replace(/\s+/g, '-')}/variants/${attr.image.name}` : undefined,
-            isActive: attr.isActive
-          };
-        });
+      // Prepare variants data
+      const variantsData = selectedAttributes.map(attr => ({
+        variantId: attr.variantId,
+        attributeId: attr.attributeId,
+        cost: parseFloat(attr.cost) || 0,
+        price: parseFloat(attr.price) || 0,
+        quantity: parseInt(attr.quantity) || 0,
+        imageKey: attr.image ? `products/${nameEn.toLowerCase().replace(/\s+/g, '-')}/variants/${attr.image.name}` : null,
+        isActive: attr.isActive
+      }));
 
       // Prepare product data
-      if (!price) {
-        throw new Error("Price is required for the product.");
-      }
       const productData = {
-        name: nameEn || undefined,
-        description: descriptionEn || undefined,
-        categoryId: categoryId || undefined,
-        brandId: brandId || undefined,
-        pharmacyId: pharmacyId || undefined,
-        cost: cost === null ? undefined : parseFloat(cost),
+
+        name: nameEn,
+        description: descriptionEn,
+        categoryId,
+        brandId,
+        pharmacyId,
+        cost: cost ? parseFloat(cost) : null,
         price: parseFloat(price),
-        quantity: quantity === null ? undefined : parseInt(quantity),
-        offerType: offerType === null ? undefined : offerType.toUpperCase().replace(' ', '_'),
-        offerPercentage: offerPercentage != null ? parseFloat(offerPercentage) : null,
+        quantity: quantity ? parseInt(quantity) : null,
+        offerType: offerType || null,
+        offerPercentage: offerPercentage ? parseFloat(offerPercentage) : null,
         hasVariants,
         isActive,
         isPublished,
-        translations: translations.filter(t => t.name !== null && t.description !== null),
+        translations,
         images: imageData,
-        variants: hasVariants ? variantsData : undefined
+        variants: hasVariants ? variantsData : []
       };
 
-      // Remove any keys that are null
+      // Remove null values
       Object.keys(productData).forEach(key => {
-        if (productData[key] == null || productData[key] == undefined) {
+        if (productData[key] === null || productData[key] === undefined) {
           delete productData[key];
         }
       });
 
-      // Log the data to verify structure
-      console.log("Submitting product:", productData);
-
       // Submit to API
-      const response = await addProduct(productData).unwrap();
+      const response = await updateProduct({id,data:productData}).unwrap();
 
       toast({
         title: "Success",
-        description: "Product created successfully",
+        description: "Product updated successfully",
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -235,7 +304,7 @@ const AddProduct = () => {
     } catch (err) {
       toast({
         title: "Error",
-        description: err.data?.message || "Failed to create product",
+        description: err.data?.message || "Failed to update product",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -259,6 +328,22 @@ const AddProduct = () => {
     });
   };
 
+  if (isProductLoading) {
+    return (
+      <Flex justify="center" align="center" minH="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (!product) {
+    return (
+      <Flex justify="center" align="center" minH="100vh">
+        <Text>Product not found</Text>
+      </Flex>
+    );
+  }
+
   return (
     <div className="container add-admin-container w-100">
       <div className="add-admin-card shadow p-4 bg-white w-100">
@@ -270,7 +355,7 @@ const AddProduct = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Product
+            Edit Product
           </Text>
           <Button
             type="button"
@@ -332,7 +417,7 @@ const AddProduct = () => {
             </Box>
           </SimpleGrid>
 
-          {/* Category, Brand, and Pricing */}
+          {/* Category, Brand, and Pharmacy */}
           <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
             <Box>
               <FormControl isRequired>
@@ -367,14 +452,14 @@ const AddProduct = () => {
               </FormControl>
             </Box>
             <Box>
-              <FormControl>
+              <FormControl isRequired>
                 <FormLabel>Pharmacy</FormLabel>
                 <Select
                   placeholder="Select Pharmacy"
                   value={pharmacyId}
                   onChange={(e) => setPharmacyId(e.target.value)}
                 >
-                  {pharmacies?.map((pharmacy) => (
+                  {pharmacies.map((pharmacy) => (
                     <option key={pharmacy.id} value={pharmacy.id}>
                       {pharmacy.name}
                     </option>
@@ -384,9 +469,10 @@ const AddProduct = () => {
             </Box>
           </SimpleGrid>
 
+          {/* Pricing Information */}
           <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
             <Box>
-              <FormControl isRequired>
+              <FormControl>
                 <FormLabel>Cost</FormLabel>
                 <Input
                   type="number"
@@ -408,7 +494,7 @@ const AddProduct = () => {
               </FormControl>
             </Box>
             <Box>
-              <FormControl isRequired>
+              <FormControl>
                 <FormLabel>Quantity</FormLabel>
                 <Input
                   type="number"
@@ -423,7 +509,15 @@ const AddProduct = () => {
           {/* Offer Type */}
           <Box mb={4}>
             <FormLabel>Offer Type</FormLabel>
-            <RadioGroup value={offerType} onChange={setOfferType}>
+            <RadioGroup 
+              value={offerType} 
+              onChange={(value) => {
+                setOfferType(value);
+                if (value !== "MONTHLY_OFFER") {
+                  setOfferPercentage("");
+                }
+              }}
+            >
               <Stack direction="row">
                 <Radio value="MONTHLY_OFFER">Monthly Offer</Radio>
                 <Radio value="NEW_ARRIVAL">New Arrival</Radio>
@@ -446,7 +540,7 @@ const AddProduct = () => {
           </Box>
 
           {/* Status Switches */}
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
+          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
             <FormControl display="flex" alignItems="center">
               <FormLabel mb="0">Has Variants</FormLabel>
               <Switch
@@ -505,7 +599,7 @@ const AddProduct = () => {
                       </CardHeader>
                       <CardBody>
                         <SimpleGrid columns={2} spacing={2}>
-                          <FormControl isRequired>
+                          <FormControl>
                             <FormLabel>Cost</FormLabel>
                             <Input
                               type="number"
@@ -521,7 +615,7 @@ const AddProduct = () => {
                               onChange={(e) => handleAttributeChange(index, "price", e.target.value)}
                             />
                           </FormControl>
-                          <FormControl isRequired>
+                          <FormControl>
                             <FormLabel>Quantity</FormLabel>
                             <Input
                               type="number"
@@ -536,6 +630,11 @@ const AddProduct = () => {
                               accept="image/*"
                               onChange={(e) => handleAttributeChange(index, "image", e.target.files[0])}
                             />
+                            {attr.image && (
+                              <Text fontSize="sm" mt={1}>
+                                Current: {attr.image.name}
+                              </Text>
+                            )}
                           </FormControl>
                         </SimpleGrid>
                       </CardBody>
@@ -548,7 +647,7 @@ const AddProduct = () => {
 
           {/* Product Images */}
           <Box mb={4}>
-            <FormControl isRequired>
+            <FormControl>
               <FormLabel>Product Images</FormLabel>
               <Box
                 border="1px dashed"
@@ -582,20 +681,20 @@ const AddProduct = () => {
               </Box>
             </FormControl>
 
-            {images.length > 0 && (
+            {(existingImages.length > 0 || images.length > 0) && (
               <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} mt={4}>
-                {images.map((img, index) => (
-                  <Box key={index} position="relative">
+                {existingImages.map((img, index) => (
+                  <Box key={`existing-${index}`} position="relative">
                     <Image
-                      src={img.preview}
+                      src={img.imageKey}
                       alt={`Product image ${index + 1}`}
                       borderRadius="md"
-                      border={mainImageIndex === index ? "2px solid" : "1px solid"}
-                      borderColor={mainImageIndex === index ? "blue.500" : "gray.200"}
+                      border={img.isMain ? "2px solid" : "1px solid"}
+                      borderColor={img.isMain ? "blue.500" : "gray.200"}
                       cursor="pointer"
-                      onClick={() => handleSetMainImage(index)}
+                      onClick={() => handleSetMainImage(index, true)}
                     />
-                    {mainImageIndex === index && (
+                    {img.isMain && (
                       <Badge
                         position="absolute"
                         top={2}
@@ -613,7 +712,40 @@ const AddProduct = () => {
                       position="absolute"
                       top={2}
                       right={2}
-                      onClick={() => handleRemoveImage(index)}
+                      onClick={() => handleRemoveImage(index, true)}
+                    />
+                  </Box>
+                ))}
+                {images.map((img, index) => (
+                  <Box key={`new-${index}`} position="relative">
+                    <Image
+                      src={img.preview}
+                      alt={`New image ${index + 1}`}
+                      borderRadius="md"
+                      border={existingImages.length + index === mainImageIndex ? "2px solid" : "1px solid"}
+                      borderColor={existingImages.length + index === mainImageIndex ? "blue.500" : "gray.200"}
+                      cursor="pointer"
+                      onClick={() => handleSetMainImage(existingImages.length + index, false)}
+                    />
+                    {existingImages.length + index === mainImageIndex && (
+                      <Badge
+                        position="absolute"
+                        top={2}
+                        left={2}
+                        colorScheme="blue"
+                      >
+                        Main
+                      </Badge>
+                    )}
+                    <IconButton
+                      icon={<FaTrash />}
+                      aria-label="Remove image"
+                      size="sm"
+                      colorScheme="red"
+                      position="absolute"
+                      top={2}
+                      right={2}
+                      onClick={() => handleRemoveImage(existingImages.length + index, false)}
                     />
                   </Box>
                 ))}
@@ -633,9 +765,9 @@ const AddProduct = () => {
             <Button
               type="submit"
               colorScheme="blue"
-              isLoading={isLoading}
+              isLoading={isUpdating}
             >
-              Save Product
+              Update Product
             </Button>
           </Flex>
         </form>
@@ -644,4 +776,4 @@ const AddProduct = () => {
   );
 };
 
-export default AddProduct;
+export default EditProduct;

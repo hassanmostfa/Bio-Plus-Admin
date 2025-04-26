@@ -99,6 +99,8 @@ import AddSpecialize from 'views/admin/doctorSpecializations/AddSpecialize';
 import EditSpecialization from 'views/admin/doctorSpecializations/EditSpecialization';
 import ShowDoctor from 'views/admin/doctors/ShowDoctor';
 import EditDoctor from 'views/admin/doctors/EditDoctor';
+import ShowProduct from 'views/admin/products/ShowProduct';
+import EditProduct from 'views/admin/products/EditProduct';
 
 
 const routes = [
@@ -385,6 +387,22 @@ const routes = [
     icon: <Icon as={MdInventory} width="20px" height="20px" color="inherit" />,
     component: <Products />,
     showInSidebar: true,
+  },
+  {
+    name: 'Products',
+    layout: '/admin',
+    path: '/products/:id',
+    icon: <Icon as={MdInventory} width="20px" height="20px" color="inherit" />,
+    component: <ShowProduct />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Products',
+    layout: '/admin',
+    path: '/edit-product/:id',
+    icon: <Icon as={MdInventory} width="20px" height="20px" color="inherit" />,
+    component: <EditProduct />,
+    showInSidebar: false,
   },
   {
     name: 'Products',
