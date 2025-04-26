@@ -40,8 +40,10 @@ export const doctorApi = createApi({
       }),
     }),
     assignDoctor:builder.mutation({
-      query: (id,data) => ({
-        url:`/admin/doctor/${id}/clinics`
+      query: ({id,data}) => ({
+        url:`/admin/doctor/${id}/clinics`,
+        method:"POST",
+        body:data
       })
     }),
     updateDoctor: builder.mutation({

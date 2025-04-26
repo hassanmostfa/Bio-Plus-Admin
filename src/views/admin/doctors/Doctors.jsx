@@ -39,6 +39,7 @@ import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { useGetDoctorsQuery, useDeleteDoctorMutation, useAssignDoctorMutation } from 'api/doctorSlice';
 import Swal from 'sweetalert2';
+import { useGetClinicsQuery } from 'api/clinicSlice';
 
 const columnHelper = createColumnHelper();
 
@@ -46,6 +47,8 @@ const Doctors = () => {
   const { data: doctorsData, isLoading, isError, refetch } = useGetDoctorsQuery();
   const [deleteDoctor] = useDeleteDoctorMutation();
   const [assignDoctor] = useAssignDoctorMutation();
+  const { data: clinicsResponse } = useGetClinicsQuery({});
+  const clinics = clinicsResponse?.data || [];
   const toast = useToast();
   
   const doctors = doctorsData?.data || [];
@@ -60,12 +63,14 @@ const Doctors = () => {
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
   // Example list of clinics - you might want to fetch this from an API
-  const clinics = [
-    { id: "3c50873a-c692-4c7d-846e-f5576ae54203", name: 'Clinic A' },
-    { id: "75edd202-5b91-4dfa-8c05-aa712b74e454", name: 'Clinic B' },
-    { id: "85edd202-5b91-4dfa-8c05-aa712b74e455", name: 'Clinic C' },
-  ];
-
+  // const clinics = [
+  //   { id: "3c50873a-c692-4c7d-846e-f5576ae54203", name: 'Clinic A' },
+  //   { id: "75edd202-5b91-4dfa-8c05-aa712b74e454", name: 'Clinic B' },
+  //   { id: "85edd202-5b91-4dfa-8c05-aa712b74e455", name: 'Clinic C' },
+  // ];
+  React.useEffect(()=>{
+    refetch();
+  },[]);
   const handleAssignClick = (doctorId) => {
     setSelectedDoctorId(doctorId);
     onOpen();
@@ -80,11 +85,10 @@ const Doctors = () => {
   };
 
   const handleAssignClinics = async () => {
+    
     try {
-      await assignDoctor({
-        doctorId: selectedDoctorId,
-        clinicIds: selectedClinics
-      }).unwrap();
+      const id = selectedDoctorId;
+      await assignDoctor({id,data: {clinicIds: selectedClinics}}).unwrap();
       
       toast({
         title: 'Success',
@@ -281,7 +285,7 @@ const Doctors = () => {
             cursor="pointer"
             onClick={() => navigate(`/admin/doctor/${info.row.original.id}`)}
           />
-          {/* <Icon
+          <Icon
             w="18px"
             h="18px"
             me="10px"
@@ -290,7 +294,7 @@ const Doctors = () => {
             cursor="pointer"
             title="Assign to clinic"
             onClick={() => handleAssignClick(info.row.original.id)}
-          /> */}
+          />
         </Flex>
       ),
     }),
