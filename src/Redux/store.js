@@ -8,6 +8,7 @@ import { CategoryApi } from "api/categorySlice";
 import { clinicApi } from "api/clinicSlice";
 import { doctorApi } from "api/doctorSlice";
 import { specializationApi } from "api/doctorSpecializationSlice";
+import { filesApi } from "api/filesSlice";
 import { pharmacyApi } from "api/pharmacySlice";
 import { privacyApi } from "api/privacySlice";
 import { ProductApi } from "api/productSlice";
@@ -41,6 +42,7 @@ export const store = configureStore({
     [specializationApi.reducerPath]:specializationApi.reducer,
     [doctorApi.reducerPath]:doctorApi.reducer,
     [ProductApi.reducerPath]:ProductApi.reducer,
+    [filesApi.reducerPath]:filesApi.reducer,
 
   },
   middleware: (getDefaultMiddleware) =>
@@ -63,6 +65,7 @@ export const store = configureStore({
       specializationApi.middleware,
       doctorApi.middleware,
       ProductApi.middleware,
+      filesApi.middleware,
     ),
 });
 

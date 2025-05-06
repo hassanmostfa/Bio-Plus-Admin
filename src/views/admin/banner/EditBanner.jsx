@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -13,43 +13,59 @@ import {
   FormLabel,
   useToast,
   Image,
+  IconButton,
+  Spinner,
   Skeleton,
-} from "@chakra-ui/react";
-import { FaUpload } from "react-icons/fa6";
-import { IoMdArrowBack } from "react-icons/io";
-import { useNavigate, useParams } from "react-router-dom";
-import { useUpdateBannerMutation, useGetBannerQuery } from "api/bannerSlice";
-import Swal from "sweetalert2";
+} from '@chakra-ui/react';
+import { FaUpload, FaTrash } from 'react-icons/fa6';
+import { IoMdArrowBack } from 'react-icons/io';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useUpdateBannerMutation, useGetBannerQuery } from 'api/bannerSlice';
+import { useAddFileMutation } from 'api/filesSlice';
+import Swal from 'sweetalert2';
 
 const EditBanner = () => {
   const { id } = useParams();
-  const { data: banner, isLoading: isFetching, error } = useGetBannerQuery(id);
-  const [updateBanner, { isLoading }] = useUpdateBannerMutation();
-  
-  const [formData, setFormData] = useState({
-    title: "",
-    arTitle: "",
-    link: "",
-    linkType: "PHARMACY",
-    linkId: "",
-    order: 1,
-    isActive: true,
-  });
-  
-  const [image, setImage] = useState(null);
-  const [existingImage, setExistingImage] = useState("");
-  const [isDragging, setIsDragging] = useState(false);
-  const textColor = useColorModeValue("secondaryGray.900", "white");
   const navigate = useNavigate();
   const toast = useToast();
 
-  // Populate form with existing data when banner is fetched
+  // State management
+  const [formData, setFormData] = useState({
+    title: '',
+    arTitle: '',
+    link: '',
+    linkType: 'PHARMACY',
+    linkId: '',
+    order: 1,
+    isActive: true,
+  });
+
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [existingImage, setExistingImage] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const textColor = useColorModeValue('secondaryGray.900', 'white');
+
+  // API hooks
+  const {
+    data: banner,
+    isLoading: isFetching,
+    error,
+    refetch,
+  } = useGetBannerQuery(id);
+  const [updateBanner] = useUpdateBannerMutation();
+  const [addFile] = useAddFileMutation();
+  useEffect(() => {
+    refetch();
+  }, []);
+  // Initialize form with existing data
   useEffect(() => {
     if (banner?.data) {
       const bannerData = banner.data;
       setFormData({
         title: bannerData.title,
-        arTitle: bannerData.translations?.[0]?.title || "",
+        arTitle: bannerData.translations?.[0]?.title || '',
         link: bannerData.link,
         linkType: bannerData.linkType,
         linkId: bannerData.linkId,
@@ -60,10 +76,54 @@ const EditBanner = () => {
     }
   }, [banner]);
 
+  // Clean up object URLs
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
-      setImage(files[0]);
+      const file = files[0];
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: 'Invalid file type',
+          description: 'Please upload an image file',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      // Validate file size (e.g., 5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'File too large',
+          description: 'Maximum file size is 5MB',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleRemoveImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImage(null);
+    setImagePreview('');
   };
 
   const handleDragOver = (e) => {
@@ -78,82 +138,126 @@ const EditBanner = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    const files = e.dataTransfer.files;
-    handleImageUpload(files);
+    handleImageUpload(e.dataTransfer.files);
   };
 
   const handleFileInputChange = (e) => {
-    const files = e.target.files;
-    handleImageUpload(files);
+    handleImageUpload(e.target.files);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSwitchChange = (e) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      isActive: e.target.checked
+      isActive: e.target.checked,
     }));
+  };
+
+  const handleCancel = () => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You will lose all unsaved changes',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, discard changes',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate('/admin/undefined/cms/banners');
+      }
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!formData.title || !formData.arTitle || !formData.link) {
+      toast({
+        title: 'Error',
+        description: 'Please fill all required fields',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      // Prepare the data in the required format
-      const bannerData = {
+      let imageUrl = existingImage;
+
+      // Upload new image if one was selected
+      if (image) {
+        const formDataToSend = new FormData();
+        formDataToSend.append('file', image);
+
+        const uploadResponse = await addFile(formDataToSend).unwrap();
+
+        if (
+          !uploadResponse.success ||
+          !uploadResponse.data.uploadedFiles[0]?.url
+        ) {
+          throw new Error('Failed to upload image');
+        }
+
+        imageUrl = uploadResponse.data.uploadedFiles[0].url;
+      }
+
+      // Prepare the update payload
+      const payload = {
         title: formData.title,
+        imageKey: imageUrl,
         link: formData.link,
         linkType: formData.linkType,
-        linkId: formData.linkId,
+        linkId: formData.linkId || null,
         order: parseInt(formData.order),
         isActive: formData.isActive,
         translations: [
           {
-            languageId: "ar",
-            title: formData.arTitle
-          }
-        ]
+            languageId: 'ar',
+            title: formData.arTitle,
+          },
+        ],
       };
 
-      // Create FormData if new image is uploaded
-      let formDataToSend;
-      if (image) {
-        formDataToSend = new FormData();
-        formDataToSend.append("image", image);
-        formDataToSend.append("data", JSON.stringify(bannerData));
-      } else {
-        formDataToSend = bannerData;
-        // Keep existing image if no new image is uploaded
-        if (existingImage) {
-          formDataToSend.imageKey = existingImage;
+      // Remove null values
+      Object.keys(payload).forEach((key) => {
+        if (payload[key] === null || payload[key] === undefined) {
+          delete payload[key];
         }
-      }
-
-      // Call the API
-      await updateBanner({ id, data: formDataToSend }).unwrap();
-
-      Swal.fire({
-        title: 'Success!',
-        text: 'Banner updated successfully',
-        icon: 'success',
-        confirmButtonText: 'OK'
-      }).then(() => {
-        navigate("/admin/undefined/cms/banners");
       });
+
+      await updateBanner({ id, data: payload }).unwrap();
+
+      toast({
+        title: 'Success',
+        description: 'Banner updated successfully',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+
+      navigate('/admin/undefined/cms/banners');
     } catch (error) {
-      Swal.fire({
-        title: 'Error!',
-        text: error.data?.message || 'Failed to update banner',
-        icon: 'error',
-        confirmButtonText: 'OK'
+      console.error('Failed to update banner:', error);
+      toast({
+        title: 'Error',
+        description: error.data?.message || 'Failed to update banner',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -207,7 +311,7 @@ const EditBanner = () => {
             Edit Banner
           </Text>
           <Button
-            onClick={() => navigate(-1)}
+            onClick={handleCancel}
             colorScheme="teal"
             size="sm"
             leftIcon={<IoMdArrowBack />}
@@ -218,47 +322,35 @@ const EditBanner = () => {
 
         <form onSubmit={handleSubmit}>
           {/* Title Field */}
-          <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              English Title <span style={{ color: "red" }}>*</span>
-            </FormLabel>
+          <FormControl mb={4} isRequired>
+            <FormLabel>English Title</FormLabel>
             <Input
               name="title"
               placeholder="Enter Banner Title (English)"
               value={formData.title}
               onChange={handleChange}
-              required
-              mt="8px"
             />
           </FormControl>
 
           {/* Arabic Title Field */}
-          <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Arabic Title <span style={{ color: "red" }}>*</span>
-            </FormLabel>
+          <FormControl mb={4} isRequired>
+            <FormLabel>Arabic Title</FormLabel>
             <Input
               name="arTitle"
-              placeholder="Enter Banner Title (Arabic)"
+              placeholder="ادخل عنوان البانر"
               value={formData.arTitle}
               onChange={handleChange}
-              required
-              mt="8px"
               dir="rtl"
             />
           </FormControl>
 
           {/* Link Type */}
-          <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Link Type <span style={{ color: "red" }}>*</span>
-            </FormLabel>
+          <FormControl mb={4} isRequired>
+            <FormLabel>Link Type</FormLabel>
             <Select
               name="linkType"
               value={formData.linkType}
               onChange={handleChange}
-              required
-              mt="8px"
             >
               <option value="PHARMACY">Pharmacy</option>
               <option value="PRODUCT">Product</option>
@@ -268,39 +360,30 @@ const EditBanner = () => {
           </FormControl>
 
           {/* Link */}
-          <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Link <span style={{ color: "red" }}>*</span>
-            </FormLabel>
+          <FormControl mb={4} isRequired>
+            <FormLabel>Link</FormLabel>
             <Input
               name="link"
               placeholder="Enter Link URL"
               value={formData.link}
               onChange={handleChange}
-              required
-              mt="8px"
             />
           </FormControl>
 
           {/* Link ID */}
           <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Link ID (for internal links)
-            </FormLabel>
+            <FormLabel>Link ID (for internal links)</FormLabel>
             <Input
               name="linkId"
               placeholder="Enter Link ID (if applicable)"
               value={formData.linkId}
               onChange={handleChange}
-              mt="8px"
             />
           </FormControl>
 
           {/* Order */}
           <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Display Order
-            </FormLabel>
+            <FormLabel>Display Order</FormLabel>
             <Input
               name="order"
               type="number"
@@ -308,17 +391,13 @@ const EditBanner = () => {
               value={formData.order}
               onChange={handleChange}
               min="1"
-              mt="8px"
             />
           </FormControl>
 
           {/* Status */}
           <FormControl mb={4} display="flex" alignItems="center">
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700" mb="0">
-              Active Status
-            </FormLabel>
+            <FormLabel mb="0">Active Status</FormLabel>
             <Switch
-              name="isActive"
               isChecked={formData.isActive}
               onChange={handleSwitchChange}
               colorScheme="green"
@@ -328,28 +407,24 @@ const EditBanner = () => {
 
           {/* Image Upload */}
           <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Banner Image
-            </FormLabel>
+            <FormLabel>Banner Image</FormLabel>
             <Box
               border="1px dashed"
-              borderColor={isDragging ? "blue.500" : "gray.300"}
+              borderColor={isDragging ? 'blue.500' : 'gray.200'}
               borderRadius="md"
               p={4}
               textAlign="center"
-              backgroundColor={isDragging ? "blue.50" : "gray.50"}
+              bg={isDragging ? 'blue.50' : 'gray.50'}
               cursor="pointer"
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => document.getElementById('fileInput').click()}
             >
-              <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
-              <Text color="gray.500" mb={2}>
-                Drag & Drop Image Here or Click to Browse
-              </Text>
-              <Text color="gray.400" fontSize="sm">
-                Recommended size: 1200x400px
+              <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
+              <Text>Drag & Drop Image Here or Click to Browse</Text>
+              <Text fontSize="sm" color="gray.500" mt={2}>
+                Recommended size: 1200x400px (Max 5MB)
               </Text>
               <input
                 type="file"
@@ -358,45 +433,39 @@ const EditBanner = () => {
                 accept="image/*"
                 onChange={handleFileInputChange}
               />
-              
-              {image ? (
-                <Box mt={4}>
-                  <Text fontSize="sm" color="green.500" mb={2}>
-                    New Image: {image.name}
-                  </Text>
-                  <Image
-                    src={URL.createObjectURL(image)}
-                    alt="Preview"
-                    maxH="150px"
-                    mx="auto"
-                    borderRadius="md"
-                  />
-                </Box>
-              ) : existingImage ? (
-                <Box mt={4}>
-                  <Text fontSize="sm" color="blue.500" mb={2}>
-                    Current Image: {existingImage.split('/').pop()}
-                  </Text>
-                  <Image
-                    src={existingImage.startsWith('http') ? existingImage : 
-                         `${process.env.REACT_APP_API_URL}/${existingImage}`}
-                    alt="Current Banner"
-                    maxH="150px"
-                    mx="auto"
-                    borderRadius="md"
-                    fallbackSrc="https://via.placeholder.com/150"
-                  />
-                </Box>
-              ) : null}
             </Box>
           </FormControl>
 
+          {/* Image Preview */}
+          {(imagePreview || existingImage) && (
+            <Box position="relative" mb={4}>
+              <Image
+                src={imagePreview || existingImage}
+                alt="Banner preview"
+                maxH="200px"
+                mx="auto"
+                borderRadius="md"
+                fallbackSrc="https://via.placeholder.com/1200x400"
+              />
+              <IconButton
+                icon={<FaTrash />}
+                aria-label="Remove image"
+                position="absolute"
+                top={2}
+                right={2}
+                colorScheme="red"
+                size="sm"
+                onClick={handleRemoveImage}
+              />
+            </Box>
+          )}
+
           {/* Action Buttons */}
-          <Flex justify="center" mt={6} gap={4}>
+          <Flex justify="flex-end" mt={6} gap={4}>
             <Button
               variant="outline"
               colorScheme="red"
-              onClick={() => navigate(-1)}
+              onClick={handleCancel}
               isDisabled={isLoading}
             >
               Cancel

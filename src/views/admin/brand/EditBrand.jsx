@@ -7,45 +7,93 @@ import {
   Text,
   useColorModeValue,
   Icon,
+  Image,
+  Badge,
+  IconButton,
+  useToast,
+  FormControl,
+  FormLabel,
+  Spinner,
 } from "@chakra-ui/react";
-import { FaUpload } from "react-icons/fa6";
+import { FaUpload, FaTrash } from "react-icons/fa6";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetBrandQuery, useUpdateBrandMutation } from "api/brandSlice";
 import Swal from "sweetalert2";
+import { useAddFileMutation } from "api/filesSlice";
 
 const EditBrand = () => {
-  const { id } = useParams(); // Get the brand ID from the URL
-  const { data: brandResponse, isLoading: isFetching, isError: fetchError } = useGetBrandQuery(id); // Fetch the brand data
-  const [updateBrand, { isLoading: isUpdating }] = useUpdateBrandMutation(); // Mutation hook for updating a brand
+  const { id } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
 
-  // State for form fields
+  // API hooks
+  const { data: brandResponse, isLoading: isFetching } = useGetBrandQuery(id);
+  const [updateBrand, { isLoading: isUpdating }] = useUpdateBrandMutation();
+  const [addFile] = useAddFileMutation();
+
+  // State management
   const [enName, setEnName] = useState("");
   const [arName, setArName] = useState("");
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [existingImage, setExistingImage] = useState("");
   const [isDragging, setIsDragging] = useState(false);
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
-  const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
 
-  // Populate the form with the existing data when the component mounts
+  // Initialize form with existing data
   useEffect(() => {
     if (brandResponse?.data) {
-      setEnName(brandResponse.data.name); // Set the English name
-      setArName(brandResponse.data.translations.find((t) => t.languageId === "ar")?.name || ""); // Set the Arabic name
-      // Set the image if it exists (you may need to fetch the image URL from the API)
+      setEnName(brandResponse.data.name);
+      setArName(brandResponse.data.translations?.find(t => t.languageId === "ar")?.name || "");
+      setExistingImage(brandResponse.data.imageKey || "");
     }
   }, [brandResponse]);
 
-  // Handle image upload
+  // Clean up object URLs
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  // Image handling functions
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
-      setImage(files[0]);
+      const file = files[0];
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: 'Invalid file type',
+          description: 'Please upload an image file',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      // Validate file size (e.g., 5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'File too large',
+          description: 'Maximum file size is 5MB',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  // Handle drag-and-drop events
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -58,60 +106,121 @@ const EditBrand = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    const files = e.dataTransfer.files;
-    handleImageUpload(files);
+    handleImageUpload(e.dataTransfer.files);
   };
 
-  // Handle file input change
   const handleFileInputChange = (e) => {
-    const files = e.target.files;
-    handleImageUpload(files);
+    handleImageUpload(e.target.files);
   };
 
-  // Handle cancel action
+  const handleRemoveImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImage(null);
+    setImagePreview("");
+  };
+
   const handleCancel = () => {
-    navigate("/admin/brands"); // Navigate back to the brands list
-  };
-
-  // Handle form submission
-  const handleSend = async () => {
-    if (!enName || !arName) {
-      Swal.fire("Error!", "Please fill all required fields.", "error");
-      return;
-    }
-
-    const payload = {
-      id, // Include the brand ID for updating
-      name: enName, // English name
-      imageKey: image ? await convertImageToBase64(image) : brandResponse.data.imageKey, // Use existing image if no new image is uploaded
-      isActive: true, // Default to true
-      translations: [
-        { languageId: "ar", name: arName }, // Arabic translation
-      ],
-    };
-
-    try {
-      const response = await updateBrand({ id, brand: payload }).unwrap(); // Send data to the API
-      Swal.fire("Success!", "Brand updated successfully.", "success");
-      navigate("/admin/brands"); // Redirect to the brands page
-    } catch (error) {
-      console.error("Failed to update brand:", error);
-      Swal.fire("Error!", "Failed to update brand.", "error");
-    }
-  };
-
-  // Convert image file to base64
-  const convertImageToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result.split(",")[1]);
-      reader.onerror = (error) => reject(error);
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You will lose all unsaved changes',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, discard changes',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate("/admin/brands");
+      }
     });
   };
 
-  if (isFetching) return <Text>Loading...</Text>;
-  if (fetchError) return <Text>Error loading brand data.</Text>;
+  const handleSubmit = async () => {
+    if (!enName || !arName) {
+      toast({
+        title: "Error",
+        description: "Please fill all required fields",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    try {
+      let imageUrl = existingImage;
+      
+      // Upload new image if one was selected
+      if (image) {
+        const formData = new FormData();
+        formData.append('file', image);
+
+        const uploadResponse = await addFile(formData).unwrap();
+        
+        if (!uploadResponse.success || !uploadResponse.data.uploadedFiles[0]?.url) {
+          throw new Error('Failed to upload image');
+        }
+
+        imageUrl = uploadResponse.data.uploadedFiles[0].url;
+      }
+
+      // Prepare the update payload
+      const payload = {
+        name: enName,
+        imageKey: imageUrl,
+        isActive: true,
+        translations: [
+          { languageId: "ar", name: arName },
+        ],
+      };
+
+      // Remove undefined/null values
+      Object.keys(payload).forEach(key => {
+        if (payload[key] === null || payload[key] === undefined) {
+          delete payload[key];
+        }
+      });
+
+      const response = await updateBrand({ id, brand: payload }).unwrap();
+
+      toast({
+        title: "Success",
+        description: "Brand updated successfully",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      navigate("/admin/brands");
+    } catch (error) {
+      console.error("Failed to update brand:", error);
+      toast({
+        title: "Error",
+        description: error.data?.message || "Failed to update brand",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  if (isFetching) {
+    return (
+      <Flex justify="center" align="center" minH="100vh">
+        <Spinner size="xl" />
+      </Flex>
+    );
+  }
+
+  if (!brandResponse?.data) {
+    return (
+      <Flex justify="center" align="center" minH="100vh">
+        <Text>Brand not found</Text>
+      </Flex>
+    );
+  }
 
   return (
     <div className="container add-admin-container w-100">
@@ -128,7 +237,7 @@ const EditBrand = () => {
           </Text>
           <Button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={handleCancel}
             colorScheme="teal"
             size="sm"
             leftIcon={<IoMdArrowBack />}
@@ -138,123 +247,105 @@ const EditBrand = () => {
         </div>
         <form>
           {/* English Name Field */}
-          <div className="mb-3">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              Brand En-Name
-              <span className="text-danger mx-1">*</span>
-            </Text>
-            <Input
-              type="text"
-              id="en_name"
-              placeholder="Enter Brand En-Name"
-              value={enName}
-              onChange={(e) => setEnName(e.target.value)}
-              required
-              mt={"8px"}
-            />
-          </div>
+          <Box mb={4}>
+            <FormControl isRequired>
+              <FormLabel>Brand Name (English)</FormLabel>
+              <Input
+                placeholder="Enter Brand Name in English"
+                value={enName}
+                onChange={(e) => setEnName(e.target.value)}
+              />
+            </FormControl>
+          </Box>
 
           {/* Arabic Name Field */}
-          <div className="mb-3">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              Brand Ar-Name
-              <span className="text-danger mx-1">*</span>
-            </Text>
-            <Input
-              type="text"
-              id="ar_name"
-              placeholder="Enter Brand Ar-Name"
-              value={arName}
-              onChange={(e) => setArName(e.target.value)}
-              required
-              mt={"8px"}
-            />
-          </div>
-
-          {/* Drag-and-Drop Upload Section */}
-          <Box
-            border="1px dashed"
-            borderColor="gray.300"
-            borderRadius="md"
-            p={4}
-            textAlign="center"
-            backgroundColor="gray.100"
-            cursor="pointer"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            mb={4}
-          >
-            <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
-            <Text color="gray.500" mb={2}>
-              Drag & Drop Image Here
-            </Text>
-            <Text color="gray.500" mb={2}>
-              or
-            </Text>
-            <Button
-              variant="outline"
-              color="#422afb"
-              border="none"
-              onClick={() => document.getElementById("fileInput").click()}
-            >
-              Upload Image
-              <input
-                type="file"
-                id="fileInput"
-                hidden
-                accept="image/*"
-                onChange={handleFileInputChange}
+          <Box mb={4}>
+            <FormControl isRequired>
+              <FormLabel>Brand Name (Arabic)</FormLabel>
+              <Input
+                placeholder="أدخل اسم العلامة التجارية"
+                value={arName}
+                onChange={(e) => setArName(e.target.value)}
+                dir="rtl"
               />
-            </Button>
-            {image ? (
+            </FormControl>
+          </Box>
+
+          {/* Image Upload Section */}
+          <Box mb={4}>
+            <FormControl>
+              <FormLabel>Brand Logo</FormLabel>
               <Box
-                mt={4}
-                display={"flex"}
-                justifyContent="center"
-                alignItems="center"
+                border="1px dashed"
+                borderColor={isDragging ? "blue.500" : "gray.200"}
+                borderRadius="md"
+                p={4}
+                textAlign="center"
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                cursor="pointer"
+                bg={isDragging ? "blue.50" : "gray.50"}
               >
-                <img
-                  src={URL.createObjectURL(image)}
-                  alt={image.name}
-                  width={80}
-                  height={80}
-                  borderRadius="md"
+                <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
+                <Text>Drag & drop logo here or</Text>
+                <Button
+                  variant="link"
+                  color="blue.500"
+                  onClick={() => document.getElementById("fileInput").click()}
+                >
+                  Browse Files
+                </Button>
+                <Input
+                  id="fileInput"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileInputChange}
+                  display="none"
                 />
               </Box>
-            ) : brandResponse?.data?.imageKey ? (
-              <Box
-                mt={4}
-                display={"flex"}
-                justifyContent="center"
-                alignItems="center"
-              >
-                <img
-                  src={brandResponse.data.imageKey}
-                  alt="Brand Image"
-                  width={80}
-                  height={80}
+            </FormControl>
+
+            {(imagePreview || existingImage) && (
+              <Box mt={4} position="relative" display="inline-block">
+                <Image
+                  src={imagePreview || existingImage}
+                  alt="Brand logo preview"
                   borderRadius="md"
+                  boxSize="150px"
+                  objectFit="contain"
                 />
+                {imagePreview && (
+                  <IconButton
+                    icon={<FaTrash />}
+                    aria-label="Remove image"
+                    size="sm"
+                    colorScheme="red"
+                    position="absolute"
+                    top={2}
+                    right={2}
+                    onClick={handleRemoveImage}
+                  />
+                )}
               </Box>
-            ) : null}
+            )}
           </Box>
 
           {/* Action Buttons */}
-          <Flex justify="center" mt={4}>
-            <Button variant="outline" colorScheme="red" onClick={handleCancel} mr={2}>
+          <Flex justify="flex-end" mt={4}>
+            <Button
+              variant="outline"
+              colorScheme="red"
+              onClick={handleCancel}
+              mr={4}
+            >
               Cancel
             </Button>
             <Button
-              variant="darkBrand"
-              color="white"
-              fontSize="sm"
-              fontWeight="500"
-              borderRadius="70px"
-              px="24px"
-              py="5px"
-              onClick={handleSend}
+              colorScheme="blue"
+              onClick={handleSubmit}
               isLoading={isUpdating}
+              loadingText="Saving..."
             >
               Save Changes
             </Button>

@@ -34,7 +34,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MdCancel, MdCheckCircle } from 'react-icons/md';
 import Card from 'components/card/Card';
 import { EditIcon, PlusSquareIcon } from '@chakra-ui/icons';
@@ -70,6 +70,9 @@ const Blogs = () => {
     // search: searchTerm,
     // status: statusFilter !== 'all' ? statusFilter : undefined
   });
+  useEffect(() => {
+    refetch();
+  }, []);
   const [deleteBlog] = useDeleteBlogMutation();
   // const [bulkDeleteBlogs] = useBulkDeleteBlogsMutation();
 

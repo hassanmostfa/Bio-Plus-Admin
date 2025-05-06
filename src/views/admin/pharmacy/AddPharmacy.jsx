@@ -20,6 +20,7 @@ import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
 import { FaUpload } from 'react-icons/fa6';
 import { useAddPharmacyMutation } from 'api/pharmacySlice';
+import { useAddFileMutation } from 'api/filesSlice';
 
 const AddPharmacy = () => {
   const [formData, setFormData] = useState({
@@ -61,7 +62,7 @@ const AddPharmacy = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const [error, setError] = useState(null);
-
+  const [addFile] = useAddFileMutation();
   // Mutation hook for creating a pharmacy
   const [createPharmacy, { isLoading }] = useAddPharmacyMutation();
 
@@ -90,12 +91,25 @@ const AddPharmacy = () => {
     }));
   };
 
+  // const handleImageUpload = (files) => {
+  //   if (files && files.length > 0) {
+  //     setImage(files[0]);
+      
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       imageKey: files[0].name, // Update with the actual image key logic
+  //     }));
+  //   }
+  // };
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
-      setImage(files[0]);
+      const selectedFile = files[0];
+      setImage(selectedFile);
+      
+      // Update the form data with the file name (temporary until we get the actual key from API)
       setFormData((prevData) => ({
         ...prevData,
-        imageKey: files[0].name, // Update with the actual image key logic
+        imageKey: selectedFile.name,
       }));
     }
   };
@@ -187,23 +201,77 @@ const AddPharmacy = () => {
     }));
   };
 
+  // const handleSend = async () => {
+  //   try {
+  //     // Format the data based on revenueShareType
+  //     const payload = {
+  //       ...formData,
+  //       feesStartDate: formData.feesStartDate ? formData.feesStartDate + 'T00:00:00Z' : '2024-05-01T00:00:00Z',
+  //       feesEndDate: formData.feesEndDate ? formData.feesEndDate + 'T00:00:00Z' : '2025-05-01T00:00:00Z',
+  //       name: formData.translations.find((t) => t.languageId === 'en').name,
+  //       description: formData.translations.find((t) => t.languageId === 'en').description,
+  //       revenueShare: formData.revenueShareType === 'percentage' ? parseInt(formData.revenueShare) : 0,
+  //       fixedFees: formData.revenueShareType === 'fixed' ? parseInt(formData.fixedFees) : 0, // Convert to integer if fixedformData.fixedFees : 0,
+  //     };
+  //     delete payload.revenueShareType;
+
+  //     // Send the data to the API
+  //     const response = await createPharmacy(payload).unwrap();
+
+  //     // Show success message
+  //     toast({
+  //       title: 'Success',
+  //       description: 'Pharmacy created successfully',
+  //       status: 'success',
+  //       duration: 5000,
+  //       isClosable: true,
+  //     });
+
+  //     // Navigate back or to another page
+  //     navigate('/admin/pharmacy');
+  //   } catch (error) {
+  //     setError(error.data);
+  //     // Show error message
+  //     toast({
+  //       title: 'Error',
+  //       description: error.data?.message || 'Failed to create pharmacy',
+  //       status: 'error',
+  //       duration: 5000,
+  //       isClosable: true,
+  //     });
+  //   }
+  // };
   const handleSend = async () => {
     try {
+      // First upload the image if it exists
+      let imageKey = formData.imageKey;
+      if (image) {
+        const formDataFile = new FormData();
+        formDataFile.append('file', image); // Use 'file' as the key as per your API requirement
+        
+        const uploadResponse = await addFile(formDataFile).unwrap();
+        
+        if (uploadResponse.success && uploadResponse.data.uploadedFiles.length > 0) {
+          imageKey = uploadResponse?.data?.uploadedFiles[0]?.url;
+        }
+      }
+  
       // Format the data based on revenueShareType
       const payload = {
         ...formData,
+        imageKey, // Use the uploaded image key
         feesStartDate: formData.feesStartDate ? formData.feesStartDate + 'T00:00:00Z' : '2024-05-01T00:00:00Z',
         feesEndDate: formData.feesEndDate ? formData.feesEndDate + 'T00:00:00Z' : '2025-05-01T00:00:00Z',
         name: formData.translations.find((t) => t.languageId === 'en').name,
         description: formData.translations.find((t) => t.languageId === 'en').description,
         revenueShare: formData.revenueShareType === 'percentage' ? parseInt(formData.revenueShare) : 0,
-        fixedFees: formData.revenueShareType === 'fixed' ? parseInt(formData.fixedFees) : 0, // Convert to integer if fixedformData.fixedFees : 0,
+        fixedFees: formData.revenueShareType === 'fixed' ? parseInt(formData.fixedFees) : 0,
       };
       delete payload.revenueShareType;
-
+  
       // Send the data to the API
       const response = await createPharmacy(payload).unwrap();
-
+  
       // Show success message
       toast({
         title: 'Success',
@@ -212,7 +280,7 @@ const AddPharmacy = () => {
         duration: 5000,
         isClosable: true,
       });
-
+  
       // Navigate back or to another page
       navigate('/admin/pharmacy');
     } catch (error) {
@@ -227,7 +295,6 @@ const AddPharmacy = () => {
       });
     }
   };
-
   return (
     <Box w={"100%"} 
      className="container add-admin-container w-100">

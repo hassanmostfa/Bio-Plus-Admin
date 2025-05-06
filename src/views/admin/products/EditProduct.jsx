@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Image,
@@ -24,50 +24,60 @@ import {
   FormControl,
   FormLabel,
   Spinner,
-} from "@chakra-ui/react";
-import { FaUpload, FaTrash } from "react-icons/fa6";
-import { IoMdArrowBack } from "react-icons/io";
-import { useNavigate, useParams } from "react-router-dom";
+} from '@chakra-ui/react';
+import { FaUpload, FaTrash } from 'react-icons/fa6';
+import { IoMdArrowBack } from 'react-icons/io';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useGetVarientsQuery } from 'api/varientSlice';
 import { useGetCategoriesQuery } from 'api/categorySlice';
 import { useGetBrandsQuery } from 'api/brandSlice';
-import { useGetPharmaciesQuery } from "api/pharmacySlice";
-import { useGetProductQuery, useUpdateProductMutation } from "api/productSlice";
-import Swal from "sweetalert2";
+import { useGetPharmaciesQuery } from 'api/pharmacySlice';
+import { useGetProductQuery, useUpdateProductMutation } from 'api/productSlice';
+import Swal from 'sweetalert2';
+import { useAddFileMutation } from 'api/filesSlice';
 
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
-  
+
   // State for form fields
-  const [nameEn, setNameEn] = useState("");
-  const [nameAr, setNameAr] = useState("");
-  const [descriptionEn, setDescriptionEn] = useState("");
-  const [descriptionAr, setDescriptionAr] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [brandId, setBrandId] = useState("");
-  const [pharmacyId, setPharmacyId] = useState("");
-  const [cost, setCost] = useState("");
-  const [price, setPrice] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [offerType, setOfferType] = useState("");
-  const [offerPercentage, setOfferPercentage] = useState("");
+  const [nameEn, setNameEn] = useState('');
+  const [nameAr, setNameAr] = useState('');
+  const [descriptionEn, setDescriptionEn] = useState('');
+  const [descriptionAr, setDescriptionAr] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [brandId, setBrandId] = useState('');
+  const [pharmacyId, setPharmacyId] = useState('');
+  const [cost, setCost] = useState('');
+  const [price, setPrice] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [offerType, setOfferType] = useState('');
+  const [offerPercentage, setOfferPercentage] = useState('');
   const [hasVariants, setHasVariants] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [isPublished, setIsPublished] = useState(false);
-  const [images, setImages] = useState([]);
-  const [existingImages, setExistingImages] = useState([]);
+  const [images, setImages] = useState([]); // Newly uploaded images
+  const [existingImages, setExistingImages] = useState([]); // Existing images from server
   const [mainImageIndex, setMainImageIndex] = useState(0);
-  const [selectedAttributes, setSelectedAttributes] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
 
   // API queries
-  const { data: productResponse, isLoading: isProductLoading } = useGetProductQuery(id);
-  const { data: categoriesResponse } = useGetCategoriesQuery({ page: 1, limit: 1000 });
-  const { data: variantsResponse } = useGetVarientsQuery({ page: 1, limit: 1000 });
+  const { data: productResponse, isLoading: isProductLoading } =
+    useGetProductQuery(id);
+  const { data: categoriesResponse } = useGetCategoriesQuery({
+    page: 1,
+    limit: 1000,
+  });
+  const { data: variantsResponse } = useGetVarientsQuery({
+    page: 1,
+    limit: 1000,
+  });
   const { data: brandsResponse } = useGetBrandsQuery({ page: 1, limit: 1000 });
-  const { data: pharmaciesResponse } = useGetPharmaciesQuery({ page: 1, limit: 1000 });
+  const { data: pharmaciesResponse } = useGetPharmaciesQuery({
+    page: 1,
+    limit: 1000,
+  });
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
 
   // Extract data from responses
@@ -76,46 +86,53 @@ const EditProduct = () => {
   const variants = variantsResponse?.data || [];
   const brands = brandsResponse?.data || [];
   const pharmacies = pharmaciesResponse?.data?.items || [];
-  const textColor = useColorModeValue("secondaryGray.900", "white");
-
+  const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const [addFile] = useAddFileMutation();
   // Initialize form with product data
   useEffect(() => {
     if (product) {
-      setNameEn(product.name || "");
-      setNameAr(product.translations?.find(t => t.languageId === "ar")?.name || "");
-      setDescriptionEn(product.description || "");
-      setDescriptionAr(product.translations?.find(t => t.languageId === "ar")?.description || "");
-      setCategoryId(product.categoryId || "");
-      setBrandId(product.brandId || "");
-      setPharmacyId(product.pharmacyId || "");
-      setCost(product.cost || "");
-      setPrice(product.price || "");
-      setQuantity(product.quantity || "");
-      setOfferType(product.offerType || "");
-      setOfferPercentage(product.offerPercentage || "");
+      setNameEn(product.name || '');
+      setNameAr(
+        product.translations?.find((t) => t.languageId === 'ar')?.name || '',
+      );
+      setDescriptionEn(product.description || '');
+      setDescriptionAr(
+        product.translations?.find((t) => t.languageId === 'ar')?.description ||
+          '',
+      );
+      setCategoryId(product.categoryId || '');
+      setBrandId(product.brandId || '');
+      setPharmacyId(product.pharmacyId || '');
+      setCost(product.cost || '');
+      setPrice(product.price || '');
+      setQuantity(product.quantity || '');
+      setOfferType(product.offerType || '');
+      setOfferPercentage(product.offerPercentage || '');
       setHasVariants(product.hasVariants || false);
       setIsActive(product.isActive ?? true);
       setIsPublished(product.isPublished ?? false);
-      
+
       // Set existing images
       if (product.images?.length > 0) {
         setExistingImages(product.images);
-        const mainIndex = product.images.findIndex(img => img.isMain);
+        const mainIndex = product.images.findIndex((img) => img.isMain);
         setMainImageIndex(mainIndex >= 0 ? mainIndex : 0);
       }
 
       // Set variants if they exist
       if (product.variants?.length > 0) {
-        const attributes = product.variants.map(variant => ({
+        const attributes = product.variants.map((variant) => ({
           variantId: variant.variantId,
-          variantName: variant.variantName || "Variant",
+          variantName: variant.variantName || 'Variant',
           attributeId: variant.attributeId,
-          attributeValue: variant.attributeValue || "",
-          cost: variant.cost || "",
-          price: variant.price || "",
-          quantity: variant.quantity || "",
-          image: variant.imageKey ? { name: variant.imageKey.split('/').pop() } : null,
-          isActive: variant.isActive ?? true
+          attributeValue: variant.attributeValue || '',
+          cost: variant.cost || '',
+          price: variant.price || '',
+          quantity: variant.quantity || '',
+          image: variant.imageKey
+            ? { name: variant.imageKey }
+            : null,
+          isActive: variant.isActive ?? true,
         }));
         setSelectedAttributes(attributes);
       }
@@ -125,40 +142,70 @@ const EditProduct = () => {
   // Image handling
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
-      const newImages = Array.from(files).map(file => ({
-        file,
-        preview: URL.createObjectURL(file),
-        isMain: images.length === 0 && existingImages.length === 0 && mainImageIndex === 0
-      }));
+      const newImages = Array.from(files)
+        .map((file) => {
+          // Validate file type
+          if (!file.type.startsWith('image/')) {
+            toast({
+              title: 'Error',
+              description: 'Please upload only image files',
+              status: 'error',
+              duration: 5000,
+              isClosable: true,
+            });
+            return null;
+          }
+          return {
+            file,
+            preview: URL.createObjectURL(file),
+            isMain: images.length === 0 && existingImages.length === 0, // First image is main if no others exist
+          };
+        })
+        .filter((img) => img !== null);
+
       setImages([...images, ...newImages]);
+
+      // Set first uploaded image as main if no main exists
+      if (
+        existingImages.length === 0 &&
+        images.length === 0 &&
+        newImages.length > 0
+      ) {
+        setMainImageIndex(0);
+      }
     }
   };
 
   const handleSetMainImage = (index, isExisting) => {
     if (isExisting) {
       setMainImageIndex(index);
-      // Mark all existing images as not main except the selected one
-      setExistingImages(existingImages.map((img, i) => ({
-        ...img,
-        isMain: i === index
-      })));
+      // Update isMain flags for existing images
+      setExistingImages(
+        existingImages.map((img, i) => ({
+          ...img,
+          isMain: i === index,
+        })),
+      );
     } else {
+      // For new images, the index is offset by existing images count
       setMainImageIndex(index + existingImages.length);
     }
   };
-
   const handleRemoveImage = (index, isExisting) => {
     if (isExisting) {
       setExistingImages(existingImages.filter((_, i) => i !== index));
       if (mainImageIndex === index) {
-        setMainImageIndex(0);
+        setMainImageIndex(0); // Reset to first image if main was removed
       } else if (mainImageIndex > index) {
-        setMainImageIndex(mainImageIndex - 1);
+        setMainImageIndex(mainImageIndex - 1); // Adjust index if needed
       }
     } else {
       const newIndex = index - existingImages.length;
+      URL.revokeObjectURL(images[newIndex].preview); // Clean up memory
+
       const newImages = images.filter((_, i) => i !== newIndex);
       setImages(newImages);
+
       if (mainImageIndex === index) {
         setMainImageIndex(0);
       } else if (mainImageIndex > index) {
@@ -181,23 +228,24 @@ const EditProduct = () => {
     setIsDragging(false);
     handleImageUpload(e.dataTransfer.files);
   };
-
+  // Add this with your other state declarations
+  const [selectedAttributes, setSelectedAttributes] = useState([]);
   // Variant handling
   const handleVariantSelect = (e) => {
     const variantId = e.target.value;
-    const selectedVariant = variants.find(v => v.id === variantId);
-    
+    const selectedVariant = variants.find((v) => v.id === variantId);
+
     if (selectedVariant) {
-      const newAttributes = selectedVariant.attributes.map(attr => ({
+      const newAttributes = selectedVariant.attributes.map((attr) => ({
         variantId: selectedVariant.id,
         variantName: selectedVariant.name,
         attributeId: attr.id,
         attributeValue: attr.value,
-        cost: "",
-        price: "",
-        quantity: "",
+        cost: '',
+        price: '',
+        quantity: '',
         image: null,
-        isActive: true
+        isActive: true,
       }));
       setSelectedAttributes([...selectedAttributes, ...newAttributes]);
     }
@@ -218,52 +266,70 @@ const EditProduct = () => {
     e.preventDefault();
 
     try {
+      // Upload new images first
+      const uploadedImages = [];
+      if (images.length > 0) {
+        const imageUploadPromises = images.map(async (img, index) => {
+          const formData = new FormData();
+          formData.append('file', img.file);
+
+          const uploadResponse = await addFile(formData).unwrap();
+
+          if (
+            uploadResponse.success &&
+            uploadResponse.data.uploadedFiles.length > 0
+          ) {
+            return {
+              imageKey: uploadResponse.data.uploadedFiles[0].url,
+              order: existingImages.length + index,
+              isMain: existingImages.length + index === mainImageIndex,
+            };
+          }
+          return null;
+        });
+
+        const results = await Promise.all(imageUploadPromises);
+        uploadedImages.push(...results.filter((img) => img !== null));
+      }
+
+      // Prepare existing images data
+      const existingImagesData = existingImages.map((img, index) => ({
+        id: img.id,
+        imageKey: img.imageKey,
+        order: index,
+        isMain: index === mainImageIndex,
+      }));
+
       // Prepare translations
       const translations = [];
       if (nameAr || descriptionAr) {
         translations.push({
-          languageId: "ar",
+          languageId: 'ar',
           name: nameAr,
-          description: descriptionAr
+          description: descriptionAr,
         });
       }
       if (nameEn || descriptionEn) {
         translations.push({
-          languageId: "en",
+          languageId: 'en',
           name: nameEn,
-          description: descriptionEn
+          description: descriptionEn,
         });
       }
 
-      // Prepare images data
-      const imageData = [
-        ...existingImages.map((img, index) => ({
-          id: img.id,
-          imageKey: img.imageKey,
-          order: index,
-          isMain: img.isMain || index === mainImageIndex
-        })),
-        ...images.map((img, index) => ({
-          imageKey: `products/${nameEn.toLowerCase().replace(/\s+/g, '-')}/${img.file.name}`,
-          order: existingImages.length + index,
-          isMain: existingImages.length + index === mainImageIndex
-        }))
-      ];
-
       // Prepare variants data
-      const variantsData = selectedAttributes.map(attr => ({
+      const variantsData = selectedAttributes.map((attr) => ({
         variantId: attr.variantId,
         attributeId: attr.attributeId,
         cost: parseFloat(attr.cost) || 0,
         price: parseFloat(attr.price) || 0,
         quantity: parseInt(attr.quantity) || 0,
-        imageKey: attr.image ? `products/${nameEn.toLowerCase().replace(/\s+/g, '-')}/variants/${attr.image.name}` : null,
-        isActive: attr.isActive
+        imageKey: attr.imageKey || undefined,
+        isActive: attr.isActive,
       }));
 
       // Prepare product data
       const productData = {
-
         name: nameEn,
         description: descriptionEn,
         categoryId,
@@ -277,35 +343,36 @@ const EditProduct = () => {
         hasVariants,
         isActive,
         isPublished,
-        translations,
-        images: imageData,
-        variants: hasVariants ? variantsData : []
+        translations: translations.filter((t) => t.name && t.description),
+        images: [...existingImagesData, ...uploadedImages],
+        // variants: hasVariants ? variantsData : [],
       };
 
       // Remove null values
-      Object.keys(productData).forEach(key => {
+      Object.keys(productData).forEach((key) => {
         if (productData[key] === null || productData[key] === undefined) {
           delete productData[key];
         }
       });
 
       // Submit to API
-      const response = await updateProduct({id,data:productData}).unwrap();
+      const response = await updateProduct({ id, data: productData }).unwrap();
 
       toast({
-        title: "Success",
-        description: "Product updated successfully",
-        status: "success",
+        title: 'Success',
+        description: 'Product updated successfully',
+        status: 'success',
         duration: 5000,
         isClosable: true,
       });
 
-      navigate("/admin/products");
+      navigate('/admin/products');
     } catch (err) {
       toast({
-        title: "Error",
-        description: err.data?.message || "Failed to update product",
-        status: "error",
+        title: 'Error',
+        description:
+          err.data?.message || err.message || 'Failed to update product',
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -314,16 +381,16 @@ const EditProduct = () => {
 
   const handleCancel = () => {
     Swal.fire({
-      title: "Are you sure?",
-      text: "You will lose all unsaved changes",
-      icon: "warning",
+      title: 'Are you sure?',
+      text: 'You will lose all unsaved changes',
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, discard changes",
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, discard changes',
     }).then((result) => {
       if (result.isConfirmed) {
-        navigate("/admin/products");
+        navigate('/admin/products');
       }
     });
   };
@@ -429,7 +496,8 @@ const EditProduct = () => {
                 >
                   {categories?.map((cat) => (
                     <option key={cat.id} value={cat.id}>
-                      {cat.translations?.find(t => t.languageId === "en")?.name || cat.name}
+                      {cat.translations?.find((t) => t.languageId === 'en')
+                        ?.name || cat.name}
                     </option>
                   ))}
                 </Select>
@@ -509,12 +577,12 @@ const EditProduct = () => {
           {/* Offer Type */}
           <Box mb={4}>
             <FormLabel>Offer Type</FormLabel>
-            <RadioGroup 
-              value={offerType} 
+            <RadioGroup
+              value={offerType}
               onChange={(value) => {
                 setOfferType(value);
-                if (value !== "MONTHLY_OFFER") {
-                  setOfferPercentage("");
+                if (value !== 'MONTHLY_OFFER') {
+                  setOfferPercentage('');
                 }
               }}
             >
@@ -524,7 +592,7 @@ const EditProduct = () => {
                 <Radio value="">None</Radio>
               </Stack>
             </RadioGroup>
-            {offerType === "MONTHLY_OFFER" && (
+            {offerType === 'MONTHLY_OFFER' && (
               <Box mt={2}>
                 <FormControl>
                   <FormLabel>Offer Percentage</FormLabel>
@@ -573,7 +641,7 @@ const EditProduct = () => {
                   placeholder="Select Variant"
                   onChange={handleVariantSelect}
                 >
-                  {variants.map(variant => (
+                  {variants.map((variant) => (
                     <option key={variant.id} value={variant.id}>
                       {variant.name}
                     </option>
@@ -587,7 +655,9 @@ const EditProduct = () => {
                     <Card key={index}>
                       <CardHeader>
                         <Flex justify="space-between" align="center">
-                          <Text fontWeight="bold">{attr.variantName} - {attr.attributeValue}</Text>
+                          <Text fontWeight="bold">
+                            {attr.variantName} - {attr.attributeValue}
+                          </Text>
                           <IconButton
                             icon={<FaTrash />}
                             aria-label="Delete variant"
@@ -604,7 +674,13 @@ const EditProduct = () => {
                             <Input
                               type="number"
                               value={attr.cost}
-                              onChange={(e) => handleAttributeChange(index, "cost", e.target.value)}
+                              onChange={(e) =>
+                                handleAttributeChange(
+                                  index,
+                                  'cost',
+                                  e.target.value,
+                                )
+                              }
                             />
                           </FormControl>
                           <FormControl isRequired>
@@ -612,7 +688,13 @@ const EditProduct = () => {
                             <Input
                               type="number"
                               value={attr.price}
-                              onChange={(e) => handleAttributeChange(index, "price", e.target.value)}
+                              onChange={(e) =>
+                                handleAttributeChange(
+                                  index,
+                                  'price',
+                                  e.target.value,
+                                )
+                              }
                             />
                           </FormControl>
                           <FormControl>
@@ -620,7 +702,13 @@ const EditProduct = () => {
                             <Input
                               type="number"
                               value={attr.quantity}
-                              onChange={(e) => handleAttributeChange(index, "quantity", e.target.value)}
+                              onChange={(e) =>
+                                handleAttributeChange(
+                                  index,
+                                  'quantity',
+                                  e.target.value,
+                                )
+                              }
                             />
                           </FormControl>
                           <FormControl>
@@ -628,12 +716,27 @@ const EditProduct = () => {
                             <Input
                               type="file"
                               accept="image/*"
-                              onChange={(e) => handleAttributeChange(index, "image", e.target.files[0])}
+                              onChange={(e) =>
+                                handleAttributeChange(
+                                  index,
+                                  'image',
+                                  e.target.files[0],
+                                )
+                              }
                             />
                             {attr.image && (
-                              <Text fontSize="sm" mt={1}>
-                                Current: {attr.image.name}
-                              </Text>
+                              <Box mt={2}>
+                                <Image
+                                  src={attr.image ? attr.image.name : undefined}
+                                  alt="Selected variant"
+                                  boxSize="100px"
+                                  objectFit="cover"
+                                  borderRadius="md"
+                                />
+                                {/* <Text fontSize="xs" color="gray.500" mt={1}>
+                                  {attr.image ? attr.image.name : 'No image selected'}
+                                </Text> */}
+                              </Box>
                             )}
                           </FormControl>
                         </SimpleGrid>
@@ -651,7 +754,7 @@ const EditProduct = () => {
               <FormLabel>Product Images</FormLabel>
               <Box
                 border="1px dashed"
-                borderColor={isDragging ? "blue.500" : "gray.200"}
+                borderColor={isDragging ? 'blue.500' : 'gray.200'}
                 borderRadius="md"
                 p={4}
                 textAlign="center"
@@ -659,7 +762,7 @@ const EditProduct = () => {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 cursor="pointer"
-                bg={isDragging ? "blue.50" : "gray.50"}
+                bg={isDragging ? 'blue.50' : 'gray.50'}
               >
                 <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
                 <Text>Drag & drop images here or</Text>
@@ -680,7 +783,6 @@ const EditProduct = () => {
                 />
               </Box>
             </FormControl>
-
             {(existingImages.length > 0 || images.length > 0) && (
               <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} mt={4}>
                 {existingImages.map((img, index) => (
@@ -689,12 +791,16 @@ const EditProduct = () => {
                       src={img.imageKey}
                       alt={`Product image ${index + 1}`}
                       borderRadius="md"
-                      border={img.isMain ? "2px solid" : "1px solid"}
-                      borderColor={img.isMain ? "blue.500" : "gray.200"}
+                      border={
+                        index === mainImageIndex ? '2px solid' : '1px solid'
+                      }
+                      borderColor={
+                        index === mainImageIndex ? 'blue.500' : 'gray.200'
+                      }
                       cursor="pointer"
                       onClick={() => handleSetMainImage(index, true)}
                     />
-                    {img.isMain && (
+                    {index === mainImageIndex && (
                       <Badge
                         position="absolute"
                         top={2}
@@ -716,57 +822,60 @@ const EditProduct = () => {
                     />
                   </Box>
                 ))}
-                {images.map((img, index) => (
-                  <Box key={`new-${index}`} position="relative">
-                    <Image
-                      src={img.preview}
-                      alt={`New image ${index + 1}`}
-                      borderRadius="md"
-                      border={existingImages.length + index === mainImageIndex ? "2px solid" : "1px solid"}
-                      borderColor={existingImages.length + index === mainImageIndex ? "blue.500" : "gray.200"}
-                      cursor="pointer"
-                      onClick={() => handleSetMainImage(existingImages.length + index, false)}
-                    />
-                    {existingImages.length + index === mainImageIndex && (
-                      <Badge
+                {images.map((img, index) => {
+                  const globalIndex = existingImages.length + index;
+                  return (
+                    <Box key={`new-${index}`} position="relative">
+                      <Image
+                        src={img.preview}
+                        alt={`New image ${index + 1}`}
+                        borderRadius="md"
+                        border={
+                          globalIndex === mainImageIndex
+                            ? '2px solid'
+                            : '1px solid'
+                        }
+                        borderColor={
+                          globalIndex === mainImageIndex
+                            ? 'blue.500'
+                            : 'gray.200'
+                        }
+                        cursor="pointer"
+                        onClick={() => handleSetMainImage(globalIndex, false)}
+                      />
+                      {globalIndex === mainImageIndex && (
+                        <Badge
+                          position="absolute"
+                          top={2}
+                          left={2}
+                          colorScheme="blue"
+                        >
+                          Main
+                        </Badge>
+                      )}
+                      <IconButton
+                        icon={<FaTrash />}
+                        aria-label="Remove image"
+                        size="sm"
+                        colorScheme="red"
                         position="absolute"
                         top={2}
-                        left={2}
-                        colorScheme="blue"
-                      >
-                        Main
-                      </Badge>
-                    )}
-                    <IconButton
-                      icon={<FaTrash />}
-                      aria-label="Remove image"
-                      size="sm"
-                      colorScheme="red"
-                      position="absolute"
-                      top={2}
-                      right={2}
-                      onClick={() => handleRemoveImage(existingImages.length + index, false)}
-                    />
-                  </Box>
-                ))}
+                        right={2}
+                        onClick={() => handleRemoveImage(globalIndex, false)}
+                      />
+                    </Box>
+                  );
+                })}
               </SimpleGrid>
             )}
           </Box>
 
           {/* Submit Buttons */}
           <Flex justify="flex-end" gap={4}>
-            <Button
-              variant="outline"
-              colorScheme="red"
-              onClick={handleCancel}
-            >
+            <Button variant="outline" colorScheme="red" onClick={handleCancel}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              colorScheme="blue"
-              isLoading={isUpdating}
-            >
+            <Button type="submit" colorScheme="blue" isLoading={isUpdating}>
               Update Product
             </Button>
           </Flex>

@@ -1,5 +1,5 @@
 import { useGetDoctorQuery } from 'api/doctorSlice';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { 
   Box, 
@@ -32,7 +32,10 @@ import { GiDoctorFace } from 'react-icons/gi';
 
 const ShowDoctor = () => {
   const {id} = useParams();
-  const {data: doctorData} = useGetDoctorQuery(id);
+  const {data: doctorData,refetch} = useGetDoctorQuery(id);
+  useEffect(() => {
+    refetch();
+  }, []);
   const doctor = doctorData?.data;
 
   const cardBg = useColorModeValue('white', 'gray.800');
@@ -70,7 +73,7 @@ const ShowDoctor = () => {
                 {doctor.imageKey ? (
                   <Avatar 
                     size="2xl" 
-                    src={`https://your-bucket-url/${doctor.imageKey}`} 
+                    src={`${doctor.imageKey}`} 
                     name={doctor.fullName}
                     border="4px solid white"
                     boxShadow="lg"
@@ -303,7 +306,7 @@ const ShowDoctor = () => {
                     borderColor={borderColor}
                   >
                     <Image 
-                      src={`https://your-bucket-url/${cert.imageKey}`} 
+                      src={`${cert.imageKey}`} 
                       alt="Certificate" 
                       objectFit="contain"
                       bg="gray.100"

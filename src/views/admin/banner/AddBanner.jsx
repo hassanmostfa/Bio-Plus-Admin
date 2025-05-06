@@ -12,15 +12,16 @@ import {
   FormControl,
   FormLabel,
   useToast,
-  Textarea,
   Image,
+  IconButton,
+  Spinner,
 } from "@chakra-ui/react";
-import { FaUpload } from "react-icons/fa6";
+import { FaUpload, FaTrash } from "react-icons/fa6";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { useAddBannerMutation } from "api/bannerSlice";
+import { useAddFileMutation } from "api/filesSlice";
 import Swal from "sweetalert2";
-
 
 const AddBanner = () => {
   const [formData, setFormData] = useState({
@@ -32,18 +33,65 @@ const AddBanner = () => {
     order: 1,
     isActive: true,
   });
+
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const navigate = useNavigate();
   const toast = useToast();
   const [createBanner] = useAddBannerMutation();
+  const [addFile] = useAddFileMutation();
+
+  // Clean up object URLs when component unmounts
+  React.useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
-      setImage(files[0]);
+      const file = files[0];
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: 'Invalid file type',
+          description: 'Please upload an image file',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      // Validate file size (e.g., 5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'File too large',
+          description: 'Maximum file size is 5MB',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleRemoveImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImage(null);
+    setImagePreview("");
   };
 
   const handleDragOver = (e) => {
@@ -58,13 +106,11 @@ const AddBanner = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    const files = e.dataTransfer.files;
-    handleImageUpload(files);
+    handleImageUpload(e.dataTransfer.files);
   };
 
   const handleFileInputChange = (e) => {
-    const files = e.target.files;
-    handleImageUpload(files);
+    handleImageUpload(e.target.files);
   };
 
   const handleChange = (e) => {
@@ -82,30 +128,69 @@ const AddBanner = () => {
     }));
   };
 
+  const handleCancel = () => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You will lose all unsaved changes',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, discard changes',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate("/admin/undefined/cms/banners");
+      }
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    
+    if (!formData.title || !formData.arTitle || !formData.link) {
+      toast({
+        title: "Error",
+        description: "Please fill all required fields",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
 
     if (!image) {
       toast({
         title: "Error",
         description: "Please upload an image",
         status: "error",
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
       });
-      setIsLoading(false);
       return;
     }
 
+    setIsLoading(true);
+
     try {
-      // Prepare the data in the required format
+      // First upload the image
+      const formDataToSend = new FormData();
+      formDataToSend.append("file", image);
+
+      const uploadResponse = await addFile(formDataToSend).unwrap();
+      
+      if (!uploadResponse.success || !uploadResponse.data.uploadedFiles[0]?.url) {
+        throw new Error('Failed to upload image');
+      }
+
+      const imageUrl = uploadResponse.data.uploadedFiles[0].url;
+
+      // Then create the banner with the image URL
       const bannerData = {
         title: formData.title,
-        imageKey: image.name,
+        imageKey: imageUrl,
         link: formData.link,
         linkType: formData.linkType,
-        linkId: formData.linkId,
+        linkId: formData.linkId || null,
         order: parseInt(formData.order),
         isActive: formData.isActive,
         translations: [
@@ -116,18 +201,33 @@ const AddBanner = () => {
         ]
       };
 
-      // Create FormData for file upload
-      // const formDataToSend = new FormData();
-      // formDataToSend.append("image", image);
-      // formDataToSend.append("data", JSON.stringify(bannerData));
+      // Remove null values
+      Object.keys(bannerData).forEach(key => {
+        if (bannerData[key] === null || bannerData[key] === undefined) {
+          delete bannerData[key];
+        }
+      });
 
-      // Call the API
       await createBanner(bannerData).unwrap();
 
-      Swal.fire('Created!', 'The Banner has been Created.', 'success');
+      toast({
+        title: "Success",
+        description: "Banner created successfully",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
       navigate("/admin/undefined/cms/banners");
     } catch (error) {
-      Swal.fire('Error!', error.message || 'Failed to Create Banner', 'error');
+      console.error("Failed to create banner:", error);
+      toast({
+        title: "Error",
+        description: error.data?.message || "Failed to create banner",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +247,7 @@ const AddBanner = () => {
             Add New Banner
           </Text>
           <Button
-            onClick={() => navigate(-1)}
+            onClick={handleCancel}
             colorScheme="teal"
             size="sm"
             leftIcon={<IoMdArrowBack />}
@@ -158,47 +258,35 @@ const AddBanner = () => {
 
         <form onSubmit={handleSubmit}>
           {/* Title Field */}
-          <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              English Title <span style={{ color: "red" }}>*</span>
-            </FormLabel>
+          <FormControl mb={4} isRequired>
+            <FormLabel>English Title</FormLabel>
             <Input
               name="title"
               placeholder="Enter Banner Title (English)"
               value={formData.title}
               onChange={handleChange}
-              required
-              mt="8px"
             />
           </FormControl>
 
           {/* Arabic Title Field */}
-          <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Arabic Title <span style={{ color: "red" }}>*</span>
-            </FormLabel>
+          <FormControl mb={4} isRequired>
+            <FormLabel>Arabic Title</FormLabel>
             <Input
               name="arTitle"
-              placeholder="Enter Banner Title (Arabic)"
+              placeholder="ادخل عنوان البانر"
               value={formData.arTitle}
               onChange={handleChange}
-              required
-              mt="8px"
               dir="rtl"
             />
           </FormControl>
 
           {/* Link Type */}
-          <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Link Type <span style={{ color: "red" }}>*</span>
-            </FormLabel>
+          <FormControl mb={4} isRequired>
+            <FormLabel>Link Type</FormLabel>
             <Select
               name="linkType"
               value={formData.linkType}
               onChange={handleChange}
-              required
-              mt="8px"
             >
               <option value="PHARMACY">Pharmacy</option>
               <option value="PRODUCT">Product</option>
@@ -208,39 +296,30 @@ const AddBanner = () => {
           </FormControl>
 
           {/* Link */}
-          <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Link <span style={{ color: "red" }}>*</span>
-            </FormLabel>
+          <FormControl mb={4} isRequired>
+            <FormLabel>Link</FormLabel>
             <Input
               name="link"
               placeholder="Enter Link URL"
               value={formData.link}
               onChange={handleChange}
-              required
-              mt="8px"
             />
           </FormControl>
 
           {/* Link ID */}
           <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Link ID (for internal links)
-            </FormLabel>
+            <FormLabel>Link ID (for internal links)</FormLabel>
             <Input
               name="linkId"
               placeholder="Enter Link ID (if applicable)"
               value={formData.linkId}
               onChange={handleChange}
-              mt="8px"
             />
           </FormControl>
 
           {/* Order */}
           <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Display Order
-            </FormLabel>
+            <FormLabel>Display Order</FormLabel>
             <Input
               name="order"
               type="number"
@@ -248,17 +327,13 @@ const AddBanner = () => {
               value={formData.order}
               onChange={handleChange}
               min="1"
-              mt="8px"
             />
           </FormControl>
 
           {/* Status */}
           <FormControl mb={4} display="flex" alignItems="center">
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700" mb="0">
-              Active Status
-            </FormLabel>
+            <FormLabel mb="0">Active Status</FormLabel>
             <Switch
-              name="isActive"
               isChecked={formData.isActive}
               onChange={handleSwitchChange}
               colorScheme="green"
@@ -267,29 +342,25 @@ const AddBanner = () => {
           </FormControl>
 
           {/* Image Upload */}
-          <FormControl mb={4}>
-            <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-              Banner Image <span style={{ color: "red" }}>*</span>
-            </FormLabel>
+          <FormControl mb={4} isRequired>
+            <FormLabel>Banner Image</FormLabel>
             <Box
               border="1px dashed"
-              borderColor={isDragging ? "blue.500" : "gray.300"}
+              borderColor={isDragging ? "blue.500" : "gray.200"}
               borderRadius="md"
               p={4}
               textAlign="center"
-              backgroundColor={isDragging ? "blue.50" : "gray.50"}
+              bg={isDragging ? "blue.50" : "gray.50"}
               cursor="pointer"
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => document.getElementById('fileInput').click()}
             >
-              <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
-              <Text color="gray.500" mb={2}>
-                Drag & Drop Image Here or Click to Browse
-              </Text>
-              <Text color="gray.400" fontSize="sm">
-                Recommended size: 1200x400px
+              <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
+              <Text>Drag & Drop Image Here or Click to Browse</Text>
+              <Text fontSize="sm" color="gray.500" mt={2}>
+                Recommended size: 1200x400px (Max 5MB)
               </Text>
               <input
                 type="file"
@@ -298,29 +369,37 @@ const AddBanner = () => {
                 accept="image/*"
                 onChange={handleFileInputChange}
               />
-              {image && (
-                <Box mt={4}>
-                  <Text fontSize="sm" color="green.500" mb={2}>
-                    Selected: {image.name}
-                  </Text>
-                  <Image
-                    src={URL.createObjectURL(image)}
-                    alt="Preview"
-                    maxH="150px"
-                    mx="auto"
-                    borderRadius="md"
-                  />
-                </Box>
-              )}
             </Box>
           </FormControl>
 
+          {imagePreview && (
+            <Box position="relative" mb={4}>
+              <Image
+                src={imagePreview}
+                alt="Banner preview"
+                maxH="200px"
+                mx="auto"
+                borderRadius="md"
+              />
+              <IconButton
+                icon={<FaTrash />}
+                aria-label="Remove image"
+                position="absolute"
+                top={2}
+                right={2}
+                colorScheme="red"
+                size="sm"
+                onClick={handleRemoveImage}
+              />
+            </Box>
+          )}
+
           {/* Action Buttons */}
-          <Flex justify="center" mt={6} gap={4}>
+          <Flex justify="flex-end" mt={6} gap={4}>
             <Button
               variant="outline"
               colorScheme="red"
-              onClick={() => navigate(-1)}
+              onClick={handleCancel}
               isDisabled={isLoading}
             >
               Cancel

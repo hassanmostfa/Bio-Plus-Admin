@@ -1,5 +1,5 @@
 import { useGetProductQuery } from 'api/productSlice';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -37,7 +37,10 @@ import Swal from 'sweetalert2';
 const ShowProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: productResponse, isLoading } = useGetProductQuery(id);
+  const { data: productResponse, isLoading ,refetch} = useGetProductQuery(id);
+  useEffect(() => {
+    refetch();
+  }, []);
   const product = productResponse?.data;
   
   const bgColor = useColorModeValue('white', 'gray.800');

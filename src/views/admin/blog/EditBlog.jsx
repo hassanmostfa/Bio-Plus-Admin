@@ -14,6 +14,8 @@ import {
   Badge,
   IconButton,
   Image,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 import { FaUpload, FaTrash } from "react-icons/fa6";
 import { IoMdArrowBack } from "react-icons/io";
@@ -21,10 +23,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import Select from "react-select";
 import { useGetBlogQuery, useUpdateBlogMutation } from "api/blogSlice";
 import { useGetTagsQuery } from "api/tagSlice";
+import { useAddFileMutation } from "api/filesSlice";
 import Swal from "sweetalert2";
 
 const EditBlog = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const toast = useToast();
+
+  // State management
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -41,31 +48,43 @@ const EditBlog = () => {
   });
 
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
   const [existingImage, setExistingImage] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const textColor = useColorModeValue("secondaryGray.900", "white");
-  const navigate = useNavigate();
-  const toast = useToast();
 
   // API hooks
   const { data: blogResponse, isLoading: isBlogLoading } = useGetBlogQuery(id);
-  const blogData = blogResponse?.data || {};
   const [updateBlog] = useUpdateBlogMutation();
-  const { data: tagsResponse, isLoading: isTagsLoading } = useGetTagsQuery({ limit: 100000, page: 1 });
-  const tagsData = tagsResponse?.data || [];
+  const { data: tagsResponse, isLoading: isTagsLoading } = useGetTagsQuery({
+    limit: 100000,
+    page: 1,
+  });
+  const [addFile] = useAddFileMutation();
+
+  // Transform tags data for react-select
+  const tagOptions = tagsResponse?.data?.map((tag) => ({
+    value: tag.id,
+    label: tag.name,
+  })) || [];
+
+  // Get currently selected tags
+  const selectedTagOptions = tagOptions.filter((option) =>
+    formData.tagIds.includes(option.value)
+  );
 
   // Initialize form with existing blog data
   useEffect(() => {
-    if (blogData) {
-      // Extract tag IDs from the blog's tags array
-      const blogTagIds = blogData.tags?.map(tag => tag.tagId) || [];
-      
+    if (blogResponse?.data) {
+      const blogData = blogResponse.data;
+      const blogTagIds = blogData.tags?.map((tag) => tag.tagId) || [];
+
       setFormData({
         title: blogData.title || "",
         description: blogData.description || "",
         imageKey: blogData.imageKey || "",
-        isActive: blogData.isActive || true,
+        isActive: blogData.isActive ?? true,
         tagIds: blogTagIds,
         translations: blogData.translations || [
           {
@@ -78,43 +97,61 @@ const EditBlog = () => {
 
       if (blogData.imageKey) {
         setExistingImage({
-          name: blogData.imageKey,
-          url: `${process.env.REACT_APP_API_URL}/uploads/${blogData.imageKey}`
+          url: blogData.imageKey,
         });
       }
     }
-  }, [blogData]);
+  }, [blogResponse]);
 
-  // Transform tags data for react-select
-  const tagOptions = tagsData.map((tag) => ({
-    value: tag.id,
-    label: tag.name,
-  }));
+  // Clean up object URLs
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
-  // Get currently selected tags based on formData.tagIds
-  const selectedTagOptions = tagOptions.filter(option => 
-    formData.tagIds.includes(option.value)
-  );
-
-  // Rest of your component code remains the same...
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
-      const uploadedFile = files[0];
-      setImage(uploadedFile);
-      setFormData(prev => ({
-        ...prev,
-        imageKey: uploadedFile.name,
-      }));
-      setExistingImage(null);
+      const file = files[0];
+
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image file",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      // Validate file size (e.g., 5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Maximum file size is 5MB",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
   const handleRemoveImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
     setImage(null);
-    setExistingImage(null);
-    setFormData(prev => ({ ...prev, imageKey: '' }));
-    const fileInput = document.getElementById('fileInput');
-    if (fileInput) fileInput.value = '';
+    setImagePreview("");
+    setFormData((prev) => ({ ...prev, imageKey: "" }));
   };
 
   const handleDragOver = (e) => {
@@ -129,66 +166,129 @@ const EditBlog = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    const files = e.dataTransfer.files;
-    handleImageUpload(files);
+    handleImageUpload(e.dataTransfer.files);
   };
 
   const handleFileInputChange = (e) => {
-    const files = e.target.files;
-    handleImageUpload(files);
+    handleImageUpload(e.target.files);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
   const handleTranslationChange = (languageId, field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      translations: prev.translations.map(translation => 
-        translation.languageId === languageId 
-          ? { ...translation, [field]: value } 
+      translations: prev.translations.map((translation) =>
+        translation.languageId === languageId
+          ? { ...translation, [field]: value }
           : translation
       ),
     }));
   };
 
   const handleTagChange = (selectedOptions) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tagIds: selectedOptions.map(option => option.value),
+      tagIds: selectedOptions.map((option) => option.value),
     }));
   };
 
+  const handleCancel = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will lose all unsaved changes",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, discard changes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate("/admin/undefined/blogs");
+      }
+    });
+  };
+
   const handleSubmit = async () => {
+    if (
+      !formData.title ||
+      !formData.description ||
+      !formData.translations[0].title ||
+      !formData.translations[0].description ||
+      formData.tagIds.length === 0
+    ) {
+      toast({
+        title: "Error",
+        description: "Please fill all required fields",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
-      
-      // Prepare the payload as raw JSON
+
+      let imageUrl = existingImage?.url || "";
+
+      // Upload new image if one was selected
+      if (image) {
+        const formData = new FormData();
+        formData.append("file", image);
+
+        const uploadResponse = await addFile(formData).unwrap();
+
+        if (
+          !uploadResponse.success ||
+          !uploadResponse.data.uploadedFiles[0]?.url
+        ) {
+          throw new Error("Failed to upload image");
+        }
+
+        imageUrl = uploadResponse.data.uploadedFiles[0].url;
+      }
+
+      // Prepare the update payload
       const payload = {
-        ...formData,
+        title: formData.title,
+        description: formData.description,
+        imageKey: imageUrl,
+        isActive: formData.isActive,
+        tagIds: formData.tagIds,
+        translations: formData.translations,
       };
 
-      // Send the update request
-      const response = await updateBlog({id,data:payload}).unwrap();
-
-      Swal.fire({
-        title: 'Success!',
-        text: 'Blog updated successfully',
-        icon: 'success',
-        confirmButtonText: 'OK'
-      }).then(() => {
-        navigate('/admin/undefined/blogs');
+      // Remove any undefined/null values
+      Object.keys(payload).forEach((key) => {
+        if (payload[key] === null || payload[key] === undefined) {
+          delete payload[key];
+        }
       });
-    } catch (error) {
+
+      const response = await updateBlog({ id, data: payload }).unwrap();
+
       toast({
-        title: 'Error',
-        description: error.data?.message || 'Failed to update blog',
-        status: 'error',
+        title: "Success",
+        description: "Blog updated successfully",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      navigate("/admin/undefined/blogs");
+    } catch (error) {
+      console.error("Failed to update blog:", error);
+      toast({
+        title: "Error",
+        description: error.data?.message || "Failed to update blog",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -199,7 +299,7 @@ const EditBlog = () => {
 
   if (isBlogLoading) {
     return (
-      <Flex justify="center" align="center" h="100vh">
+      <Flex justify="center" align="center" minH="100vh">
         <Spinner size="xl" />
       </Flex>
     );
@@ -213,7 +313,7 @@ const EditBlog = () => {
             Edit Blog
           </Text>
           <Button
-            onClick={() => navigate(-1)}
+            onClick={handleCancel}
             colorScheme="teal"
             size="sm"
             leftIcon={<IoMdArrowBack />}
@@ -223,67 +323,61 @@ const EditBlog = () => {
         </Flex>
 
         <form>
-          {/* English Title and Arabic Title */}
+          {/* Title Section */}
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mb={4}>
-            <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700" mb={2}>
-                English Title <span className="text-danger">*</span>
-              </Text>
+            <FormControl isRequired>
+              <FormLabel>English Title</FormLabel>
               <Input
                 name="title"
                 placeholder="Enter English Title"
                 value={formData.title}
                 onChange={handleChange}
-                required
               />
-            </Box>
-            <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700" mb={2}>
-                Arabic Title <span className="text-danger">*</span>
-              </Text>
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Arabic Title</FormLabel>
               <Input
                 placeholder="ادخل العنوان"
-                value={formData.translations[0]?.title || ''}
-                onChange={(e) => handleTranslationChange('ar', 'title', e.target.value)}
+                value={formData.translations[0].title}
+                onChange={(e) =>
+                  handleTranslationChange("ar", "title", e.target.value)
+                }
                 dir="rtl"
-                required
               />
-            </Box>
+            </FormControl>
           </Grid>
 
-          {/* English Description and Arabic Description */}
+          {/* Description Section */}
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mb={4}>
-            <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700" mb={2}>
-                English Description <span className="text-danger">*</span>
-              </Text>
+            <FormControl isRequired>
+              <FormLabel>English Description</FormLabel>
               <Textarea
                 name="description"
                 placeholder="Enter English Description"
                 value={formData.description}
                 onChange={handleChange}
-                required
+                minH="150px"
               />
-            </Box>
-            <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700" mb={2}>
-                Arabic Description <span className="text-danger">*</span>
-              </Text>
+            </FormControl>
+
+            <FormControl isRequired>
+              <FormLabel>Arabic Description</FormLabel>
               <Textarea
                 placeholder="ادخل الوصف"
-                value={formData.translations[0]?.description || ''}
-                onChange={(e) => handleTranslationChange('ar', 'description', e.target.value)}
+                value={formData.translations[0].description}
+                onChange={(e) =>
+                  handleTranslationChange("ar", "description", e.target.value)
+                }
                 dir="rtl"
-                required
+                minH="150px"
               />
-            </Box>
+            </FormControl>
           </Grid>
 
           {/* Tags Selection */}
-          <Box mb={4}>
-            <Text color={textColor} fontSize="sm" fontWeight="700" mb={2}>
-              Tags <span className="text-danger">*</span>
-            </Text>
+          <FormControl isRequired mb={4}>
+            <FormLabel>Tags</FormLabel>
             {isTagsLoading ? (
               <Spinner size="sm" />
             ) : (
@@ -297,88 +391,85 @@ const EditBlog = () => {
                 classNamePrefix="select"
               />
             )}
-          </Box>
+          </FormControl>
 
           {/* Status Toggle */}
-          <Box mb={4}>
-            <Text color={textColor} fontSize="sm" fontWeight="700" mb={2}>
-              Status
-            </Text>
+          <FormControl mb={4}>
+            <FormLabel>Status</FormLabel>
             <Badge
-              colorScheme={formData.isActive ? 'green' : 'red'}
+              colorScheme={formData.isActive ? "green" : "red"}
               fontSize="sm"
               p={2}
               borderRadius="md"
               cursor="pointer"
-              onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
+              onClick={() =>
+                setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))
+              }
             >
-              {formData.isActive ? 'Active' : 'Inactive'}
+              {formData.isActive ? "Active" : "Inactive"}
             </Badge>
-          </Box>
+          </FormControl>
 
           {/* Image Upload */}
-          <Box
-            border="1px dashed"
-            borderColor="gray.300"
-            borderRadius="md"
-            p={4}
-            textAlign="center"
-            backgroundColor="gray.100"
-            cursor="pointer"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            mb={4}
-          >
-            <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
-            <Text color="gray.500" mb={2}>
-              Drag & Drop Image Here
-            </Text>
-            <Text color="gray.500" mb={2}>
-              or
-            </Text>
-            <Button
-              variant="outline"
-              color="#422afb"
-              border="none"
-              onClick={() => document.getElementById('fileInput').click()}
+          <FormControl>
+            <FormLabel>Featured Image</FormLabel>
+            <Box
+              border="1px dashed"
+              borderColor={isDragging ? "blue.500" : "gray.200"}
+              borderRadius="md"
+              p={4}
+              textAlign="center"
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              cursor="pointer"
+              bg={isDragging ? "blue.50" : "gray.50"}
+              mb={4}
             >
-              Upload Image
-              <input
-                type="file"
+              <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
+              <Text>Drag & drop image here or</Text>
+              <Button
+                variant="link"
+                color="blue.500"
+                onClick={() => document.getElementById("fileInput").click()}
+              >
+                Browse Files
+              </Button>
+              <Input
                 id="fileInput"
+                type="file"
                 hidden
                 accept="image/*"
                 onChange={handleFileInputChange}
               />
-            </Button>
-            
-            {(image || existingImage) && (
-              <Box mt={4} position="relative">
-                <Image
-                  src={image ? URL.createObjectURL(image) : existingImage.url}
-                  alt={image ? image.name : existingImage.name}
-                  maxH="200px"
-                  objectFit="contain"
-                  mx="auto"
-                />
-                <IconButton
-                  icon={<FaTrash />}
-                  aria-label="Remove image"
-                  position="absolute"
-                  top={2}
-                  right={2}
-                  colorScheme="red"
-                  size="sm"
-                  onClick={handleRemoveImage}
-                />
-              </Box>
-            )}
-          </Box>
+            </Box>
+          </FormControl>
+
+          {(imagePreview || existingImage) && (
+            <Box position="relative" display="inline-block" mb={4}>
+              <Image
+                src={imagePreview || existingImage.url}
+                alt="Blog preview"
+                borderRadius="md"
+                maxH="200px"
+                objectFit="contain"
+              />
+              <IconButton
+                icon={<FaTrash />}
+                aria-label="Remove image"
+                position="absolute"
+                top={2}
+                right={2}
+                colorScheme="red"
+                size="sm"
+                onClick={handleRemoveImage}
+              />
+            </Box>
+          )}
 
           {/* Action Buttons */}
-          <Flex justify="center" mt={6} gap={4}>
-            <Button variant="outline" colorScheme="red" onClick={() => navigate(-1)}>
+          <Flex justify="flex-end" mt={6} gap={4}>
+            <Button variant="outline" colorScheme="red" onClick={handleCancel}>
               Cancel
             </Button>
             <Button

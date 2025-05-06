@@ -199,7 +199,7 @@ const AllBrands = () => {
             cursor="pointer"
             onClick={() => navigate(`/admin/edit-brand/${info.getValue()}`)}
           />
-          <Icon
+          {/* <Icon
             w="18px"
             h="18px"
             me="10px"
@@ -207,7 +207,7 @@ const AllBrands = () => {
             as={FaEye}
             cursor="pointer"
             onClick={() => navigate(`/admin/brand/details/${info.getValue()}`)}
-          />
+          /> */}
         </Flex>
       ),
     }),

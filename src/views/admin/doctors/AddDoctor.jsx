@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -16,14 +16,15 @@ import {
   Select,
   Image,
   useToast,
-} from "@chakra-ui/react";
-import { FaUpload, FaTrash, FaPlus } from "react-icons/fa6";
-import { IoMdArrowBack } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
-import { useAddDoctorMutation } from "api/doctorSlice";
-import { useGetSpecializationsQuery } from "api/doctorSpecializationSlice";
-import { useGetClinicsQuery } from "api/clinicSlice";
-import Swal from "sweetalert2";
+} from '@chakra-ui/react';
+import { FaUpload, FaTrash, FaPlus } from 'react-icons/fa6';
+import { IoMdArrowBack } from 'react-icons/io';
+import { useNavigate } from 'react-router-dom';
+import { useAddDoctorMutation } from 'api/doctorSlice';
+import { useGetSpecializationsQuery } from 'api/doctorSpecializationSlice';
+import { useGetClinicsQuery } from 'api/clinicSlice';
+import Swal from 'sweetalert2';
+import { useAddFileMutation } from 'api/filesSlice';
 
 const AddDoctor = () => {
   const [addDoctor] = useAddDoctorMutation();
@@ -34,41 +35,44 @@ const AddDoctor = () => {
 
   const clinics = clinicsResponse?.data || [];
   const specializations = specializationsResponse?.data || [];
-
+  const [addFile] = useAddFileMutation();
   // Form state
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    aboutEn: "",
-    aboutAr: "",
-    clinicFees: "",
-    onlineFees: "",
+    imageKey: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    aboutEn: '',
+    aboutAr: '',
+    clinicFees: '',
+    onlineFees: '',
     isRecommended: true,
     hasClinicConsult: true,
     hasOnlineConsult: true,
-    gender: "MALE",
-    title: "CONSULTANT",
-    specializationId: "",
+    gender: 'MALE',
+    title: 'CONSULTANT',
+    specializationId: '',
   });
 
-  const [languages, setLanguages] = useState([{ language: "", isActive: true }]);
-  const [phones, setPhones] = useState([{ phoneNumber: "" }]);
+  const [languages, setLanguages] = useState([
+    { language: '', isActive: true },
+  ]);
+  const [phones, setPhones] = useState([{ phoneNumber: '' }]);
   const [selectedClinics, setSelectedClinics] = useState([]);
   const [image, setImage] = useState(null);
   const [certificates, setCertificates] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
 
-  const textColor = useColorModeValue("secondaryGray.900", "white");
-  const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+  const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === 'checkbox' ? checked : value,
     });
   };
 
@@ -83,7 +87,14 @@ const AddDoctor = () => {
   // Image upload handlers
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
-      setImage(files[0]);
+      const selectedFile = files[0];
+      setImage(selectedFile);
+
+      // Update the form data with the file name (temporary until we get the actual key from API)
+      setFormData((prev) => ({
+        ...prev,
+        imageKey: selectedFile.name,
+      }));
     }
   };
 
@@ -110,9 +121,9 @@ const AddDoctor = () => {
   const handleCertificateUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      const newCertificates = files.map(file => ({
-        imageKey: `certificates/${file.name}`,
-        file
+      const newCertificates = files.map((file) => ({
+        imageKey: file.name, // Temporary until we get the actual key from API
+        file,
       }));
       setCertificates([...certificates, ...newCertificates]);
     }
@@ -120,7 +131,7 @@ const AddDoctor = () => {
 
   // Phone number handlers
   const handleAddPhone = () => {
-    setPhones([...phones, { phoneNumber: "" }]);
+    setPhones([...phones, { phoneNumber: '' }]);
   };
 
   const handlePhoneChange = (index, value) => {
@@ -136,12 +147,12 @@ const AddDoctor = () => {
 
   // Language handlers
   const handleAddLanguage = () => {
-    setLanguages([...languages, { language: "", isActive: true }]);
+    setLanguages([...languages, { language: '', isActive: true }]);
   };
 
   const handleLanguageChange = (index, field, value) => {
     const newLanguages = [...languages];
-    if (field === "isActive") {
+    if (field === 'isActive') {
       newLanguages[index][field] = value;
     } else {
       newLanguages[index][field] = value;
@@ -156,10 +167,10 @@ const AddDoctor = () => {
 
   // Clinic selection handlers
   const handleClinicSelection = (clinicId) => {
-    setSelectedClinics(prev =>
+    setSelectedClinics((prev) =>
       prev.includes(clinicId)
-        ? prev.filter(id => id !== clinicId)
-        : [...prev, clinicId]
+        ? prev.filter((id) => id !== clinicId)
+        : [...prev, clinicId],
     );
   };
 
@@ -170,41 +181,126 @@ const AddDoctor = () => {
   };
 
   // Form submission
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     // Prepare the data for API
+  //     const doctorData = {
+  //       ...formData,
+  //       clinicFees: parseFloat(formData.clinicFees),
+  //       onlineFees: parseFloat(formData.onlineFees),
+  //       languages: languages.map(lang => lang.language).filter(lang => lang),
+  //       phones: phones.filter(phone => phone.phoneNumber),
+  //       clinics: selectedClinics,
+  //       certificates: certificates.map(cert => ({ imageKey: cert.imageKey })),
+  //       imageKey: image ? `doctor_images/${image.name}` : null,
+  //     };
+
+  //     // Call the API
+  //     await addDoctor(doctorData).unwrap();
+
+  //     // Show success message
+  //     toast({
+  //       title: "Success",
+  //       description: "Doctor added successfully",
+  //       status: "success",
+  //       duration: 5000,
+  //       isClosable: true,
+  //     });
+
+  //     // Navigate back or reset form
+  //     navigate("/admin/doctors");
+  //   } catch (err) {
+  //     toast({
+  //       title: "Error",
+  //       description: err.data?.message || "Failed to add doctor",
+  //       status: "error",
+  //       duration: 5000,
+  //       isClosable: true,
+  //     });
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
+      let imageKey = formData.imageKey;
+      let uploadedCertificates = [];
+
+      // Upload doctor image if it exists
+      if (image) {
+        const formDataFile = new FormData();
+        formDataFile.append('file', image);
+
+        const uploadResponse = await addFile(formDataFile).unwrap();
+
+        if (
+          uploadResponse.success &&
+          uploadResponse.data.uploadedFiles.length > 0
+        ) {
+          imageKey = uploadResponse.data.uploadedFiles[0].url;
+        }
+      }
+
+      // Upload certificates if they exist
+      if (certificates.length > 0) {
+        const certUploadPromises = certificates.map(async (cert) => {
+          const certFormData = new FormData();
+          certFormData.append('file', cert.file);
+
+          const certResponse = await addFile(certFormData).unwrap();
+          if (
+            certResponse.success &&
+            certResponse.data.uploadedFiles.length > 0
+          ) {
+            return { imageKey: certResponse.data.uploadedFiles[0].url };
+          }
+          return null;
+        });
+
+        uploadedCertificates = await Promise.all(certUploadPromises);
+        uploadedCertificates = uploadedCertificates.filter(
+          (cert) => cert !== null,
+        );
+      }
+
       // Prepare the data for API
       const doctorData = {
         ...formData,
+        imageKey,
         clinicFees: parseFloat(formData.clinicFees),
         onlineFees: parseFloat(formData.onlineFees),
-        languages: languages.map(lang => lang.language).filter(lang => lang),
-        phones: phones.filter(phone => phone.phoneNumber),
+        languages: languages
+          .map((lang) => lang.language)
+          .filter((lang) => lang),
+          phones: phones
+          .filter(phone => phone.phoneNumber) // Remove empty phone numbers
+          .map(phone => ({ phoneNumber: phone.phoneNumber })), // Format as array of objects
         clinics: selectedClinics,
-        certificates: certificates.map(cert => ({ imageKey: cert.imageKey })),
-        imageKey: image ? `doctor_images/${image.name}` : null,
+        certificates: uploadedCertificates,
       };
 
       // Call the API
       await addDoctor(doctorData).unwrap();
-      
+
       // Show success message
       toast({
-        title: "Success",
-        description: "Doctor added successfully",
-        status: "success",
+        title: 'Success',
+        description: 'Doctor added successfully',
+        status: 'success',
         duration: 5000,
         isClosable: true,
       });
-      
+
       // Navigate back or reset form
-      navigate("/admin/doctors");
+      navigate('/admin/doctors');
     } catch (err) {
       toast({
-        title: "Error",
-        description: err.data?.message || "Failed to add doctor",
-        status: "error",
+        title: 'Error',
+        description: err.data?.message || 'Failed to add doctor',
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -213,16 +309,16 @@ const AddDoctor = () => {
 
   const handleCancel = () => {
     Swal.fire({
-      title: "Are you sure?",
-      text: "You will lose all unsaved changes",
-      icon: "warning",
+      title: 'Are you sure?',
+      text: 'You will lose all unsaved changes',
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, discard changes",
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, discard changes',
     }).then((result) => {
       if (result.isConfirmed) {
-        navigate("/admin/doctors");
+        navigate('/admin/doctors');
       }
     });
   };
@@ -251,7 +347,7 @@ const AddDoctor = () => {
           </Button>
         </div>
         <form onSubmit={handleSubmit}>
-          <div className="row"  gap={6}>
+          <div className="row" gap={6}>
             {/* Basic Information */}
             <Box className="col-md-6 " mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
@@ -262,7 +358,7 @@ const AddDoctor = () => {
                 value={formData.firstName}
                 onChange={handleInputChange}
                 required
-                mt={"8px"}
+                mt={'8px'}
               />
             </Box>
 
@@ -275,7 +371,7 @@ const AddDoctor = () => {
                 value={formData.lastName}
                 onChange={handleInputChange}
                 required
-                mt={"8px"}
+                mt={'8px'}
               />
             </Box>
 
@@ -289,7 +385,7 @@ const AddDoctor = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                mt={"8px"}
+                mt={'8px'}
               />
             </Box>
 
@@ -303,7 +399,7 @@ const AddDoctor = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 required
-                mt={"8px"}
+                mt={'8px'}
               />
             </Box>
 
@@ -317,7 +413,7 @@ const AddDoctor = () => {
                 value={formData.gender}
                 onChange={handleInputChange}
                 required
-                mt={"8px"}
+                mt={'8px'}
               >
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
@@ -333,7 +429,7 @@ const AddDoctor = () => {
                 value={formData.title}
                 onChange={handleInputChange}
                 required
-                mt={"8px"}
+                mt={'8px'}
               >
                 <option value="CONSULTANT">Consultant</option>
                 <option value="SPECIALIST">Specialist</option>
@@ -350,7 +446,7 @@ const AddDoctor = () => {
                 value={formData.specializationId}
                 onChange={handleInputChange}
                 required
-                mt={"8px"}
+                mt={'8px'}
               >
                 <option value="">Select Specialization</option>
                 {specializations.map((spec) => (
@@ -372,7 +468,7 @@ const AddDoctor = () => {
                 value={formData.clinicFees}
                 onChange={handleInputChange}
                 required
-                mt={"8px"}
+                mt={'8px'}
               />
             </Box>
 
@@ -386,11 +482,11 @@ const AddDoctor = () => {
                 value={formData.onlineFees}
                 onChange={handleInputChange}
                 required
-                mt={"8px"}
+                mt={'8px'}
               />
             </Box>
-  
-<Box> </Box>
+
+            <Box> </Box>
             {/* About Sections */}
             <Box className="col-md-6" mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
@@ -401,7 +497,7 @@ const AddDoctor = () => {
                 value={formData.aboutEn}
                 onChange={handleInputChange}
                 required
-                mt={"8px"}
+                mt={'8px'}
               />
             </Box>
 
@@ -414,59 +510,59 @@ const AddDoctor = () => {
                 value={formData.aboutAr}
                 onChange={handleInputChange}
                 required
-                mt={"8px"}
+                mt={'8px'}
               />
             </Box>
-                <Box> </Box>
-              <Box className="col-md-4">
-                <FormControl display="flex" alignItems="center" mt={4}>
-                  <FormLabel htmlFor="isRecommended" mb="0">
-                    Recommended Doctor
-                  </FormLabel>
-                  <Switch
-                    id="isRecommended"
-                    isChecked={formData.isRecommended}
-                    onChange={() => handleToggle("isRecommended")}
-                    colorScheme="brand"
-                  />
-                </FormControl>
-              </Box>
+            <Box> </Box>
+            <Box className="col-md-4">
+              <FormControl display="flex" alignItems="center" mt={4}>
+                <FormLabel htmlFor="isRecommended" mb="0">
+                  Recommended Doctor
+                </FormLabel>
+                <Switch
+                  id="isRecommended"
+                  isChecked={formData.isRecommended}
+                  onChange={() => handleToggle('isRecommended')}
+                  colorScheme="brand"
+                />
+              </FormControl>
+            </Box>
 
-              <Box className="col-md-4">
-                <FormControl display="flex" alignItems="center" mt={4}>
-                  <FormLabel htmlFor="hasClinicConsult" mb="0">
-                    Clinic Consultation
-                  </FormLabel>
-                  <Switch
-                    id="hasClinicConsult"
-                    isChecked={formData.hasClinicConsult}
-                    onChange={() => handleToggle("hasClinicConsult")}
-                    colorScheme="brand"
-                  />
-                </FormControl>
-              </Box>
+            <Box className="col-md-4">
+              <FormControl display="flex" alignItems="center" mt={4}>
+                <FormLabel htmlFor="hasClinicConsult" mb="0">
+                  Clinic Consultation
+                </FormLabel>
+                <Switch
+                  id="hasClinicConsult"
+                  isChecked={formData.hasClinicConsult}
+                  onChange={() => handleToggle('hasClinicConsult')}
+                  colorScheme="brand"
+                />
+              </FormControl>
+            </Box>
 
-              <Box className="col-md-4">
-                <FormControl display="flex" alignItems="center" mt={4}>
-                  <FormLabel htmlFor="hasOnlineConsult" mb="0">
-                    Online Consultation
-                  </FormLabel>
-                  <Switch
-                    id="hasOnlineConsult"
-                    isChecked={formData.hasOnlineConsult}
-                    onChange={() => handleToggle("hasOnlineConsult")}
-                    colorScheme="brand"
-                  />
-                </FormControl>
-              </Box>
-           
+            <Box className="col-md-4">
+              <FormControl display="flex" alignItems="center" mt={4}>
+                <FormLabel htmlFor="hasOnlineConsult" mb="0">
+                  Online Consultation
+                </FormLabel>
+                <Switch
+                  id="hasOnlineConsult"
+                  isChecked={formData.hasOnlineConsult}
+                  onChange={() => handleToggle('hasOnlineConsult')}
+                  colorScheme="brand"
+                />
+              </FormControl>
+            </Box>
+
             {/* Phones */}
             <Box className="col-md-12 mt-2" mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
                 Phone Numbers<span className="text-danger mx-1">*</span>
               </Text>
               {phones.map((phone, index) => (
-                <Flex key={index} align="center" mt={"8px"} mb={2}>
+                <Flex key={index} align="center" mt={'8px'} mb={2}>
                   <Input
                     type="text"
                     placeholder={`Phone ${index + 1}`}
@@ -484,9 +580,9 @@ const AddDoctor = () => {
                       color="red.500"
                       cursor="pointer"
                       onClick={() => handleDeletePhone(index)}
-                      border={"1px solid #ddd"}
-                      padding={"5px"}
-                      borderRadius={"5px"}
+                      border={'1px solid #ddd'}
+                      padding={'5px'}
+                      borderRadius={'5px'}
                     />
                   )}
                 </Flex>
@@ -509,13 +605,13 @@ const AddDoctor = () => {
                 Languages<span className="text-danger mx-1">*</span>
               </Text>
               {languages.map((lang, index) => (
-                <Flex key={index} align="center" mt={"8px"} mb={2}>
+                <Flex key={index} align="center" mt={'8px'} mb={2}>
                   <Input
                     type="text"
                     placeholder={`Language ${index + 1}`}
                     value={lang.language}
                     onChange={(e) =>
-                      handleLanguageChange(index, "language", e.target.value)
+                      handleLanguageChange(index, 'language', e.target.value)
                     }
                     required={index === 0}
                     flex="1"
@@ -529,7 +625,11 @@ const AddDoctor = () => {
                       id={`active-${index}`}
                       isChecked={lang.isActive}
                       onChange={(e) =>
-                        handleLanguageChange(index, "isActive", e.target.checked)
+                        handleLanguageChange(
+                          index,
+                          'isActive',
+                          e.target.checked,
+                        )
                       }
                       colorScheme="brand"
                     />
@@ -542,9 +642,9 @@ const AddDoctor = () => {
                       color="red.500"
                       cursor="pointer"
                       onClick={() => handleDeleteLanguage(index)}
-                      border={"1px solid #ddd"}
-                      padding={"5px"}
-                      borderRadius={"5px"}
+                      border={'1px solid #ddd'}
+                      padding={'5px'}
+                      borderRadius={'5px'}
                       ml={2}
                     />
                   )}
@@ -588,16 +688,16 @@ const AddDoctor = () => {
               </Text>
               <Box
                 border="1px dashed"
-                borderColor={isDragging ? "brand.500" : "gray.300"}
+                borderColor={isDragging ? 'brand.500' : 'gray.300'}
                 borderRadius="md"
                 p={4}
                 textAlign="center"
-                backgroundColor={isDragging ? "brand.50" : "gray.50"}
+                backgroundColor={isDragging ? 'brand.50' : 'gray.50'}
                 cursor="pointer"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                mt={"8px"}
+                mt={'8px'}
               >
                 {image ? (
                   <Flex direction="column" align="center">
@@ -612,7 +712,10 @@ const AddDoctor = () => {
                       variant="outline"
                       colorScheme="red"
                       size="sm"
-                      onClick={() => setImage(null)}
+                      onClick={() => {
+                        setImage(null);
+                        setFormData((prev) => ({ ...prev, imageKey: '' }));
+                      }}
                     >
                       Remove Image
                     </Button>
@@ -630,7 +733,9 @@ const AddDoctor = () => {
                       variant="outline"
                       color="#422afb"
                       border="none"
-                      onClick={() => document.getElementById('doctorImage').click()}
+                      onClick={() =>
+                        document.getElementById('doctorImage').click()
+                      }
                     >
                       Upload Image
                       <input
@@ -686,7 +791,11 @@ const AddDoctor = () => {
                         right={2}
                         color="red.500"
                         cursor="pointer"
-                        onClick={() => handleDeleteCertificate(index)}
+                        onClick={() => {
+                          const newCertificates = [...certificates];
+                          newCertificates.splice(index, 1);
+                          setCertificates(newCertificates);
+                        }}
                         bg="white"
                         p={1}
                         borderRadius="full"

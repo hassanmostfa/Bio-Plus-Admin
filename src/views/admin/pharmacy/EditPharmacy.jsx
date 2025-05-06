@@ -23,6 +23,7 @@ import {
   useGetPharmacyQuery,
   useUpdatePharmacyMutation,
 } from 'api/pharmacySlice';
+import { useAddFileMutation } from 'api/filesSlice';
 
 const EditPharmacy = () => {
   const { id } = useParams(); // Get the pharmacy ID from the URL
@@ -31,6 +32,7 @@ const EditPharmacy = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
+  const [addFile] = useAddFileMutation();
   // Fetch pharmacy data by ID
   const {
     data,
@@ -137,33 +139,47 @@ const EditPharmacy = () => {
   };
 
   // Handle branch translation changes
-    const handleBranchTranslationChange = (index, languageId, field, value) => {
-      setFormData((prevData) => ({
-        ...prevData,
-        branches: prevData.branches?.map((branch, i) =>
-          i === index
-            ? {
-                ...branch,
-                name: branch.translations.find((t) => t.languageId === 'en').name,
-                address: branch.translations.find((t) => t.languageId === 'en').address,
-                translations: branch.translations?.map((translation) =>
-                  translation.languageId === languageId
-                    ? { ...translation, [field]: value }
-                    : translation
-                ),
-              }
-            : branch
-        ),
-      }));
-    };
+  const handleBranchTranslationChange = (index, languageId, field, value) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      branches: prevData.branches?.map((branch, i) =>
+        i === index
+          ? {
+              ...branch,
+              name: branch.translations.find((t) => t.languageId === 'en').name,
+              address: branch.translations.find((t) => t.languageId === 'en')
+                .address,
+              translations: branch.translations?.map((translation) =>
+                translation.languageId === languageId
+                  ? { ...translation, [field]: value }
+                  : translation,
+              ),
+            }
+          : branch,
+      ),
+    }));
+  };
 
   // Handle image upload
+  // const handleImageUpload = (files) => {
+  //   if (files && files.length > 0) {
+  //     setImage(files[0]);
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       imageKey: files[0].name, // Update with the actual image key logic
+  //     }));
+  //   }
+  // };
+
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
-      setImage(files[0]);
+      const selectedFile = files[0];
+      setImage(selectedFile);
+
+      // Update the form data with the file name (temporary until we get the actual key from API)
       setFormData((prevData) => ({
         ...prevData,
-        imageKey: files[0].name, // Update with the actual image key logic
+        imageKey: selectedFile.name,
       }));
     }
   };
@@ -221,18 +237,93 @@ const EditPharmacy = () => {
     }));
   };
 
+  // const handleSubmit = async () => {
+  //   try {
+  //     // Filter out unnecessary fields from branches
+  //     const filteredBranches = formData.branches?.map((branch) => {
+  //       const { id, createdAt, updatedAt, ...rest } = branch;
+  //       return rest;
+  //     });
+
+  //     // Prepare the payload
+  //     const payload = {
+  //       ...formData,
+  //       branches: filteredBranches, // Use the filtered branches
+  //       feesStartDate: formData.feesStartDate
+  //         ? formData.feesStartDate + 'T00:00:00Z'
+  //         : '2024-05-01T00:00:00Z',
+  //       feesEndDate: formData.feesEndDate
+  //         ? formData.feesEndDate + 'T00:00:00Z'
+  //         : '2025-05-01T00:00:00Z',
+  //       name: formData.translations.find((t) => t.languageId === 'en').name,
+  //       description: formData.translations.find((t) => t.languageId === 'en')
+  //         .description,
+  //       revenueShare: parseInt(formData.revenueShare),
+  //       fixedFees: formData.fixedFees ? parseInt(formData.fixedFees) : 0,
+  //     };
+
+  //     // Remove additional unwanted fields from the payload
+  //     delete payload.revenueShareType;
+  //     delete payload.createdAt;
+  //     delete payload.updatedAt;
+  //     delete payload.id;
+
+  //     // Send the update request
+  //     const response = await updatePharmacy({ id, pharmacy: payload }).unwrap();
+
+  //     // Show success message
+  //     toast({
+  //       title: 'Success',
+  //       description: 'Pharmacy updated successfully',
+  //       status: 'success',
+  //       duration: 5000,
+  //       isClosable: true,
+  //     });
+
+  //     // Navigate back
+  //     navigate('/admin/pharmacy');
+  //   } catch (error) {
+  //     setError(error.data);
+  //     toast({
+  //       title: 'Error',
+  //       description: error.data?.message || 'Failed to update pharmacy',
+  //       status: 'error',
+  //       duration: 5000,
+  //       isClosable: true,
+  //     });
+  //   }
+  // };
+
   const handleSubmit = async () => {
     try {
+      let imageKey = formData.imageKey;
+
+      // Upload new image if it exists
+      if (image) {
+        const formDataFile = new FormData();
+        formDataFile.append('file', image);
+
+        const uploadResponse = await addFile(formDataFile).unwrap();
+
+        if (
+          uploadResponse.success &&
+          uploadResponse.data.uploadedFiles.length > 0
+        ) {
+          imageKey = uploadResponse.data?.uploadedFiles[0]?.url;
+        }
+      }
+
       // Filter out unnecessary fields from branches
       const filteredBranches = formData.branches?.map((branch) => {
         const { id, createdAt, updatedAt, ...rest } = branch;
         return rest;
       });
-  
+
       // Prepare the payload
       const payload = {
         ...formData,
-        branches: filteredBranches, // Use the filtered branches
+        imageKey, // Use the new or existing image key
+        branches: filteredBranches,
         feesStartDate: formData.feesStartDate
           ? formData.feesStartDate + 'T00:00:00Z'
           : '2024-05-01T00:00:00Z',
@@ -245,16 +336,16 @@ const EditPharmacy = () => {
         revenueShare: parseInt(formData.revenueShare),
         fixedFees: formData.fixedFees ? parseInt(formData.fixedFees) : 0,
       };
-  
+
       // Remove additional unwanted fields from the payload
       delete payload.revenueShareType;
       delete payload.createdAt;
       delete payload.updatedAt;
       delete payload.id;
-  
+
       // Send the update request
       const response = await updatePharmacy({ id, pharmacy: payload }).unwrap();
-  
+
       // Show success message
       toast({
         title: 'Success',
@@ -263,7 +354,7 @@ const EditPharmacy = () => {
         duration: 5000,
         isClosable: true,
       });
-  
+
       // Navigate back
       navigate('/admin/pharmacy');
     } catch (error) {
@@ -283,7 +374,7 @@ const EditPharmacy = () => {
   return (
     <div className="container add-admin-container w-100">
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100">
-        <Box  className="mb-3 d-flex justify-content-between align-items-center">
+        <Box className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
             Edit Pharmacy
           </Text>
@@ -335,8 +426,8 @@ const EditPharmacy = () => {
                 Pharmacy Name Ar <span className="text-danger">*</span>
               </Text>
               <Input
-              bg={inputBg}
-              color={textColor}
+                bg={inputBg}
+                color={textColor}
                 value={
                   formData.translations.find((t) => t.languageId === 'ar').name
                 }
@@ -368,8 +459,8 @@ const EditPharmacy = () => {
                 WhatsApp Number <span className="text-danger">*</span>
               </Text>
               <Input
-              bg={inputBg}
-              color={textColor}
+                bg={inputBg}
+                color={textColor}
                 name="whatsappNumber"
                 value={formData.whatsappNumber}
                 onChange={handleChange}
@@ -385,8 +476,8 @@ const EditPharmacy = () => {
                 Password <span className="text-danger">*</span>
               </Text>
               <Input
-              bg={inputBg}
-              color={textColor}
+                bg={inputBg}
+                color={textColor}
                 type="password"
                 name="password"
                 value={formData.password}
@@ -399,8 +490,8 @@ const EditPharmacy = () => {
                 Iban <span className="text-danger">*</span>
               </Text>
               <Input
-              bg={inputBg}
-              color={textColor}
+                bg={inputBg}
+                color={textColor}
                 name="iban"
                 value={formData.iban}
                 onChange={handleChange}
@@ -416,8 +507,8 @@ const EditPharmacy = () => {
                 Working Hours <span className="text-danger">*</span>
               </Text>
               <Input
-              bg={inputBg}
-              color={textColor}
+                bg={inputBg}
+                color={textColor}
                 name="workingHours"
                 value={formData.workingHours}
                 onChange={handleChange}
@@ -453,8 +544,8 @@ const EditPharmacy = () => {
                 Percentage <span className="text-danger">*</span>
               </Text>
               <Input
-              bg={inputBg}
-              color={textColor}
+                bg={inputBg}
+                color={textColor}
                 type="number"
                 name="revenueShare"
                 value={formData.revenueShare}
@@ -469,8 +560,8 @@ const EditPharmacy = () => {
                   Fixed Fees <span className="text-danger">*</span>
                 </Text>
                 <Input
-                bg={inputBg}
-                color={textColor}
+                  bg={inputBg}
+                  color={textColor}
                   type="number"
                   name="fixedFees"
                   value={formData.fixedFees}
@@ -483,8 +574,8 @@ const EditPharmacy = () => {
                   Fees Start Date <span className="text-danger">*</span>
                 </Text>
                 <Input
-                bg={inputBg}
-                color={textColor}
+                  bg={inputBg}
+                  color={textColor}
                   type="date"
                   name="feesStartDate"
                   value={formData.feesStartDate}
@@ -497,8 +588,8 @@ const EditPharmacy = () => {
                   Fees End Date <span className="text-danger">*</span>
                 </Text>
                 <Input
-                bg={inputBg}
-                color={textColor}
+                  bg={inputBg}
+                  color={textColor}
                   type="date"
                   name="feesEndDate"
                   value={formData.feesEndDate}
@@ -516,8 +607,8 @@ const EditPharmacy = () => {
                 Description En<span className="text-danger">*</span>
               </Text>
               <Textarea
-              bg={inputBg}
-              color={textColor}
+                bg={inputBg}
+                color={textColor}
                 value={
                   formData.translations.find((t) => t.languageId === 'en')
                     .description
@@ -535,8 +626,8 @@ const EditPharmacy = () => {
                 Description Ar<span className="text-danger">*</span>
               </Text>
               <Textarea
-              bg={inputBg}
-              color={textColor}
+                bg={inputBg}
+                color={textColor}
                 value={
                   formData.translations.find((t) => t.languageId === 'ar')
                     .description
@@ -559,7 +650,7 @@ const EditPharmacy = () => {
             p={4}
             textAlign="center"
             bg={inputBg}
-                color={textColor}
+            color={textColor}
             cursor="pointer"
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -588,7 +679,7 @@ const EditPharmacy = () => {
                 onChange={handleFileInputChange}
               />
             </Button>
-            {image && (
+            {image ? (
               <Box
                 mt={4}
                 display={'flex'}
@@ -603,7 +694,25 @@ const EditPharmacy = () => {
                   borderRadius="md"
                 />
               </Box>
-            )}
+            ) : pharmacy?.imageKey ? (
+              <Box
+                mt={4}
+                display={'flex'}
+                justifyContent="center"
+                alignItems="center"
+              >
+                {/* <Text color="gray.500" mb={2}>
+                  Current Image:
+                </Text> */}
+                <img
+                  src={`https://ideacentererp.s3.eu-north-1.amazonaws.com/${pharmacy.imageKey}`}
+                  alt="Current pharmacy"
+                  width={80}
+                  height={80}
+                  borderRadius="md"
+                />
+              </Box>
+            ) : null}
           </Box>
 
           {/* Number of Branches */}
@@ -612,8 +721,8 @@ const EditPharmacy = () => {
               Number of Branches <span className="text-danger">*</span>
             </Text>
             <Input
-            bg={inputBg}
-            color={textColor}
+              bg={inputBg}
+              color={textColor}
               type="number"
               value={numberOfBranches}
               onChange={handleNumberOfBranchesChange}
@@ -643,8 +752,8 @@ const EditPharmacy = () => {
                     Branch En-Name <span className="text-danger">*</span>
                   </Text>
                   <Input
-                  bg={inputBg}
-                  color={textColor}
+                    bg={inputBg}
+                    color={textColor}
                     placeholder="Enter Branch En-Name"
                     value={
                       formData.branches[index]?.translations.find(
@@ -667,8 +776,8 @@ const EditPharmacy = () => {
                     Branch En-Address <span className="text-danger">*</span>
                   </Text>
                   <Input
-                  bg={inputBg}
-                  color={textColor}
+                    bg={inputBg}
+                    color={textColor}
                     placeholder="Enter Branch En-Address"
                     value={
                       formData.branches[index]?.translations.find(
@@ -691,8 +800,8 @@ const EditPharmacy = () => {
                     Branch Ar-Name <span className="text-danger">*</span>
                   </Text>
                   <Input
-                  bg={inputBg}
-                  color={textColor}
+                    bg={inputBg}
+                    color={textColor}
                     placeholder="أدخل اسم الفرع بالعربية"
                     value={
                       formData.branches[index]?.translations.find(
@@ -715,8 +824,8 @@ const EditPharmacy = () => {
                     Branch Ar-Address <span className="text-danger">*</span>
                   </Text>
                   <Input
-                  bg={inputBg}
-                  color={textColor}
+                    bg={inputBg}
+                    color={textColor}
                     placeholder="أدخل عنوان الفرع بالعربية"
                     value={
                       formData.branches[index]?.translations.find(
@@ -740,10 +849,10 @@ const EditPharmacy = () => {
                 <Text color={textColor} fontSize="sm" fontWeight="700">
                   Location Link <span className="text-danger">*</span>
                 </Text>
-                
+
                 <Input
-                bg={inputBg}
-                color={textColor}
+                  bg={inputBg}
+                  color={textColor}
                   placeholder="Enter Branch Location Link"
                   value={formData.branches[index]?.locationLink || ''}
                   onChange={(e) =>
