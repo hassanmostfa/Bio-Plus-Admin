@@ -567,24 +567,24 @@ const routes = [
         color="inherit"
       />
     ),
-    component: <AllNotification />,
+    component: <AddNotification />,
     showInSidebar: true,
   },
-  {
-    name: 'Notifications',
-    layout: '/admin',
-    path: '/add-notifications',
-    icon: (
-      <Icon
-        as={IoNotificationsOutline}
-        width="20px"
-        height="20px"
-        color="inherit"
-      />
-    ),
-    component: <AddNotification />,
-    showInSidebar: false,
-  },
+  // {
+  //   name: 'Notifications',
+  //   layout: '/admin',
+  //   path: '/add-notifications',
+  //   icon: (
+  //     <Icon
+  //       as={IoNotificationsOutline}
+  //       width="20px"
+  //       height="20px"
+  //       color="inherit"
+  //     />
+  //   ),
+  //   component: <AddNotification />,
+  //   showInSidebar: false,
+  // },
   {
     name: 'Promo Codes',
     layout: '/admin',

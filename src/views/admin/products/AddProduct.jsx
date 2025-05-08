@@ -34,6 +34,7 @@ import { useAddProductMutation } from 'api/productSlice';
 import Swal from 'sweetalert2';
 import { useGetPharmaciesQuery } from 'api/pharmacySlice';
 import { useAddFileMutation } from 'api/filesSlice';
+import { useGetTypesQuery } from 'api/typeSlice';
 
 const AddProduct = () => {
   const [nameEn, setNameEn] = useState('');
@@ -42,7 +43,8 @@ const AddProduct = () => {
   const [descriptionAr, setDescriptionAr] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [brandId, setBrandId] = useState('');
-  const [pharmacyId, setPharmacyId] = useState(''); // You'll need to get this from your auth context or API
+  const [pharmacyId, setPharmacyId] = useState('');
+  const [productTypeId, setProductTypeId] = useState(''); // New state for product type
   const [cost, setCost] = useState('');
   const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -74,18 +76,22 @@ const AddProduct = () => {
     page: 1,
     limit: 1000,
   });
+  const { data: productTypesResponse } = useGetTypesQuery({ page: 1, limit: 1000 }); // Fetch product types
+  
   const categories = categoriesResponse?.data?.data || [];
   const variants = variantsResponse?.data || [];
   const brands = brandsResponse?.data || [];
   const pharmacies = PharmacyResponse?.data?.items || [];
+  const productTypes = productTypesResponse?.data?.items || []; // Get product types from response
+  
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const [addFile] = useAddFileMutation();
+
   // Image handling
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
       const newImages = Array.from(files)
         .map((file) => {
-          // Validate file type
           if (!file.type.startsWith('image/')) {
             toast({
               title: 'Error',
@@ -99,7 +105,7 @@ const AddProduct = () => {
           return {
             file,
             preview: URL.createObjectURL(file),
-            isMain: images.length === 0, // First image is main by default
+            isMain: images.length === 0,
           };
         })
         .filter((img) => img !== null);
@@ -112,9 +118,7 @@ const AddProduct = () => {
   };
 
   const handleRemoveImage = (index) => {
-    // Revoke the object URL to avoid memory leaks
     URL.revokeObjectURL(images[index].preview);
-
     const newImages = images.filter((_, i) => i !== index);
     setImages(newImages);
     if (mainImageIndex === index) {
@@ -127,16 +131,6 @@ const AddProduct = () => {
   const handleSetMainImage = (index) => {
     setMainImageIndex(index);
   };
-
-  // const handleRemoveImage = (index) => {
-  //   const newImages = images.filter((_, i) => i !== index);
-  //   setImages(newImages);
-  //   if (mainImageIndex === index) {
-  //     setMainImageIndex(0);
-  //   } else if (mainImageIndex > index) {
-  //     setMainImageIndex(mainImageIndex - 1);
-  //   }
-  // };
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -185,104 +179,6 @@ const AddProduct = () => {
   };
 
   // Form submission
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   try {
-  //     // Prepare translations
-  //     const translations = [];
-  //     if (nameAr || descriptionAr) {
-  //       translations.push({
-  //         languageId: "ar",
-  //         name: nameAr,
-  //         description: descriptionAr
-  //       });
-  //     }
-  //     if (nameEn || descriptionEn) {
-  //       translations.push({
-  //         languageId: "en",
-  //         name: nameEn,
-  //         description: descriptionEn
-  //       });
-  //     }
-
-  //     // Prepare images
-  //     const imageData = images.map((img, index) => ({
-  //       imageKey: `products/${nameEn.toLowerCase().replace(/\s+/g, '-')}/${img.file.name}`,
-  //       order: index,
-  //       isMain: index === mainImageIndex
-  //     }));
-
-  //       const variantsData = selectedAttributes.map(attr => {
-  //         if (!attr.price) {
-  //           throw new Error("Price is required for each variant.");
-  //         }
-  //         return {
-  //           variantId: attr.variantId,
-  //           attributeId: attr.attributeId,
-  //           cost: attr.cost ? parseFloat(attr.cost) : 0,
-  //           price: parseFloat(attr.price),
-  //           quantity: attr.quantity ? parseInt(attr.quantity) : 0,
-  //           imageKey: attr.image ? `products/${nameEn.toLowerCase().replace(/\s+/g, '-')}/variants/${attr.image.name}` : undefined,
-  //           isActive: attr.isActive
-  //         };
-  //       });
-
-  //     // Prepare product data
-  //     if (!price) {
-  //       throw new Error("Price is required for the product.");
-  //     }
-  //     const productData = {
-  //       name: nameEn || undefined,
-  //       description: descriptionEn || undefined,
-  //       categoryId: categoryId || undefined,
-  //       brandId: brandId || undefined,
-  //       pharmacyId: pharmacyId || undefined,
-  //       cost: cost === null ? undefined : parseFloat(cost),
-  //       price: parseFloat(price),
-  //       quantity: quantity === null ? undefined : parseInt(quantity),
-  //       offerType: offerType === null ? undefined : offerType.toUpperCase().replace(' ', '_'),
-  //       offerPercentage: offerPercentage != null ? parseFloat(offerPercentage) : null,
-  //       hasVariants,
-  //       isActive,
-  //       isPublished,
-  //       translations: translations.filter(t => t.name !== null && t.description !== null),
-  //       images: imageData,
-  //       variants: hasVariants ? variantsData : undefined
-  //     };
-
-  //     // Remove any keys that are null
-  //     Object.keys(productData).forEach(key => {
-  //       if (productData[key] == null || productData[key] == undefined) {
-  //         delete productData[key];
-  //       }
-  //     });
-
-  //     // Log the data to verify structure
-  //     console.log("Submitting product:", productData);
-
-  //     // Submit to API
-  //     const response = await addProduct(productData).unwrap();
-
-  //     toast({
-  //       title: "Success",
-  //       description: "Product created successfully",
-  //       status: "success",
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-
-  //     navigate("/admin/products");
-  //   } catch (err) {
-  //     toast({
-  //       title: "Error",
-  //       description: err.data?.message || "Failed to create product",
-  //       status: "error",
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -379,6 +275,7 @@ const AddProduct = () => {
         categoryId: categoryId || undefined,
         brandId: brandId || undefined,
         pharmacyId: pharmacyId || undefined,
+        productTypeId: productTypeId || undefined, // Add product type to the request
         cost: cost === null ? undefined : parseFloat(cost),
         price: parseFloat(price),
         quantity: quantity === null ? undefined : parseInt(quantity),
@@ -516,8 +413,8 @@ const AddProduct = () => {
             </Box>
           </SimpleGrid>
 
-          {/* Category, Brand, and Pricing */}
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
+          {/* Category, Brand, Pharmacy and Product Type */}
+          <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
             <Box>
               <FormControl isRequired>
                 <FormLabel>Category</FormLabel>
@@ -562,6 +459,22 @@ const AddProduct = () => {
                   {pharmacies?.map((pharmacy) => (
                     <option key={pharmacy.id} value={pharmacy.id}>
                       {pharmacy.name}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+            <Box>
+              <FormControl>
+                <FormLabel>Product Type</FormLabel>
+                <Select
+                  placeholder="Select Product Type"
+                  value={productTypeId}
+                  onChange={(e) => setProductTypeId(e.target.value)}
+                >
+                  {productTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.name}
                     </option>
                   ))}
                 </Select>
@@ -632,13 +545,14 @@ const AddProduct = () => {
 
           {/* Status Switches */}
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
-            <FormControl display="flex" alignItems="center">
-              <FormLabel mb="0">Has Variants</FormLabel>
+          <FormControl display="flex" alignItems="center">
+              <FormLabel mb="0">Published</FormLabel>
               <Switch
-                isChecked={hasVariants}
-                onChange={() => setHasVariants(!hasVariants)}
+                isChecked={isPublished}
+                onChange={() => setIsPublished(!isPublished)}
               />
             </FormControl>
+
             <FormControl display="flex" alignItems="center">
               <FormLabel mb="0">Active</FormLabel>
               <Switch
@@ -646,11 +560,12 @@ const AddProduct = () => {
                 onChange={() => setIsActive(!isActive)}
               />
             </FormControl>
+            
             <FormControl display="flex" alignItems="center">
-              <FormLabel mb="0">Published</FormLabel>
+              <FormLabel mb="0">Has Variants</FormLabel>
               <Switch
-                isChecked={isPublished}
-                onChange={() => setIsPublished(!isPublished)}
+                isChecked={hasVariants}
+                onChange={() => setHasVariants(!hasVariants)}
               />
             </FormControl>
           </SimpleGrid>

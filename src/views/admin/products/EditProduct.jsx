@@ -35,6 +35,7 @@ import { useGetPharmaciesQuery } from 'api/pharmacySlice';
 import { useGetProductQuery, useUpdateProductMutation } from 'api/productSlice';
 import Swal from 'sweetalert2';
 import { useAddFileMutation } from 'api/filesSlice';
+import { useGetTypesQuery } from 'api/typeSlice';
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -52,6 +53,7 @@ const EditProduct = () => {
   const [cost, setCost] = useState('');
   const [price, setPrice] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [productTypeId, setProductTypeId] = useState(''); // New state for product type
   const [offerType, setOfferType] = useState('');
   const [offerPercentage, setOfferPercentage] = useState('');
   const [hasVariants, setHasVariants] = useState(false);
@@ -62,9 +64,23 @@ const EditProduct = () => {
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
+
+
+
   // API queries
-  const { data: productResponse, isLoading: isProductLoading } =
+  const { data: productResponse, isLoading: isProductLoading , refetch } =
     useGetProductQuery(id);
+
+
+       // Trigger refetch when component mounts (navigates to)
+   React.useEffect(() => {
+    // Only trigger refetch if the data is not being loaded
+    if (!isProductLoading) {
+      refetch(); // Manually trigger refetch when component is mounted
+    }
+  }, [refetch, isProductLoading]); // Dependency array to ensure it only runs on mount
+
+  
   const { data: categoriesResponse } = useGetCategoriesQuery({
     page: 1,
     limit: 1000,
@@ -79,6 +95,9 @@ const EditProduct = () => {
     limit: 1000,
   });
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+
+  const { data: productTypesResponse } = useGetTypesQuery({ page: 1, limit: 1000 }); // Fetch product types
+  const productTypes = productTypesResponse?.data?.items || []; // Get product types from response
 
   // Extract data from responses
   const product = productResponse?.data;
@@ -103,6 +122,7 @@ const EditProduct = () => {
       setCategoryId(product.categoryId || '');
       setBrandId(product.brandId || '');
       setPharmacyId(product.pharmacyId || '');
+      setProductTypeId(product.productTypeId || '');
       setCost(product.cost || '');
       setPrice(product.price || '');
       setQuantity(product.quantity || '');
@@ -335,6 +355,7 @@ const EditProduct = () => {
         categoryId,
         brandId,
         pharmacyId,
+        productTypeId,
         cost: cost ? parseFloat(cost) : null,
         price: parseFloat(price),
         quantity: quantity ? parseInt(quantity) : null,
@@ -485,7 +506,7 @@ const EditProduct = () => {
           </SimpleGrid>
 
           {/* Category, Brand, and Pharmacy */}
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
+          <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
             <Box>
               <FormControl isRequired>
                 <FormLabel>Category</FormLabel>
@@ -535,6 +556,23 @@ const EditProduct = () => {
                 </Select>
               </FormControl>
             </Box>
+
+            <Box>
+                <FormControl>
+                  <FormLabel>Product Type</FormLabel>
+                  <Select
+                    placeholder="Select Product Type"
+                    value={productTypeId}
+                    onChange={(e) => setProductTypeId(e.target.value)}
+                  >
+                    {productTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.name}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
           </SimpleGrid>
 
           {/* Pricing Information */}

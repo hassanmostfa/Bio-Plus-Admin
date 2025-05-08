@@ -62,17 +62,16 @@ const Doctors = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
-  // Example list of clinics - you might want to fetch this from an API
-  // const clinics = [
-  //   { id: "3c50873a-c692-4c7d-846e-f5576ae54203", name: 'Clinic A' },
-  //   { id: "75edd202-5b91-4dfa-8c05-aa712b74e454", name: 'Clinic B' },
-  //   { id: "85edd202-5b91-4dfa-8c05-aa712b74e455", name: 'Clinic C' },
-  // ];
-  React.useEffect(()=>{
+  React.useEffect(() => {
     refetch();
-  },[]);
+  }, []);
+
   const handleAssignClick = (doctorId) => {
+    const doctor = doctors.find(doc => doc.id === doctorId);
+    const existingClinicIds = doctor?.clinics?.map(clinic => clinic.clinicId) || [];
+    
     setSelectedDoctorId(doctorId);
+    setSelectedClinics(existingClinicIds);
     onOpen();
   };
 
@@ -85,10 +84,9 @@ const Doctors = () => {
   };
 
   const handleAssignClinics = async () => {
-    
     try {
       const id = selectedDoctorId;
-      await assignDoctor({id,data: {clinicIds: selectedClinics}}).unwrap();
+      await assignDoctor({ id, data: { clinicIds: selectedClinics } }).unwrap();
       
       toast({
         title: 'Success',
@@ -423,7 +421,10 @@ const Doctors = () => {
       </Card>
 
       {/* Modal for Assigning Clinics */}
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={() => {
+        onClose();
+        setSelectedClinics([]);
+      }}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Assign Clinics to Doctor</ModalHeader>
@@ -458,7 +459,10 @@ const Doctors = () => {
             <Button 
               bg='gray.200'
               mr={3} 
-              onClick={onClose}
+              onClick={() => {
+                onClose();
+                setSelectedClinics([]);
+              }}
             >
               Cancel
             </Button>

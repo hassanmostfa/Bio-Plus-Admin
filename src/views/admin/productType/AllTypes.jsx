@@ -35,6 +35,14 @@ const AllTypes = () => {
   const [deleteType, { isLoading: isDeleting }] = useDeleteTypeMutation(); // Delete mutation
   const [sorting, setSorting] = React.useState([]);
 
+   // Trigger refetch when component mounts (navigates to)
+   React.useEffect(() => {
+    // Only trigger refetch if the data is not being loaded
+    if (!isLoading) {
+      refetch(); // Manually trigger refetch when component is mounted
+    }
+  }, [refetch, isLoading]); // Dependency array to ensure it only runs on mount
+  
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 

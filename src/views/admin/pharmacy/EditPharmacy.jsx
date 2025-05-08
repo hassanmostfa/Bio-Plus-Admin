@@ -15,6 +15,7 @@ import {
   Stack,
   SimpleGrid,
   useToast,
+  Image
 } from '@chakra-ui/react';
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -41,7 +42,8 @@ const EditPharmacy = () => {
     error: fetchError,
   } = useGetPharmacyQuery(id);
   const pharmacy = data?.data;
-
+  console.log("pharmacy Data:", pharmacy);
+  
   // Mutation for updating a pharmacy
   const [updatePharmacy, { isLoading: isUpdating }] =
     useUpdatePharmacyMutation();
@@ -686,7 +688,7 @@ const EditPharmacy = () => {
                 justifyContent="center"
                 alignItems="center"
               >
-                <img
+                <Image
                   src={URL.createObjectURL(image)}
                   alt={image.name}
                   width={80}
@@ -705,7 +707,7 @@ const EditPharmacy = () => {
                   Current Image:
                 </Text> */}
                 <img
-                  src={`https://ideacentererp.s3.eu-north-1.amazonaws.com/${pharmacy.imageKey}`}
+                  src={pharmacy.imageKey}
                   alt="Current pharmacy"
                   width={80}
                   height={80}

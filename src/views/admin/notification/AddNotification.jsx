@@ -9,11 +9,12 @@ import {
   Text,
   useColorModeValue,
   Icon,
-
+  useToast,
 } from "@chakra-ui/react";
 import "./notification.css";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import { usePostNotificationMutation } from "api/notificationsSlice";
 
 const AddNotification = () => {
   const [englishTitle, setEnglishTitle] = useState("");
@@ -21,9 +22,12 @@ const AddNotification = () => {
   const [englishDescription, setEnglishDescription] = useState("");
   const [arabicDescription, setArabicDescription] = useState("");
   const [image, setImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const textColor = useColorModeValue("secondaryGray.900", "white");
-
-const navigate = useNavigate();
+  const navigate = useNavigate();
+  const toast = useToast();
+  
+  const [postNotification] = usePostNotificationMutation();
 
   const handleCancel = () => {
     setEnglishTitle("");
@@ -33,16 +37,69 @@ const navigate = useNavigate();
     setImage(null);
   };
 
-  const handleSend = () => {
-    const notificationData = {
-      englishTitle,
-      arabicTitle,
-      englishDescription,
-      arabicDescription,
-      image,
-    };
-    console.log("Notification Data:", notificationData);
-    // You can send this data to an API or perform other actions
+  const handleSend = async () => {
+    // Validate required fields
+    if (!englishTitle || !arabicTitle || !englishDescription || !arabicDescription) {
+      toast({
+        title: "Validation Error",
+        description: "All fields are required",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const notificationData = {
+        title: englishTitle,
+        body: englishDescription,
+        isActive: true,
+        translations: [
+          {
+            languageId: "ar",
+            title: arabicTitle,
+            body: arabicDescription,
+          },
+        ],
+      };
+
+      // If you have image handling
+      if (image) {
+        notificationData.image = image;
+      }
+
+      const response = await postNotification(notificationData).unwrap();
+      
+      toast({
+        title: "Success",
+        description: "Notification sent successfully",
+        status: "success",
+        position: "top-right",
+        duration: 5000,
+        isClosable: true,
+      });
+      
+      // Reset form after successful submission
+      handleCancel();
+      
+      // Optionally navigate away or refresh notifications list
+      // navigate('/notifications');
+      
+    } catch (error) {
+      console.error("Failed to send notification:", error);
+      toast({
+        title: "Error",
+        description: error.data?.message || "Failed to send notification",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -56,14 +113,13 @@ const navigate = useNavigate();
             mb="20px !important"
             lineHeight="100%"
             >
-            Add New Notification
+            Send Notification
             </Text>
             <Button
             type="button"
             onClick={() => navigate(-1)}
             colorScheme="teal"
             size="sm"
-            // mt="20px"
             leftIcon={<IoMdArrowBack />}
             >
             Back
@@ -138,12 +194,42 @@ const navigate = useNavigate();
             </div>
           </div>
 
+          {/* Image Upload (if needed) */}
+          {/* <div className="mb-3">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              Notification Image
+            </Text>
+            <Input
+              type="file"
+              id="image"
+              onChange={(e) => setImage(e.target.files[0])}
+              mt={"8px"}
+            />
+          </div> */}
+
           {/* Action Buttons */}
           <Flex justify="center" mt={4}>
-            <Button variant="outline" colorScheme="red" onClick={handleCancel} mr={2}>
+            <Button 
+              variant="outline" 
+              colorScheme="red" 
+              onClick={handleCancel} 
+              mr={2}
+              disabled={isLoading}
+            >
               Cancel
             </Button>
-            <Button variant='darkBrand' color='white' fontSize='sm' fontWeight='500' borderRadius='70px' px='24px' py='5px' onClick={handleSend}>
+            <Button 
+              variant='darkBrand' 
+              color='white' 
+              fontSize='sm' 
+              fontWeight='500' 
+              borderRadius='70px' 
+              px='24px' 
+              py='5px' 
+              onClick={handleSend}
+              isLoading={isLoading}
+              loadingText="Sending..."
+            >
               Send
             </Button>
           </Flex>

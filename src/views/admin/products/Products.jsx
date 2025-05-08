@@ -37,7 +37,7 @@ const columnHelper = createColumnHelper();
 const Products = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const { data: productsResponse, isLoading, isFetching,refetch } = useGetProductsQuery({ page, limit });
+  const { data: productsResponse, isLoading, isFetching, refetch } = useGetProductsQuery({ page, limit });
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const navigate = useNavigate();
@@ -54,6 +54,14 @@ const Products = () => {
     totalItems: 0,
     totalPages: 1
   };
+
+   // Trigger refetch when component mounts (navigates to)
+   React.useEffect(() => {
+    // Only trigger refetch if the data is not being loaded
+    if (!isLoading) {
+      refetch(); // Manually trigger refetch when component is mounted
+    }
+  }, [refetch, isLoading]); // Dependency array to ensure it only runs on mount
 
   // Function to handle status toggle
   const toggleStatus = async (productId, currentStatus) => {

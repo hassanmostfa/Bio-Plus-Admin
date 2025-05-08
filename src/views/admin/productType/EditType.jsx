@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 
 const EditType = () => {
   const { id } = useParams(); // Get the product type ID from the URL
-  const { data: typeResponse, isLoading: isFetching, isError: fetchError } = useGetTypeQuery(id); // Fetch the product type data
+  const { data: typeResponse, isLoading: isFetching, isError: fetchError , refetch } = useGetTypeQuery(id); // Fetch the product type data
   const [updateType, { isLoading: isUpdating }] = useUpdateTypeMutation(); // Mutation hook for updating a product type
   const navigate = useNavigate();
 
@@ -31,6 +31,15 @@ const EditType = () => {
       setArName(typeResponse.data.translations.find((t) => t.languageId === "ar")?.name || ""); // Set the Arabic name
     }
   }, [typeResponse]);
+
+
+     // Trigger refetch when component mounts (navigates to)
+     React.useEffect(() => {
+      // Only trigger refetch if the data is not being loaded
+      if (!isFetching) {
+        refetch(); // Manually trigger refetch when component is mounted
+      }
+    }, [refetch, isFetching]); // Dependency array to ensure it only runs on mount
 
   // Handle form submission
   const handleSend = async () => {
