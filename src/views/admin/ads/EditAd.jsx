@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -16,33 +16,64 @@ import {
 import "./ad.css";
 import { FaUpload } from "react-icons/fa6";
 import { IoMdArrowBack } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
-import { useAddAdMutation } from "api/adsSlice";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEditAdMutation, useGetAdByIdQuery } from "api/adsSlice";
 import { useAddFileMutation } from "api/filesSlice";
 import Swal from 'sweetalert2';
+import { useGetAdsQuery } from "api/adsSlice";
+import { useUpdateAdMutation } from "api/adsSlice";
 
 
-const AddAd = () => {
-  const [addAd] = useAddAdMutation();
+const EditAd = () => {
+  const { id } = useParams();
+  const { data: adsResponse, isLoading: isAdLoading, refetch } = useGetAdsQuery({ page: 1, limit: 1000 });
+
+  React.useEffect(() => {
+    refetch();
+  }, []);
+  
+  const adData = React.useMemo(() => {
+    return adsResponse?.data?.find(ad => ad.id === id) || {};
+  }, [adsResponse, id]);
+  console.log("adData", adData);
+  
+  const [editAd] = useUpdateAdMutation();
   const [addFile] = useAddFileMutation();
+  
   const [title, setTitle] = useState("");
   const [link, setLink] = useState("");
   const [linkType, setLinkType] = useState("EXTERNAL");
   const [isActive, setIsActive] = useState(true);
   const [order, setOrder] = useState(1);
   const [image, setImage] = useState(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   const navigate = useNavigate();
   const toast = useToast();
+
+  // Load ad data when component mounts or adData changes
+  useEffect(() => {
+    if (adData) {
+      const ad = adData;
+      setTitle(ad.title);
+      setLink(ad.link);
+      setLinkType(ad.linkType);
+      setIsActive(ad.isActive);
+      setOrder(ad.order);
+      setCurrentImageUrl(ad.imageKey); // Assuming imageKey contains the URL
+    }
+  }, [adData]);
 
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
       const file = files[0];
       if (file.type.startsWith('image/')) {
         setImage(file);
+        setCurrentImageUrl(URL.createObjectURL(file));
       } else {
         toast({
           title: "Invalid file type",
@@ -77,19 +108,23 @@ const AddAd = () => {
   };
 
   const handleReset = () => {
-    setTitle("");
-    setLink("");
-    setLinkType("EXTERNAL");
-    setIsActive(true);
-    setOrder(1);
-    setImage(null);
+    if (adData) {
+      const ad = adData;
+      setTitle(ad.title);
+      setLink(ad.link);
+      setLinkType(ad.linkType);
+      setIsActive(ad.isActive);
+      setOrder(ad.order);
+      setImage(null);
+      setCurrentImageUrl(ad.imageKey);
+    }
   };
 
   const handleSubmit = async () => {
-    if (!title || !link || !image) {
+    if (!title || !link) {
       toast({
         title: "Missing required fields",
-        description: "Please fill all required fields and upload an image",
+        description: "Please fill all required fields",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -100,21 +135,24 @@ const AddAd = () => {
     setIsSubmitting(true);
 
     try {
-      // First upload the image
-      const formDataToSend = new FormData();
-      formDataToSend.append("file", image);
+      let imageKey = currentImageUrl; // Use existing image if no new one uploaded
 
-      const uploadResponse = await addFile(formDataToSend).unwrap();
-      
-      if (!uploadResponse.success || !uploadResponse.data.uploadedFiles[0]?.url) {
-        throw new Error('Failed to upload image');
+      // Upload new image if provided
+      if (image) {
+        const formDataToSend = new FormData();
+        formDataToSend.append("file", image);
+
+        const uploadResponse = await addFile(formDataToSend).unwrap();
+        
+        if (!uploadResponse.success || !uploadResponse.data.uploadedFiles[0]?.url) {
+          throw new Error('Failed to upload image');
+        }
+
+        imageKey = uploadResponse.data.uploadedFiles[0].url;
       }
 
-      const imageKey = uploadResponse.data.uploadedFiles[0].url;
-    
-
-      // Then create the ad
-      const adData = {
+      // Prepare the ad data for update
+      const updatedAdData = {
         title,
         imageKey,
         link,
@@ -124,22 +162,22 @@ const AddAd = () => {
         translations: [] // Add translations if needed
       };
 
-      const response = await addAd(adData).unwrap();
+      const response = await editAd({id,Ad:updatedAdData}).unwrap();
 
       if (response.success) {
         await Swal.fire({
           title: 'Success!',
-          text: 'Ad created successfully',
+          text: 'Ad updated successfully',
           icon: 'success',
           confirmButtonText: 'OK'
         });
         navigate('/admin/undefined/cms/ads');
       } else {
-        throw new Error(response.message || 'Failed to create ad');
+        throw new Error(response.message || 'Failed to update ad');
       }
     } catch (error) {
       toast({
-        title: "Error creating ad",
+        title: "Error updating ad",
         description: error.message || "Something went wrong",
         status: "error",
         duration: 5000,
@@ -149,6 +187,10 @@ const AddAd = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (isAdLoading) {
+    return <div>Loading ad data...</div>;
+  }
 
   return (
     <div className="container add-admin-container w-100">
@@ -161,7 +203,7 @@ const AddAd = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Ad
+            Edit Ad
           </Text>
           <Button
             type="button"
@@ -220,9 +262,7 @@ const AddAd = () => {
               mt="8px"
             >
               <option value="EXTERNAL">External</option>
-              {/* <option value="PRODUCT">PRODUCT</option>
-              <option value="PHARMACY">PHARMACY</option>
-              <option value="DOCTOR">DOCTOR</option> */}
+              <option value="INTERNAL">Internal</option>
             </Select>
           </div>
 
@@ -291,7 +331,7 @@ const AddAd = () => {
                 onChange={handleFileInputChange}
               />
             </Button>
-            {image && (
+            {currentImageUrl && (
               <Box
                 mt={4}
                 display={'flex'}
@@ -300,14 +340,14 @@ const AddAd = () => {
                 alignItems="center"
               >
                 <img
-                  src={URL.createObjectURL(image)}
-                  alt={image.name}
+                  src={currentImageUrl}
+                  alt="Current Ad"
                   width={150}
                   height={150}
                   style={{ borderRadius: "md", maxHeight: "150px" }}
                 />
                 <Text mt={2} fontSize="sm">
-                  {image.name}
+                  {image ? image.name : "Current ad image"}
                 </Text>
               </Box>
             )}
@@ -336,7 +376,7 @@ const AddAd = () => {
               isLoading={isSubmitting}
               loadingText="Submitting..."
             >
-              Save Ad
+              Update Ad
             </Button>
           </Flex>
         </form>
@@ -345,4 +385,4 @@ const AddAd = () => {
   );
 };
 
-export default AddAd;
+export default EditAd;

@@ -101,6 +101,7 @@ import ShowDoctor from 'views/admin/doctors/ShowDoctor';
 import EditDoctor from 'views/admin/doctors/EditDoctor';
 import ShowProduct from 'views/admin/products/ShowProduct';
 import EditProduct from 'views/admin/products/EditProduct';
+import EditAd from 'views/admin/ads/EditAd';
 
 
 const routes = [
@@ -722,6 +723,14 @@ const routes = [
     path: '/cms/add-ads',
     icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
     component: <AddAd />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Edit ads',
+    layout: '/admin', 
+    path: '/cms/edit-ads/:id',
+    icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
+    component: <EditAd />,
     showInSidebar: false,
   },
   {

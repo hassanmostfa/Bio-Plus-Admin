@@ -24,42 +24,80 @@ import Card from 'components/card/Card';
 import { EditIcon, PlusSquareIcon } from '@chakra-ui/icons';
 import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
+import { useGetAdsQuery, useDeleteAdMutation } from 'api/adsSlice';
+import Swal from 'sweetalert2';
+
 
 const columnHelper = createColumnHelper();
 
 const Ads = () => {
-  const [data, setData] = React.useState([
-    {
-      id: 1,
-      image:
-        'https://th.bing.com/th/id/OIP.4NebaoMBQ1I-_Sk9KLW0DQHaFz?w=220&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7',
-      title: 'ads',
-      out_link: 'https://linkout.com',
-      in_link: 'https://linkout.com',
-    },
-    {
-      id: 2,
-      image:
-        'https://th.bing.com/th/id/OIP.4NebaoMBQ1I-_Sk9KLW0DQHaFz?w=220&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7',
-      title: 'ads2',
-      out_link: 'https://linkout.com',
-      in_link: 'https://linkout.com',
-    },
-    {
-      id: 3,
-      image:
-        'https://th.bing.com/th/id/OIP.4NebaoMBQ1I-_Sk9KLW0DQHaFz?w=220&h=180&c=7&r=0&o=5&dpr=1.3&pid=1.7',
-      title: 'ads3',
-      out_link: 'https://linkout.com',
-      in_link: 'https://linkout.com',
-    },
-  ]);
-
+  const [page, setPage] = React.useState(1);
+  const limit = 10;
+  
+  const { data: adsResponse, isLoading, refetch } = useGetAdsQuery({ page, limit });
+  const [deleteAd] = useDeleteAdMutation();
+  React.useEffect(() => {
+    refetch();
+  }, []);
   const navigate = useNavigate();
+  
   const [sorting, setSorting] = React.useState([]);
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+
+  // Transform API data to match table structure
+  const tableData = React.useMemo(() => {
+    if (!adsResponse?.data) return [];
+    
+    return adsResponse.data.map(ad => ({
+      id: ad.id,
+      title: ad.title,
+      link: ad.link,
+      linkType: ad.linkType,
+      image: ad.imageKey, // You might want to use a proper image URL here
+      isActive: ad.isActive ? 'Active' : 'Inactive',
+      order: ad.order,
+    }));
+  }, [adsResponse]);
+
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteAd(id).unwrap();
+        await Swal.fire(
+          'Deleted!',
+          'The ad has been deleted.',
+          'success'
+        );
+        refetch();
+      } catch (error) {
+        await Swal.fire(
+          'Error!',
+          error.message || 'Failed to delete the ad.',
+          'error'
+        );
+      }
+    }
+  };
+
+  const handleEdit = (id) => {
+    navigate(`/admin/cms/edit-ads/${id}`);
+  };
+
+  const handleView = (id) => {
+    navigate(`/admin/cms/edit-ads/${id}`);
+  };
 
   const columns = [
     columnHelper.accessor('id', {
@@ -94,8 +132,8 @@ const Ads = () => {
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
-    columnHelper.accessor('out_link', {
-      id: 'out_link',
+    columnHelper.accessor('link', {
+      id: 'link',
       header: () => (
         <Text
           justifyContent="space-between"
@@ -103,13 +141,37 @@ const Ads = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          External Link
+          Link
+        </Text>
+      ),
+      cell: (info) => (
+        <Text 
+          color={textColor}
+          maxW="200px"
+          whiteSpace="nowrap"
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
+          {info.getValue()}
+        </Text>
+      ),
+    }),
+    columnHelper.accessor('linkType', {
+      id: 'linkType',
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: '10px', lg: '12px' }}
+          color="gray.400"
+        >
+          Link Type
         </Text>
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
-    columnHelper.accessor('in_link', {
-      id: 'in_link',
+    columnHelper.accessor('isActive', {
+      id: 'isActive',
       header: () => (
         <Text
           justifyContent="space-between"
@@ -117,10 +179,17 @@ const Ads = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Internal Link
+          Status
         </Text>
       ),
-      cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
+      cell: (info) => (
+        <Text 
+          color={info.getValue() === 'Active' ? 'green.500' : 'red.500'}
+          fontWeight="bold"
+        >
+          {info.getValue()}
+        </Text>
+      ),
     }),
     columnHelper.accessor('image', {
       id: 'image',
@@ -137,7 +206,7 @@ const Ads = () => {
       cell: (info) => (
         <img
           src={info.getValue()}
-          alt="Brand Image"
+          alt="Ad Image"
           width={70}
           height={70}
           style={{ borderRadius: '8px' }}
@@ -165,6 +234,7 @@ const Ads = () => {
             color="red.500"
             as={FaTrash}
             cursor="pointer"
+            onClick={() => handleDelete(info.row.original.id)}
           />
           <Icon
             w="18px"
@@ -173,6 +243,7 @@ const Ads = () => {
             color="green.500"
             as={EditIcon}
             cursor="pointer"
+            onClick={() => handleEdit(info.row.original.id)}
           />
           <Icon
             w="18px"
@@ -181,6 +252,7 @@ const Ads = () => {
             color="blue.500"
             as={FaEye}
             cursor="pointer"
+            onClick={() => handleView(info.row.original.id)}
           />
         </Flex>
       ),
@@ -188,7 +260,7 @@ const Ads = () => {
   ];
 
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
     state: {
       sorting,
@@ -198,6 +270,37 @@ const Ads = () => {
     getSortedRowModel: getSortedRowModel(),
     debugTable: true,
   });
+
+  // Pagination controls
+  const PaginationControls = () => {
+    if (!adsResponse?.pagination) return null;
+    
+    const { page: currentPage, totalPages } = adsResponse.pagination;
+    
+    return (
+      <Flex justifyContent="center" mt={4} gap={2}>
+        <Button
+          onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+          isDisabled={currentPage === 1}
+        >
+          Previous
+        </Button>
+        <Text>
+          Page {currentPage} of {totalPages}
+        </Text>
+        <Button
+          onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+          isDisabled={currentPage === totalPages}
+        >
+          Next
+        </Button>
+      </Flex>
+    );
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="container">
@@ -268,32 +371,30 @@ const Ads = () => {
               ))}
             </Thead>
             <Tbody>
-              {table
-                .getRowModel()
-                .rows.slice(0, 11)
-                .map((row) => {
-                  return (
-                    <Tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => {
-                        return (
-                          <Td
-                            key={cell.id}
-                            fontSize={{ sm: '14px' }}
-                            minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                            borderColor="transparent"
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </Td>
-                        );
-                      })}
-                    </Tr>
-                  );
-                })}
+              {table.getRowModel().rows.map((row) => {
+                return (
+                  <Tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => {
+                      return (
+                        <Td
+                          key={cell.id}
+                          fontSize={{ sm: '14px' }}
+                          minW={{ sm: '150px', md: '200px', lg: 'auto' }}
+                          borderColor="transparent"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </Td>
+                      );
+                    })}
+                  </Tr>
+                );
+              })}
             </Tbody>
           </Table>
+          <PaginationControls />
         </Box>
       </Card>
     </div>

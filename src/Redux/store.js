@@ -20,6 +20,9 @@ import { TypeApi } from "api/typeSlice";
 import { apiService } from "api/userSlice";
 import { VarientApi } from "api/varientSlice";
 import { notificationApi } from "api/notificationsSlice";
+import { pharmacyRequestsApi } from "api/pharmacyRequestsSlice";
+import Ads from "views/admin/ads/Ads";
+import { adsApi } from "api/adsSlice";
 
 // import { userApi, authReducer } from './userSlice';
 
@@ -44,7 +47,9 @@ export const store = configureStore({
     [doctorApi.reducerPath]:doctorApi.reducer,
     [ProductApi.reducerPath]:ProductApi.reducer,
     [filesApi.reducerPath]:filesApi.reducer,
-    [notificationApi.reducerPath]:notificationApi.reducer
+    [notificationApi.reducerPath]:notificationApi.reducer,
+    [pharmacyRequestsApi.reducerPath]:pharmacyRequestsApi.reducer,
+    [adsApi.reducerPath]:adsApi.reducer,
 
   },
   middleware: (getDefaultMiddleware) =>
@@ -68,7 +73,9 @@ export const store = configureStore({
       doctorApi.middleware,
       ProductApi.middleware,
       filesApi.middleware,
-      notificationApi.middleware
+      notificationApi.middleware,
+      pharmacyRequestsApi.middleware,
+      adsApi.middleware,
     ),
 });
 
