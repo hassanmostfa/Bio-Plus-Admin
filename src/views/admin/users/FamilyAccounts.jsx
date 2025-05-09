@@ -26,11 +26,17 @@ import {
 import { FaEye, FaTrash } from "react-icons/fa6";
 import { EditIcon } from "@chakra-ui/icons";
 import Card from "components/card/Card";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useGetUserFamilyQuery } from "api/clientSlice";
 const columnHelper = createColumnHelper();
 
 const FamilyAccounts = () => {
   const navigate = useNavigate();
+  const {id} = useParams();
+  const {data:familyData} = useGetUserFamilyQuery(id);
+  const family = familyData?.data || [];
+  console.log(family);
+  
   const [data, setData] = useState([
     {
       name: "John Doe",

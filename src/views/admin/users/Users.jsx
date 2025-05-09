@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -11,7 +11,12 @@ import {
   Thead,
   Tr,
   useColorModeValue,
-  Switch,
+  Button,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useToast,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -21,44 +26,57 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { FaEye, FaTrash } from "react-icons/fa6";
-import { EditIcon } from "@chakra-ui/icons";
+import { EditIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import Card from "components/card/Card";
 import { useNavigate } from "react-router-dom";
+import { useGetUsersQuery, useUpdateUserMutation } from "api/clientSlice";
+import Swal from "sweetalert2";
+
 const columnHelper = createColumnHelper();
 
 const Users = () => {
   const navigate = useNavigate();
-  const [data, setData] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      gender: "Male",
-      phone: "1234567890",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Jane Doe",
-      email: "jane@example.com",
-      gender: "Female",
-      phone: "9876543210",
-      status: "Inactive",
-    },
-  ]);
-
+  const toast = useToast();
+  const { data: usersData, refetch } = useGetUsersQuery({ page: 1, limit: 10 });
+  const [updateStatus] = useUpdateUserMutation();
+  
+  const users = usersData?.data || [];
+  
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
 
-  // Function to toggle status
-  const toggleStatus = (id) => {
-    setData((prevData) =>
-      prevData.map((user) =>
-        user.id === id
-          ? { ...user, status: user.status === "Active" ? "Inactive" : "Active" }
-          : user
-      )
-    );
+  const handleStatusUpdate = async (userId, newStatus) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: `You are about to change the user's status to ${newStatus}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, update it!'
+      });
+      
+      if (result.isConfirmed) {
+        await updateStatus({ id: userId, data: { status: newStatus} }).unwrap();
+        await refetch();
+        toast({
+          title: 'Status updated',
+          description: `User status has been changed to ${newStatus}`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error updating status',
+        description: error.message || 'Failed to update user status',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const columns = [
@@ -82,7 +100,7 @@ const Users = () => {
       header: () => <Text color="gray.400">Gender</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
-    columnHelper.accessor("phone", {
+    columnHelper.accessor("phoneNumber", {
       id: "phone",
       header: () => <Text color="gray.400">Phone</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
@@ -90,32 +108,56 @@ const Users = () => {
     columnHelper.accessor("status", {
       id: "status",
       header: () => <Text color="gray.400">Status</Text>,
-      cell: (info) => {
-        const isActive = info.getValue() === "Active";
-        return (
-          <Switch
-            colorScheme="green"
-            isChecked={isActive}
-            onChange={() => toggleStatus(info.row.original.id)}
-          />
-        );
-      },
+      cell: (info) => (
+        <Text 
+          color={info.getValue() === 'ACTIVE' ? 'green.500' : 
+                info.getValue() === 'SUSPENDED' ? 'red.500' :
+                info.getValue() === 'PENDING' ? 'orange.500' : 'gray.500'}
+          fontWeight="bold"
+        >
+          {info.getValue()}
+        </Text>
+      ),
     }),
     columnHelper.accessor("actions", {
       id: "actions",
       header: () => <Text color="gray.400">Actions</Text>,
       cell: (info) => (
-        <Flex>
-          <Icon w="18px" h="18px" me="10px" color="red.500" as={FaTrash} cursor="pointer" />
-          <Icon w="18px" h="18px" me="10px" color="green.500" as={EditIcon} cursor="pointer" />
-          <Icon w="18px" h="18px" me="10px" color="blue.500" onClick={() => navigate(`/admin/family-Accounts`)} title="View Family Accounts" as={FaEye} cursor="pointer" />
+        <Flex alignItems="center"> 
+          <Icon 
+            w="18px" 
+            h="18px" 
+            me="10px" 
+            color="blue.500" 
+            onClick={() => navigate(`/admin/family-Accounts/${info.row.original.id}`)} 
+            title="View Family Accounts" 
+            as={FaEye} 
+            cursor="pointer" 
+          />
+          <Menu>
+            <MenuButton 
+              as={Button} 
+              rightIcon={<ChevronDownIcon />} 
+              size="sm" 
+              variant="outline"
+              colorScheme="teal"
+            >
+              Edit Status
+            </MenuButton>
+            <MenuList>
+              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'PENDING')}>PENDING</MenuItem>
+              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'ACTIVE')}>ACTIVE</MenuItem>
+              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'SUSPENDED')}>SUSPENDED</MenuItem>
+              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'BLOCKED')}>BLOCKED</MenuItem>
+            </MenuList>
+          </Menu>
         </Flex>
       ),
     }),
   ];
 
   const table = useReactTable({
-    data,
+    data: users,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),

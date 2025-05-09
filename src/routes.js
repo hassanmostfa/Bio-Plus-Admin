@@ -618,14 +618,14 @@ const routes = [
     component: <Appointments />,
     showInSidebar: true,
   },
-  {
-    name: 'Reports',
-    layout: '/admin',
-    path: '/reports',
-    icon: <Icon as={MdBarChart} width="20px" height="20px" color="inherit" />,
-    component: <NFTMarketplace />,
-    showInSidebar: true,
-  },
+  // {
+  //   name: 'Reports',
+  //   layout: '/admin',
+  //   path: '/reports',
+  //   icon: <Icon as={MdBarChart} width="20px" height="20px" color="inherit" />,
+  //   component: <NFTMarketplace />,
+  //   showInSidebar: true,
+  // },
   {
     name: 'CMS',
     layout: '/admin',
@@ -790,7 +790,7 @@ const routes = [
   {
     name: 'Family Accounts',
     layout: '/admin',
-    path: '/family-Accounts',
+    path: '/family-Accounts/:id',
     component: <FamilyAccounts />,
     showInSidebar: false,
   },

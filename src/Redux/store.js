@@ -23,6 +23,8 @@ import { notificationApi } from "api/notificationsSlice";
 import { pharmacyRequestsApi } from "api/pharmacyRequestsSlice";
 import Ads from "views/admin/ads/Ads";
 import { adsApi } from "api/adsSlice";
+import { clientSlice } from "api/clientSlice";
+import { appointmentSlice } from "api/appointmentSlice";
 
 // import { userApi, authReducer } from './userSlice';
 
@@ -50,6 +52,8 @@ export const store = configureStore({
     [notificationApi.reducerPath]:notificationApi.reducer,
     [pharmacyRequestsApi.reducerPath]:pharmacyRequestsApi.reducer,
     [adsApi.reducerPath]:adsApi.reducer,
+    [clientSlice.reducerPath]:clientSlice.reducer,
+    [appointmentSlice.reducerPath]:appointmentSlice.reducer,
 
   },
   middleware: (getDefaultMiddleware) =>
@@ -76,6 +80,8 @@ export const store = configureStore({
       notificationApi.middleware,
       pharmacyRequestsApi.middleware,
       adsApi.middleware,
+      clientSlice.middleware,
+      appointmentSlice.middleware,
     ),
 });
 

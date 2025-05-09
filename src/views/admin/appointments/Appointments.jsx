@@ -1,437 +1,459 @@
-    import {
-        Box,
-        Flex,
-        Icon,
-        Input,
-        Select,
-        Table,
-        Tbody,
-        Td,
-        Text,
-        Th,
-        Thead,
-        Tr,
-        useColorModeValue,
-        useDisclosure,
-        Modal,
-        ModalOverlay,
-        ModalContent,
-        ModalHeader,
-        ModalCloseButton,
-        ModalBody,
-        ModalFooter,
-        Button,
-    } from '@chakra-ui/react';
-    import {
-        createColumnHelper,
-        flexRender,
-        getCoreRowModel,
-        getSortedRowModel,
-        useReactTable,
-    } from '@tanstack/react-table';
-    import React, { useState } from 'react';
-    import Card from 'components/card/Card';
-    import { FaEye } from 'react-icons/fa6';
+import {
+  Box,
+  Flex,
+  Icon,
+  Input,
+  Select,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  useColorModeValue,
+  Button,
+  Image,
+  Badge,
+  useToast,
+} from '@chakra-ui/react';
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
+import React, { useState, useEffect } from 'react';
+import Card from 'components/card/Card';
+import { FaCreativeCommons, FaEye } from 'react-icons/fa6';
+import { useGetAppointmentsQuery } from 'api/appointmentSlice';
+import { useGetClinicsQuery } from 'api/clinicSlice';
+import { useGetDoctorsQuery } from 'api/doctorSlice';
+import { BsFillPersonBadgeFill } from 'react-icons/bs';
+import { BiBuilding, BiVideo } from 'react-icons/bi';
+
+
+const columnHelper = createColumnHelper();
+
+const Appointments = () => {
+  const toast = useToast();
+
+  // State for filters
+  const [filters, setFilters] = useState({
+    doctorId: '',
+    clinicId: '',
+    consultType: '',
+    startDate: '',
+    endDate: '',
+    status: '',
+  });
+
+  // API calls
+  const { data: clinicsResponse } = useGetClinicsQuery({ page: 1, limit: 100 });
+  const { data: doctorsData } = useGetDoctorsQuery({ page: 1, limit: 100 });
+  const { data: appointmentsData, refetch } = useGetAppointmentsQuery({
+    page: 1,
+    limit: 10,
+    ...filters,
+  });
+
+  // Data extraction
+  const clinics = clinicsResponse?.data || [];
+  const doctors = doctorsData?.data || [];
+  const appointments = appointmentsData?.data || [];
+
+  // Format time from minutes since midnight to HH:MM
+  const formatTime = (minutes) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins
+      .toString()
+      .padStart(2, '0')}`;
+  };
+
+  // Format appointment date
+  const formatAppointmentDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-GB');
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (field, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Apply filters (will trigger automatic refetch via RTK Query)
+  const applyFilters = () => {
+    refetch();
+  };
+
+  // Reset all filters
+  const resetFilters = () => {
+    setFilters({
+      doctorId: '',
+      clinicId: '',
+      consultationType: '',
+      startDate: '',
+      endDate: '',
+    });
+  };
+
+  const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+
+  const columns = [
+    columnHelper.accessor('appointmentNumber', {
+      header: 'Appointment #',
+      cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
+    }),
+    columnHelper.accessor('patient.name', {
+      header: 'Patient',
+      cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
+    }),
+    columnHelper.accessor('patient.phoneNumber', {
+      header: 'Phone',
+      cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
+    }),
+    columnHelper.accessor('doctor', {
+      header: 'Doctor',
+      cell: (info) => (
+        <Flex align="center">
+          <Image
+            src={info.getValue()?.imageUrl || 'https://via.placeholder.com/40'}
+            boxSize="40px"
+            borderRadius="full"
+            mr="2"
+            alt="Doctor"
+          />
+          <Box>
+            <Text color={textColor} fontWeight="bold">
+              {info.getValue()?.name}
+            </Text>
+            <Text color="gray.500" fontSize="sm">
+              {info.getValue()?.specialization}
+            </Text>
+          </Box>
+        </Flex>
+      ),
+    }),
+    columnHelper.accessor('location.clinicName', {
+      header: 'Clinic',
+      cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
+    }),
+    columnHelper.accessor('consultationType', {
+      header: 'Type',
+      cell: (info) => (
+        <Badge
+          colorScheme={info.getValue() === 'AT_CLINIC' ? 'blue' : 'green'}
+          p="5px 10px"
+          borderRadius="8px"
+        >
+          {info.getValue() === 'AT_CLINIC' ? 'At Clinic' : 'Online'}
+        </Badge>
+      ),
+    }),
+    columnHelper.accessor('appointmentDate', {
+      header: 'Date',
+      cell: (info) => (
+        <Text color={textColor}>{formatAppointmentDate(info.getValue())}</Text>
+      ),
+    }),
+    columnHelper.accessor('formattedTime', {
+      header: 'Time',
+      cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
+    }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      cell: (info) => (
+        <Badge
+          colorScheme={
+            info.getValue() === 'CONFIRMED'
+              ? 'green'
+              : info.getValue() === 'PENDING'
+              ? 'yellow'
+              : 'red'
+          }
+          p="5px 10px"
+          borderRadius="8px"
+        >
+          {info.getValue()}
+        </Badge>
+      ),
+    }),
+    columnHelper.accessor('paymentStatus', {
+      header: 'Payment',
+      cell: (info) => (
+        <Badge
+          colorScheme={info.getValue() === 'PAID' ? 'green' : 'red'}
+          p="5px 10px"
+          borderRadius="8px"
+        >
+          {info.getValue()}
+        </Badge>
+      ),
+    }),
+    // columnHelper.accessor('actions', {
+    //   header: 'Actions',
+    //   cell: (info) => (
+    //     <Icon
+    //       w="18px"
+    //       h="18px"
+    //       color="blue.500"
+    //       as={FaEye}
+    //       cursor="pointer"
+    //       onClick={() => console.log('View appointment:', info.row.original.id)}
+    //     />
+    //   ),
+    // }),
+  ];
+
+  const table = useReactTable({
+    data: appointments,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
+
+  return (
+    <div className="container">
+      <Card
+        flexDirection="column"
+        w="100%"
+        px="0px"
+        overflowX={{ sm: 'scroll', lg: 'hidden' }}
+      >
+        <Flex px="25px" mb="20px" justifyContent="space-between" align="center">
+          <Text
+            color={textColor}
+            fontSize="22px"
+            fontWeight="700"
+            lineHeight="100%"
+          >
+            Appointments
+          </Text>
+        </Flex>
+
+      {/* Filters */}
+<div className="card shadow-sm mb-4">
+  <div className="card-body">
+    <h5 className="card-title mb-3">
+      <i className="bi bi-funnel me-2"></i>
+      Filter Consultations
+    </h5>
     
-    const columnHelper = createColumnHelper();
-    
-    const Appointments = () => {
-        const [data, setData] = useState([
-        {
-            username: 'John Doe',
-            userType: 'Registered User',
-            email: 'john.doe@example.com',
-            phoneNo: '+96599123456',
-            doctor: 'Dr. Smith',
-            clinic: 'City Clinic',
-            clinicCategory: 'General',
-            appointmentType: 'Online',
-            appointmentDate: '2025-02-20',
-        },
-        {
-            username: 'Jane Smith',
-            userType: 'Family Account',
-            email: 'jane.smith@example.com',
-            phoneNo: '+96599123457',
-            doctor: 'Dr. Johnson',
-            clinic: 'Health Plus',
-            clinicCategory: 'Dental',
-            appointmentType: 'At Clinic',
-            appointmentDate: '2025-02-21',
-        },
-        {
-            username: 'Emily Johnson',
-            userType: 'Registered User',
-            email: 'emily.johnson@example.com',
-            phoneNo: '+96599123458',
-            doctor: 'Dr. Brown',
-            clinic: 'Care Clinic',
-            clinicCategory: 'Pediatric',
-            appointmentType: 'Online',
-            appointmentDate: '2025-02-22',
-        },
-        ]);
-    
-        const [sorting, setSorting] = useState([]);
-        
-        // Filter states
-        const [doctorFilter, setDoctorFilter] = useState('');
-        const [clinicFilter, setClinicFilter] = useState('');
-        const [clinicCategoryFilter, setClinicCategoryFilter] = useState('');
-        const [appointmentTypeFilter, setAppointmentTypeFilter] = useState('');
-        const [startDate, setStartDate] = useState('');
-        const [endDate, setEndDate] = useState('');
-        const [filteredData, setFilteredData] = useState(data); // State for filtered data
-    
-        // Extract unique filter options
-        const doctors = [...new Set(data.map((appointment) => appointment.doctor))];
-        const clinics = [...new Set(data.map((appointment) => appointment.clinic))];
-        const clinicCategories = [...new Set(data.map((appointment) => appointment.clinicCategory))];
-        const appointmentTypes = [...new Set(data.map((appointment) => appointment.appointmentType))];
-    
-        // Apply all filters
-        const applyFilters = (doctor, clinic, clinicCategory, appointmentType, start, end) => {
-        const filtered = data.filter((appointment) => {
-            const appointmentDate = new Date(appointment.appointmentDate);
-    
-            // Date range filter
-            const startFilter = start ? new Date(start) : null;
-            const endFilter = end ? new Date(end) : null;
-            const matchesDate =
-            (!startFilter || appointmentDate >= startFilter) && (!endFilter || appointmentDate <= endFilter);
-    
-            // Doctor filter
-            const matchesDoctor = !doctor || appointment.doctor === doctor;
-    
-            // Clinic filter
-            const matchesClinic = !clinic || appointment.clinic === clinic;
-    
-            // Clinic category filter
-            const matchesClinicCategory = !clinicCategory || appointment.clinicCategory === clinicCategory;
-    
-            // Appointment type filter
-            const matchesAppointmentType = !appointmentType || appointment.appointmentType === appointmentType;
-    
-            return (
-            matchesDate &&
-            matchesDoctor &&
-            matchesClinic &&
-            matchesClinicCategory &&
-            matchesAppointmentType
-            );
-        });
-    
-        setFilteredData(filtered);
-        };
-    
-        // Handle filter changes
-        const handleDoctorFilterChange = (e) => {
-        const selectedDoctor = e.target.value;
-        setDoctorFilter(selectedDoctor);
-        applyFilters(selectedDoctor, clinicFilter, clinicCategoryFilter, appointmentTypeFilter, startDate, endDate);
-        };
-    
-        const handleClinicFilterChange = (e) => {
-        const selectedClinic = e.target.value;
-        setClinicFilter(selectedClinic);
-        applyFilters(doctorFilter, selectedClinic, clinicCategoryFilter, appointmentTypeFilter, startDate, endDate);
-        };
-    
-        const handleClinicCategoryFilterChange = (e) => {
-        const selectedClinicCategory = e.target.value;
-        setClinicCategoryFilter(selectedClinicCategory);
-        applyFilters(doctorFilter, clinicFilter, selectedClinicCategory, appointmentTypeFilter, startDate, endDate);
-        };
-    
-        const handleAppointmentTypeFilterChange = (e) => {
-        const selectedAppointmentType = e.target.value;
-        setAppointmentTypeFilter(selectedAppointmentType);
-        applyFilters(doctorFilter, clinicFilter, clinicCategoryFilter, selectedAppointmentType, startDate, endDate);
-        };
-    
-        const handleApplyDateFilter = () => {
-        applyFilters(doctorFilter, clinicFilter, clinicCategoryFilter, appointmentTypeFilter, startDate, endDate);
-        };
-    
-        const textColor = useColorModeValue('secondaryGray.900', 'white');
-        const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-    
-        const columns = [
-        columnHelper.accessor('username', {
-            header: 'Username',
-            cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-        }),
-        columnHelper.accessor('userType', {
-            header: 'User Type',
-            cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-        }),
-        columnHelper.accessor('email', {
-            header: 'Email',
-            cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-        }),
-        columnHelper.accessor('phoneNo', {
-            header: 'Phone No',
-            cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-        }),
-        columnHelper.accessor('doctor', {
-            header: 'Doctor',
-            cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-        }),
-        columnHelper.accessor('clinic', {
-            header: 'Clinic',
-            cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-        }),
-        columnHelper.accessor('clinicCategory', {
-            header: 'Clinic Category',
-            cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-        }),
-        columnHelper.accessor('appointmentType', {
-            header: 'Appointment Type',
-            cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-        }),
-        columnHelper.accessor('appointmentDate', {
-            header: 'Appointment Date',
-            cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-        }),
-        ];
-    
-        const table = useReactTable({
-        data: filteredData,
-        columns,
-        state: {
-            sorting,
-        },
-        onSortingChange: setSorting,
-        getCoreRowModel: getCoreRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        debugTable: true,
-        });
-    
-        return (
-        <div className="container">
-            <Card
-            flexDirection="column"
-            w="100%"
-            px="0px"
-            overflowX={{ sm: 'scroll', lg: 'hidden' }}
+    <div className="row g-3">
+      {/* Doctor Filter */}
+      <div className="col-md-6 col-lg-4">
+        <div className="form-group">
+          <label htmlFor="doctorFilter" className="form-label">Doctor</label>
+          <div className="input-group">
+            <span className="input-group-text">
+              <BsFillPersonBadgeFill className="bi me-2" />
+            </span>
+            <select
+              id="doctorFilter"
+              className="form-select"
+              value={filters.doctorId}
+              onChange={(e) => handleFilterChange('doctorId', e.target.value)}
             >
-            <Flex px="25px" mb="20px" justifyContent="space-between" align="center">
-                <Text
-                color={textColor}
-                fontSize="22px"
-                fontWeight="700"
-                lineHeight="100%"
-
-                >
-                Appointments
-                </Text>
-            </Flex>
-    
-            {/* Filters */}
-            <Flex mb="20px" mx={"10px"} wrap="wrap" justifyContent="space-around">
-                {/* Doctor Filter */}
-                <Box>
-
-                <Select
-                    placeholder="Filter by Doctor"
-                    value={doctorFilter}
-                    onChange={handleDoctorFilterChange}
-                    size="sm"
-                    borderRadius="15px"
-                    width="250px"
-                    bg={'gray.100'}
-                    padding={'10px'}
-                >
-                    {doctors.map((doctor) => (
-                    <option key={doctor} value={doctor}>
-                        {doctor}
-                    </option>
-                    ))}
-                </Select>
-                </Box>
-    
-                {/* Clinic Filter */}
-                <Box>
-                <Select
-                    placeholder="Filter by Clinic"
-                    value={clinicFilter}
-                    onChange={handleClinicFilterChange}
-                    size="sm"
-                    borderRadius="15px"
-                    width="250px"
-                    bg={'gray.100'}
-                    padding={'10px'}
-                >
-                    {clinics.map((clinic) => (
-                    <option key={clinic} value={clinic}>
-                        {clinic}
-                    </option>
-                    ))}
-                </Select>
-                </Box>
-    
-                {/* Clinic Category Filter */}
-                <Box>
-                <Select
-                    placeholder="Filter by Clinic Category"
-                    value={clinicCategoryFilter}
-                    onChange={handleClinicCategoryFilterChange}
-                    size="sm"
-                    borderRadius="15px"
-                    width="250px"
-                    bg={'gray.100'}
-                    padding={'10px'}
-                >
-                    {clinicCategories.map((category) => (
-                    <option key={category} value={category}>
-                        {category}
-                    </option>
-                    ))}
-                </Select>
-                </Box>
-    
-                {/* Appointment Type Filter */}
-                <Box>
-                <Select
-                    placeholder="Filter by Appointment Type"
-                    value={appointmentTypeFilter}
-                    onChange={handleAppointmentTypeFilterChange}
-                    size="sm"
-                    borderRadius="15px"
-                    width="250px"
-                    bg={'gray.100'}
-                    padding={'10px'}
-                >
-                    {appointmentTypes.map((type) => (
-                    <option key={type} value={type}>
-                        {type}
-                    </option>
-                    ))}
-                </Select>
-                </Box>
-    
-            </Flex>
-            
-            <Flex mb="20px" mx={"20px"} wrap="wrap" justifyContent="space-around" alignItems={'center'}>
-                {/* Date Range Filter */}
-                <Box>
-
-                <Text color={textColor} mb={'10px'} fontWeight={'bold'} fontSize={'sm'}>
-                From Date
-                </Text>
-                <Input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    size="sm"
-                    borderRadius="15px"
-                    padding="20px"
-                    bg={'gray.100'}
-                    width={'400px'}
-                    
-                />
-                </Box>
-                <Box>
-                <Text color={textColor} mb={'10px'} fontWeight={'bold'} fontSize={'sm'}>
-                    To Date
-                </Text>
-                <Input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    size="sm"
-                    borderRadius="15px"
-                    padding="20px"
-                    bg={'gray.100'}
-                    width={'400px'}
-                />
-                </Box>
-                <Box>
-                <Button
-                    onClick={handleApplyDateFilter}
-                    variant="darkBrand"
-                    color="white"
-                    fontSize="sm"
-                    fontWeight="500"
-                    borderRadius="70px"
-                    px="24px"
-                    py="5px"
-                    width={'200px'}
-                    mt={'20px'}
-                >
-                    Apply Filter
-                </Button>
-                </Box>
-
-            </Flex>
-            {/* Table */}
-            <Box overflowX="auto">
-                <Table variant="simple" color="gray.500" mb="24px" mt="12px" minWidth="1000px">
-                <Thead>
-                    {table.getHeaderGroups().map((headerGroup) => (
-                    <Tr key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => {
-                        return (
-                            <Th
-                            key={header.id}
-                            colSpan={header.colSpan}
-                            pe="10px"
-                            borderColor={borderColor}
-                            cursor="pointer"
-                            onClick={header.column.getToggleSortingHandler()}
-                            >
-                            <Flex
-                                justifyContent="space-between"
-                                align="center"
-                                fontSize={{ sm: '10px', lg: '12px' }}
-                                color="gray.400"
-                            >
-                                {flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                                )}
-                                {{
-                                asc: ' 🔼',
-                                desc: ' 🔽',
-                                }[header.column.getIsSorted()] ?? null}
-                            </Flex>
-                            </Th>
-                        );
-                        })}
-                    </Tr>
-                    ))}
-                </Thead>
-                <Tbody>
-                    {table
-                    .getRowModel()
-                    .rows.slice(0, 11)
-                    .map((row) => {
-                        return (
-                        <Tr key={row.id}>
-                            {row.getVisibleCells().map((cell) => {
-                            return (
-                                <Td
-                                key={cell.id}
-                                fontSize={{ sm: '14px' }}
-                                minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                                borderColor="transparent"
-                                >
-                                {flexRender(
-                                    cell.column.columnDef.cell,
-                                    cell.getContext()
-                                )}
-                                </Td>
-                            );
-                            })}
-                        </Tr>
-                        );
-                    })}
-                </Tbody>
-                </Table>
-            </Box>
-            </Card>
+              <option value="">All Doctors</option>
+              {doctors.map((doctor) => (
+                <option key={doctor.id} value={doctor.id}>
+                  {doctor.fullName}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        );
-    };
-    
-    export default Appointments;
+      </div>
+
+      {/* Clinic Filter */}
+      <div className="col-md-6 col-lg-4">
+        <div className="form-group">
+          <label htmlFor="clinicFilter" className="form-label">Clinic</label>
+          <div className="input-group">
+            <span className="input-group-text">
+              <BiBuilding className="bi me-2" />
+            </span>
+            <select
+              id="clinicFilter"
+              className="form-select"
+              value={filters.clinicId}
+              onChange={(e) => handleFilterChange('clinicId', e.target.value)}
+            >
+              <option value="">All Clinics</option>
+              {clinics.map((clinic) => (
+                <option key={clinic.id} value={clinic.id}>
+                  {clinic.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Consultation Type Filter */}
+      <div className="col-md-6 col-lg-4">
+        <div className="form-group">
+          <label htmlFor="consultTypeFilter" className="form-label">Consultation Type</label>
+          <div className="input-group">
+            <span className="input-group-text">
+
+                <BiVideo className="bi me-2" />
+
+            </span>
+            <select
+              id="consultTypeFilter"
+              className="form-select"
+              value={filters.consultType}
+              onChange={(e) => handleFilterChange('consultType', e.target.value)}
+            >
+              <option value="">All Types</option>
+              <option value="AT_CLINIC">At Clinic</option>
+              <option value="ONLINE">Online</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Date Range Filter - Start Date */}
+      <div className="col-md-6 col-lg-4">
+        <div className="form-group">
+          <label htmlFor="startDateFilter" className="form-label">From Date</label>
+          <div className="input-group">
+           
+            <input
+              id="startDateFilter"
+              type="date"
+              className="form-control"
+              value={filters.startDate}
+              onChange={(e) => handleFilterChange('startDate', e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Date Range Filter - End Date */}
+      <div className="col-md-6 col-lg-4">
+        <div className="form-group">
+          <label htmlFor="endDateFilter" className="form-label">To Date</label>
+          <div className="input-group">
+           
+            <input
+              id="endDateFilter" 
+              type="date"
+              className="form-control"
+              value={filters.endDate}
+              onChange={(e) => handleFilterChange('endDate', e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Buttons */}
+      <div className="col-md-6 col-lg-4 d-flex align-items-end">
+        <div className="d-grid gap-2 d-md-flex justify-content-md-end w-100 mt-2">
+          <button
+            onClick={applyFilters}
+            className="btn btn-primary"
+            type="button"
+          >
+            <i className="bi bi-search me-1"></i> Apply Filters
+          </button>
+          <button
+            onClick={resetFilters}
+            className="btn btn-outline-secondary"
+            type="button"
+          >
+            <i className="bi bi-x-circle me-1"></i> Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* Active Filters Display (Optional) */}
+    <div className="mt-3">
+      <div className="d-flex flex-wrap gap-2" id="activeFilters">
+        {/* This area can be used to show active filter tags */}
+      </div>
+    </div>
+  </div>
+</div>
+
+        {/* Table */}
+        <Box overflowX="auto">
+          <Table
+            variant="simple"
+            color="gray.500"
+            mb="24px"
+            mt="12px"
+            minWidth="1000px"
+          >
+            <Thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <Tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <Th
+                        key={header.id}
+                        colSpan={header.colSpan}
+                        pe="10px"
+                        borderColor={borderColor}
+                        cursor="pointer"
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        <Flex
+                          justifyContent="space-between"
+                          align="center"
+                          fontSize={{ sm: '10px', lg: '12px' }}
+                          color="gray.400"
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                          {{
+                            asc: ' 🔼',
+                            desc: ' 🔽',
+                          }[header.column.getIsSorted()] ?? null}
+                        </Flex>
+                      </Th>
+                    );
+                  })}
+                </Tr>
+              ))}
+            </Thead>
+            <Tbody>
+              {table.getRowModel().rows.map((row) => {
+                return (
+                  <Tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => {
+                      return (
+                        <Td
+                          key={cell.id}
+                          fontSize={{ sm: '14px' }}
+                          minW={{ sm: '150px', md: '200px', lg: 'auto' }}
+                          borderColor="transparent"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </Td>
+                      );
+                    })}
+                  </Tr>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </Box>
+      </Card>
+    </div>
+  );
+};
+
+export default Appointments;
