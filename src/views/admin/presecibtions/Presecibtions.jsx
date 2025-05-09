@@ -23,6 +23,9 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
+  Badge,
+  Image,
+  useToast,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -31,194 +34,268 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from 'components/card/Card';
 import { EditIcon, SearchIcon } from '@chakra-ui/icons';
-import { FaEye, FaTrash } from 'react-icons/fa6';
+import { FaEye, FaTrash, FaX } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { CgAssign } from 'react-icons/cg';
 import { CiSearch } from "react-icons/ci";
-import { useGetDocumentsQuery } from 'api/documentSlice';
+
 import { useAssignDocumentMutation } from 'api/documentSlice';
 import { useRejectDocumentMutation } from 'api/documentSlice';
 import { useGetPharmaciesQuery } from 'api/pharmacySlice';
+import Swal from 'sweetalert2';
+import { useGetDocumentsQuery } from 'api/documentSlice';
+
+
+
 const columnHelper = createColumnHelper();
 
-const Presecibtions = () => {
-  const {data:documents,refetch} = useGetDocumentsQuery({});
+const Prescriptions = () => {
+  const navigate = useNavigate();
+  const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [selectedPharmacy, setSelectedPharmacy] = useState(null);
+
+  // Pagination state
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+  });
+
+  // Filters state
+  const [filters, setFilters] = useState({
+    status: '',
+    search: '',
+  });
+  // API calls
+  const { data: pharmacyData } = useGetPharmaciesQuery({
+    page: 1,
+    limit: 100000
+  });
+  
+  const { data: documentsResponse , refetch , isLoading , isFetching } = useGetDocumentsQuery({
+    page: pagination.page,
+    limit: pagination.limit,
+    ...filters
+  });
+
+
+  
+
   const [assignDocument] = useAssignDocumentMutation();
   const [rejectDocument] = useRejectDocumentMutation();
-   const { data: pharmacyData } = useGetPharmaciesQuery({
-      page: 1,
-      limit:100000
-    });
-    console.log(documents, "documents");
-    console.log(pharmacyData, "pharmacyData");
-    
-  React.useEffect(() => {
-    refetch();
-  }, []);
-  const [data, setData] = React.useState([
-    {
-      user: 'John Doe',
-      image: 'https://th.bing.com/th/id/R.55a346616e34a25b0823473b586c94bd?rik=07czPXKi2V2Kpw&pid=ImgRaw&r=0',
-      phoneNumber: '+96599123456',
-      uploadDate: '2023-10-15',
-      status: 'new',
-      assignedPharmacy: 'pending',
-    },
-    {
-      user: 'Jane Smith',
-      image: 'https://th.bing.com/th/id/R.55a346616e34a25b0823473b586c94bd?rik=07czPXKi2V2Kpw&pid=ImgRaw&r=0',
-      phoneNumber: '+96599123457',
-      uploadDate: '2023-09-10',
-      status: 'assigned',
-      assignedPharmacy: 'Al-Shifa Pharmacy',
-    },
-    {
-      user: 'Emily Johnson',
-      image: 'https://th.bing.com/th/id/R.55a346616e34a25b0823473b586c94bd?rik=07czPXKi2V2Kpw&pid=ImgRaw&r=0',
-      phoneNumber: '+96599123458',
-      uploadDate: '2023-08-05',
-      status: 'checkout',
-      assignedPharmacy: 'Al-Noor Pharmacy',
-    },
-  ]);
 
-  const navigate = useNavigate();
-  const [sorting, setSorting] = React.useState([]);
-  const { isOpen, onOpen, onClose } = useDisclosure(); // Modal state
-  const [selectedPrescription, setSelectedPrescription] = React.useState(null); // Track selected prescription
+  // Data extraction
+  const documents = documentsResponse?.data?.items || [];
+  const pharmacies = pharmacyData?.data?.items || [];
+  const totalItems = documentsResponse?.data?.total || 0;
+  const totalPages = documentsResponse?.data?.totalPages || 1;
+
+
+  
+  // Format date for display
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (field, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    // Reset to first page when filters change
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
+  // Handle assign pharmacy
+  const handleAssignPharmacy = async () => {
+    if (!selectedDocument || !selectedPharmacy) return;
+
+    try {
+      onClose();
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: `Assign this prescription to ${selectedPharmacy.name}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, assign it!'
+      });
+
+      if (result.isConfirmed) {
+        await assignDocument({id:selectedDocument.id,data:{
+          documentId: selectedDocument.id,
+          pharmacyId: selectedPharmacy.id
+        }}).unwrap();
+
+        Swal.fire(
+          'Assigned!',
+          'The prescription has been assigned.',
+          'success'
+        );
+        refetch();
+
+      }
+    } catch (error) {
+      Swal.fire(
+        'Error!',
+        error.message || 'Failed to assign prescription',
+        'error'
+      );
+    }
+  };
+
+  // Handle reject document
+  const handleRejectDocument = async (documentId) => {
+    const { value: reason } = await Swal.fire({
+      title: 'Reject Prescription',
+      input: 'textarea',
+      inputLabel: 'Reason for rejection',
+      inputPlaceholder: 'Enter the reason for rejecting this prescription...',
+      inputAttributes: {
+        'aria-label': 'Type your rejection reason here'
+      },
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Reject',
+      cancelButtonText: 'Cancel',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'You need to provide a reason!';
+        }
+      }
+    });
+
+    if (reason) {
+      try {
+        await rejectDocument({id:documentId,data:{
+          reason
+        }}).unwrap();
+
+        Swal.fire(
+          'Rejected!',
+          'The prescription has been rejected.',
+          'success'
+        );
+        refetch();
+      } catch (error) {
+        Swal.fire(
+          'Error!',
+          error.message || 'Failed to reject prescription',
+          'error'
+        );
+      }
+    }
+  };
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
-  // List of pharmacies for the modal
-  const pharmacies = [
-    { id: 1, name: 'Al-Shifa Pharmacy' },
-    { id: 2, name: 'Al-Noor Pharmacy' },
-    { id: 3, name: 'Al-Razi Pharmacy' },
-  ];
-
   const columns = [
-    columnHelper.accessor('user', {
+    columnHelper.accessor('userName', {
       header: 'User',
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
-    columnHelper.accessor('image', {
-      header: 'Image',
+    columnHelper.accessor('fileKey', {
+      header: 'Prescription',
       cell: (info) => (
-        <img
+        <Image
           src={info.getValue()}
           alt="Prescription"
-          width={70}
-          height={70}
-          style={{ borderRadius: '8px' }}
+          boxSize="70px"
+          objectFit="cover"
+          borderRadius="8px"
+          fallbackSrc="https://via.placeholder.com/70"
         />
       ),
     }),
-    columnHelper.accessor('phoneNumber', {
-      header: 'Phone Number',
+    columnHelper.accessor('userPhone', {
+      header: 'Phone',
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
-    columnHelper.accessor('uploadDate', {
+    columnHelper.accessor('createdAt', {
       header: 'Upload Date',
-      cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
+      cell: (info) => <Text color={textColor}>{formatDate(info.getValue())}</Text>,
     }),
     columnHelper.accessor('status', {
       header: 'Status',
       cell: (info) => (
-        <Text
-          fontWeight="bold"
-          textAlign={'center'}
-          color={
-            info.getValue() === 'new'
-              ? 'blue.500'
-              : info.getValue() === 'assigned'
-              ? 'green.500'
-              : 'orange.500'
+        <Badge
+          colorScheme={
+            info.getValue() === 'PENDING_REVIEW' ? 'yellow' :
+            info.getValue() === 'ASSIGNED' ? 'green' : 'red'
           }
+          px="10px"
+          py="2px"
+          borderRadius="8px"
         >
-          {info.getValue()}
-        </Text>
+          {info.getValue().replace('_', ' ')}
+        </Badge>
       ),
     }),
-    columnHelper.accessor('assignedPharmacy', {
-      header: 'Assigned Pharmacy',
-      cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
+    columnHelper.accessor('pharmacyName', {
+      header: 'Assigned To',
+      cell: (info) => (
+        <Text color={textColor}>{info.getValue() || 'Not assigned'}</Text>
+      ),
     }),
     columnHelper.accessor('actions', {
       header: 'Actions',
       cell: (info) => (
         <Flex align="center">
-          <Icon
-            w="18px"
-            h="18px"
-            me="10px"
-            color="red.500"
-            as={FaTrash}
-            cursor="pointer"
-          />
-          <Icon
-            w="18px"
-            h="18px"
-            me="10px"
-            color="green.500"
-            as={EditIcon}
-            cursor="pointer"
-          />
-          <Icon
-            w="18px"
-            h="18px"
-            me="10px"
-            color="blue.500"
-            as={FaEye}
-            cursor="pointer"
-            onClick={() => navigate('/admin/pharmacy-branches')}
-          />
-          <Icon
-            w="18px"
-            h="18px"
-            me="10px"
-            color="black"
-            title="Assign"
-            as={CgAssign}
-            cursor="pointer"
-            onClick={() => {
-              setSelectedPrescription(info.row.original); // Set selected prescription
-              onOpen(); // Open modal
-            }}
-          />
+          {info.row.original.status !== 'REJECTED' && info.row.original.status !== 'ASSIGNED' && info.row.original.status === 'PENDING_REVIEW' ? (
+            <>
+              <Icon
+                w="18px"
+                h="18px"
+                me="10px"
+                color="red.500"
+                as={FaX}
+                cursor="pointer"
+                onClick={() => handleRejectDocument(info.row.original.id)}
+                title="Reject Prescription"
+              />
+              <Icon
+                w="18px"
+                h="18px"
+                me="10px"
+                color="green.500"
+                as={CgAssign}
+                cursor="pointer"
+                title="Assign to Pharmacy"
+                onClick={() => {
+                  setSelectedDocument(info.row.original);
+                  onOpen();
+                }}
+              />
+            </>
+          ) : (
+            <Text color={textColor}>----</Text>
+          )}
         </Flex>
       ),
     }),
   ];
 
+ 
   const table = useReactTable({
-    data,
+    data: documents,
     columns,
-    state: {
-      sorting,
-    },
-    onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    debugTable: true,
   });
-
-  // Handle assigning a pharmacy
-  const handleAssignPharmacy = (pharmacy) => {
-    const updatedData = data.map((item) =>
-      item.user === selectedPrescription.user
-        ? { ...item, assignedPharmacy: pharmacy.name }
-        : item
-    );
-    setData(updatedData);
-    console.log('Assigned Pharmacy:', pharmacy.name , "to", selectedPrescription.user);
-    
-    onClose(); // Close modal
-  };
-
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="container">
       <Card
@@ -236,47 +313,39 @@ const Presecibtions = () => {
           >
             All Prescriptions
           </Text>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {/* Search Input */}
-          <Box>
-              <InputGroup borderRadius="15px" background={"gray.100"} w={{ base: "300", md: "300px" }}>
-                  <InputLeftElement pointerEvents="none">
-                      <CiSearch color="gray.400" />
-                  </InputLeftElement>
-                  <Input
-                      variant="outline"
-                      fontSize="sm"
-                      placeholder="Search..."
-                      border="1px solid"
-                      borderColor="gray.200"
-                      _hover={{ borderColor: "gray.400" }}
-                      borderRadius={"15px"}
-                  />
-              </InputGroup>
-          </Box>
-          <Select
-              placeholder="Filter by status"
-              width="300px"
-              background={"gray.100"}
-              onChange={(e) => {
-                const statusValue = e.target.value;
-                const filteredData = data.filter((item) =>
-                  statusValue ? item.status === statusValue : true
-                );
-                setData(filteredData);
-              }}
-              variant="outline"
-                fontSize="sm"
+          <Flex alignItems="center" gap="10px">
+            <InputGroup borderRadius="15px" background={"gray.100"} w="300px">
+              <InputLeftElement pointerEvents="none">
+                <CiSearch color="gray.400" />
+              </InputLeftElement>
+              <Input
+                placeholder="Search..."
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
                 border="1px solid"
                 borderColor="gray.200"
                 _hover={{ borderColor: "gray.400" }}
                 borderRadius={"15px"}
+              />
+            </InputGroup>
+            <Select
+              placeholder="Filter by status"
+              width="300px"
+              background={"gray.100"}
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+              variant="outline"
+              fontSize="sm"
+              border="1px solid"
+              borderColor="gray.200"
+              _hover={{ borderColor: "gray.400" }}
+              borderRadius={"15px"}
             >
-              <option value="new">New</option>
-              <option value="assigned">Assigned</option>
-              <option value="checkout">Checkout</option>
+              <option value="PENDING_REVIEW">Pending Review</option>
+              <option value="ASSIGNED">Assigned</option>
+              <option value="REJECTED">Rejected</option>
             </Select>
-          </div>
+          </Flex>
         </Flex>
         <Box>
           <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -315,62 +384,120 @@ const Presecibtions = () => {
               ))}
             </Thead>
             <Tbody>
-              {table
-                .getRowModel()
-                .rows.slice(0, 11)
-                .map((row) => {
-                  return (
-                    <Tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => {
-                        return (
-                          <Td
-                            key={cell.id}
-                            fontSize={{ sm: '14px' }}
-                            minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                            borderColor="transparent"
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </Td>
-                        );
-                      })}
-                    </Tr>
-                  );
-                })}
+              {table.getRowModel().rows.length > 0 ? (
+                table.getRowModel().rows.map((row) => (
+                  <Tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <Td
+                        key={cell.id}
+                        fontSize={{ sm: '14px' }}
+                        minW={{ sm: '150px', md: '200px', lg: 'auto' }}
+                        borderColor="transparent"
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </Td>
+                    ))}
+                  </Tr>
+                ))
+              ) : (
+                <Tr>
+                  <Td colSpan={columns.length} textAlign="center" py="40px">
+                    <Text color={textColor}>No prescriptions found</Text>
+                  </Td>
+                </Tr>
+              )}
             </Tbody>
           </Table>
         </Box>
+
+        {/* Pagination */}
+        <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
+          <Text color={textColor}>
+            Showing {documents.length} of {totalItems} prescriptions
+          </Text>
+          <Flex gap="10px">
+            <Button
+              onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
+              isDisabled={pagination.page === 1}
+              variant="outline"
+              size="sm"
+            >
+              Previous
+            </Button>
+            <Text color={textColor} px="10px" display="flex" alignItems="center">
+              Page {pagination.page} of {totalPages}
+            </Text>
+            <Button
+              onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
+              isDisabled={pagination.page >= totalPages}
+              variant="outline"
+              size="sm"
+            >
+              Next
+            </Button>
+          </Flex>
+        </Flex>
       </Card>
 
-      {/* Modal for Assigning Pharmacy */}
+      {/* Assign Pharmacy Modal */}
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Assign Pharmacy</ModalHeader>
+          <ModalHeader>Assign Prescription to Pharmacy</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <Text mb="4">Select a pharmacy to assign:</Text>
-            {pharmacies.map((pharmacy) => (
-              <Box
-                key={pharmacy.id}
-                p="2"
-                mb="2"
-                borderWidth="1px"
-                borderRadius="md"
-                cursor="pointer"
-                _hover={{ bg: 'gray.100' }}
-                onClick={() => handleAssignPharmacy(pharmacy)}
-              >
-                <Text>{pharmacy.name}</Text>
-              </Box>
-            ))}
+            {selectedDocument && (
+              <>
+                <Text mb="4">Assign prescription from {selectedDocument.userName} to:</Text>
+                <Box maxH="400px" overflowY="auto">
+                  {pharmacies.map((pharmacy) => (
+                    <Box
+                      key={pharmacy.id}
+                      p="3"
+                      mb="2"
+                      borderWidth="1px"
+                      borderRadius="md"
+                      cursor="pointer"
+                      bg={selectedPharmacy?.id === pharmacy.id ? 'blue.50' : 'white'}
+                      borderColor={selectedPharmacy?.id === pharmacy.id ? 'blue.200' : 'gray.200'}
+                      _hover={{ bg: 'gray.50' }}
+                      onClick={() => setSelectedPharmacy(pharmacy)}
+                    >
+                      <Flex align="center">
+                        <Image
+                          src={pharmacy.imageKey}
+                          boxSize="50px"
+                          objectFit="cover"
+                          borderRadius="md"
+                          mr="3"
+                          fallbackSrc="https://via.placeholder.com/50"
+                        />
+                        <Box>
+                          <Text fontWeight="bold">{pharmacy.name}</Text>
+                          <Text fontSize="sm" color="gray.600">{pharmacy.description}</Text>
+                          <Text fontSize="sm">Branches: {pharmacy.numOfBranches}</Text>
+                        </Box>
+                      </Flex>
+                    </Box>
+                  ))}
+                </Box>
+              </>
+            )}
           </ModalBody>
           <ModalFooter>
-            {/* <Button colorScheme="blue" onClick={onClose}>
-              Close
-            </Button> */}
+            <Button variant="ghost" mr={3} onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="blue"
+              onClick={handleAssignPharmacy}
+              isDisabled={!selectedPharmacy}
+            >
+              Assign to {selectedPharmacy?.name || 'Pharmacy'}
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -378,4 +505,4 @@ const Presecibtions = () => {
   );
 };
 
-export default Presecibtions;
+export default Prescriptions;

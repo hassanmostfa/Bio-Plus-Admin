@@ -12,10 +12,12 @@ import {
   Tr,
   useColorModeValue,
   Button,
-  Switch,
+  Input,
+  InputGroup,
+  InputLeftElement,
 } from "@chakra-ui/react";
 import { IoMdArrowBack } from 'react-icons/io';
-
+import { FaSearch } from 'react-icons/fa';
 import {
   createColumnHelper,
   flexRender,
@@ -23,48 +25,25 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { FaEye, FaTrash } from "react-icons/fa6";
-import { EditIcon } from "@chakra-ui/icons";
 import Card from "components/card/Card";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetUserFamilyQuery } from "api/clientSlice";
+
 const columnHelper = createColumnHelper();
 
 const FamilyAccounts = () => {
   const navigate = useNavigate();
-  const {id} = useParams();
-  const {data:familyData} = useGetUserFamilyQuery(id);
+  const { id } = useParams();
+  const { data: familyData } = useGetUserFamilyQuery(id);
+  const [searchTerm, setSearchTerm] = useState("");
+
   const family = familyData?.data || [];
-  console.log(family);
-  
-  const [data, setData] = useState([
-    {
-      name: "John Doe",
-      age: 30,
-      gender: "Male",
-      relationship: "Father",
-    },
-    {
-      name: "John Doe",
-      age: 30,
-      gender: "Male",
-      relationship: "Father",
-    },
-  ]);
+  const filteredData = family.filter((member) =>
+    member.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
-
-  // Function to toggle status
-  const toggleStatus = (id) => {
-    setData((prevData) =>
-      prevData.map((user) =>
-        user.id === id
-          ? { ...user, status: user.status === "Active" ? "Inactive" : "Active" }
-          : user
-      )
-    );
-  };
 
   const columns = [
     columnHelper.accessor("name", {
@@ -87,21 +66,10 @@ const FamilyAccounts = () => {
       header: () => <Text color="gray.400">Relationship</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
-    columnHelper.accessor("actions", {
-      id: "actions",
-      header: () => <Text color="gray.400">Actions</Text>,
-      cell: (info) => (
-        <Flex>
-          <Icon w="18px" h="18px" me="10px" color="red.500" as={FaTrash} cursor="pointer" />
-          <Icon w="18px" h="18px" me="10px" color="green.500" as={EditIcon} cursor="pointer" />
-          <Icon w="18px" h="18px" me="10px" color="blue.500" as={FaEye} cursor="pointer" />
-        </Flex>
-      ),
-    }),
   ];
 
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -113,16 +81,24 @@ const FamilyAccounts = () => {
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700">Family Accounts</Text>
           <Button
-                    type="button"
-                    onClick={() => navigate(-1)}
-                    colorScheme="teal"
-                    size="sm"
-                    // mt="20px"
-                    leftIcon={<IoMdArrowBack />}
-                >
-                    Back
-                </Button>
+            type="button"
+            onClick={() => navigate(-1)}
+            colorScheme="teal"
+            size="sm"
+            leftIcon={<IoMdArrowBack />}
+          >
+            Back
+          </Button>
         </Flex>
+        {/* <InputGroup mb="4">
+          <InputLeftElement pointerEvents="none" children={<FaSearch color="gray.300" />} />
+          <Input
+            type="text"
+            placeholder="Search by name"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </InputGroup> */}
         <Box>
           <Table variant="simple" color="gray.500" mb="24px" mt="12px">
             <Thead>
@@ -155,3 +131,4 @@ const FamilyAccounts = () => {
 };
 
 export default FamilyAccounts;
+

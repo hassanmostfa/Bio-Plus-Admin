@@ -22,11 +22,10 @@ export const documentSlice = createApi({
   }),
 
   endpoints: (builder) => ({
-
     getDocuments: builder.query({
       query: (params) => ({
-        url: `/admin/documents`,
-        params,
+        url: '/admin/documents',
+        params: params, // Pass page and limit as query parameters
       }),
     }),
     getDocumentById: builder.query({
@@ -48,7 +47,6 @@ export const documentSlice = createApi({
         body: data,
       }),
     }),
-
   }),
 });
 
