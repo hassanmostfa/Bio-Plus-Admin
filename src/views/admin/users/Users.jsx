@@ -17,6 +17,9 @@ import {
   MenuList,
   MenuItem,
   useToast,
+  Input,
+  InputGroup,
+  InputLeftElement,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -25,7 +28,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { FaEye, FaTrash } from "react-icons/fa6";
+import { FaEye, FaTrash, FaSearch } from "react-icons/fa";
 import { EditIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import Card from "components/card/Card";
 import { useNavigate } from "react-router-dom";
@@ -40,10 +43,26 @@ const Users = () => {
   const { data: usersData, refetch } = useGetUsersQuery({ page: 1, limit: 10 });
   const [updateStatus] = useUpdateUserMutation();
   
-  const users = usersData?.data || [];
+  const allUsers = usersData?.data || [];
+  const [filteredUsers, setFilteredUsers] = useState(allUsers);
+  const [searchTerm, setSearchTerm] = useState("");
   
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+
+  // Apply search filter whenever searchTerm or allUsers changes
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredUsers(allUsers);
+    } else {
+      const filtered = allUsers.filter(user => 
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+    }
+  }, [searchTerm, allUsers]);
 
   const handleStatusUpdate = async (userId, newStatus) => {
     try {
@@ -58,7 +77,7 @@ const Users = () => {
       });
       
       if (result.isConfirmed) {
-        await updateStatus({ id: userId, data: { status: newStatus} }).unwrap();
+        await updateStatus({ id: userId, data: { status: newStatus } }).unwrap();
         await refetch();
         toast({
           title: 'Status updated',
@@ -157,7 +176,7 @@ const Users = () => {
   ];
 
   const table = useReactTable({
-    data: users,
+    data: filteredUsers,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -168,6 +187,21 @@ const Users = () => {
       <Card flexDirection="column" w="100%" px="0px" overflowX="auto">
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700">Users</Text>
+          <Box width="300px">
+            <InputGroup>
+              <InputLeftElement pointerEvents="none">
+                <Icon as={FaSearch} color="gray.400" />
+              </InputLeftElement>
+              <Input
+                type="text"
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                bg={useColorModeValue("white", "gray.700")}
+                borderRadius="10px"
+              />
+            </InputGroup>
+          </Box>
         </Flex>
         <Box>
           <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -183,15 +217,23 @@ const Users = () => {
               ))}
             </Thead>
             <Tbody>
-              {table.getRowModel().rows.map((row) => (
-                <Tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <Td key={cell.id} borderColor="transparent">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </Td>
-                  ))}
+              {table.getRowModel().rows.length > 0 ? (
+                table.getRowModel().rows.map((row) => (
+                  <Tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <Td key={cell.id} borderColor="transparent">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </Td>
+                    ))}
+                  </Tr>
+                ))
+              ) : (
+                <Tr>
+                  <Td colSpan={columns.length} textAlign="center" py="40px">
+                    <Text color={textColor}>No users found matching your search</Text>
+                  </Td>
                 </Tr>
-              ))}
+              )}
             </Tbody>
           </Table>
         </Box>

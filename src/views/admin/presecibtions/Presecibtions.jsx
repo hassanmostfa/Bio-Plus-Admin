@@ -38,9 +38,26 @@ import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { CgAssign } from 'react-icons/cg';
 import { CiSearch } from "react-icons/ci";
+import { useGetDocumentsQuery } from 'api/documentSlice';
+import { useAssignDocumentMutation } from 'api/documentSlice';
+import { useRejectDocumentMutation } from 'api/documentSlice';
+import { useGetPharmaciesQuery } from 'api/pharmacySlice';
 const columnHelper = createColumnHelper();
 
 const Presecibtions = () => {
+  const {data:documents,refetch} = useGetDocumentsQuery({});
+  const [assignDocument] = useAssignDocumentMutation();
+  const [rejectDocument] = useRejectDocumentMutation();
+   const { data: pharmacyData } = useGetPharmaciesQuery({
+      page: 1,
+      limit:100000
+    });
+    console.log(documents, "documents");
+    console.log(pharmacyData, "pharmacyData");
+    
+  React.useEffect(() => {
+    refetch();
+  }, []);
   const [data, setData] = React.useState([
     {
       user: 'John Doe',

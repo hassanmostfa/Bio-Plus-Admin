@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -53,7 +53,9 @@ const Returns = () => {
   // Extract table data and pagination info
   const tableData = returnsResponse?.data || [];
   const pagination = returnsResponse?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
-
+  useEffect(() => {
+    refetch();
+  },[]);
   // Filter data based on search query
   const filteredData = React.useMemo(() => {
     if (!searchQuery) return tableData;

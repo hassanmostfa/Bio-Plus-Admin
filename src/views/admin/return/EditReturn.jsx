@@ -17,6 +17,7 @@ import { FaUpload, FaTrash } from 'react-icons/fa6';
 import { useUpdateReturnMutation } from 'api/returnSlice';
 import { useGetReturnQuery } from 'api/returnSlice';
 import Swal from 'sweetalert2';
+import { useAddFileMutation } from 'api/filesSlice';
 
 const EditReturn = () => {
   const [formData, setFormData] = useState({
@@ -38,8 +39,11 @@ const EditReturn = () => {
 
   // API hooks
   const [updateReturnPolicy, { isLoading }] = useUpdateReturnMutation();
-  const { data: returnData, isLoading: isFetching } = useGetReturnQuery(id);
-
+  const { data: returnData, isLoading: isFetching,refetch } = useGetReturnQuery(id);
+  const [addFile] = useAddFileMutation();
+useEffect(() => {
+  refetch();
+},[]);
   // Set initial data when fetched
   useEffect(() => {
     if (returnData?.data) {
@@ -48,12 +52,8 @@ const EditReturn = () => {
         contentAr: returnData.data.contentAr || '',
         imageKey: returnData.data.image || '',
       });
-      if (returnData.image) {
-        setExistingImage({
-          name: returnData.image,
-          url: `${process.env.REACT_APP_API_URL}/uploads/${returnData.image}` // Adjust based on your API
-        });
-      }
+      setExistingImage(returnData.data.image || "");
+     
     }
   }, [returnData]);
 
@@ -65,10 +65,6 @@ const EditReturn = () => {
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
       setImage(files[0]);
-      setFormData((prevData) => ({
-        ...prevData,
-        imageKey: files[0].name,
-      }));
       // Clear existing image when new one is uploaded
       setExistingImage(null);
     }
@@ -106,11 +102,27 @@ const EditReturn = () => {
 
   const handleSubmit = async () => {
     try {
+      let imageUrl = existingImage;
+      
+      // Upload new image if one was selected
+      if (image) {
+        const file = new FormData();
+        file.append('file', image);
+
+        const uploadResponse = await addFile(file).unwrap();
+        
+        if (!uploadResponse.success || !uploadResponse.data.uploadedFiles[0]?.url) {
+          throw new Error('Failed to upload image');
+        }
+
+        imageUrl = uploadResponse.data.uploadedFiles[0].url;
+      }
+
       // Prepare the payload as a raw JSON object
       const payload = {
         contentEn: formData.contentEn,
         contentAr: formData.contentAr,
-        image: formData.imageKey // Send just the image filename as string
+        image: imageUrl // Send just the image filename as string
       };
   
       // Update the policy with raw JSON data

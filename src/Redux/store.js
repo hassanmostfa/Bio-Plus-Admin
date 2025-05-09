@@ -25,6 +25,7 @@ import Ads from "views/admin/ads/Ads";
 import { adsApi } from "api/adsSlice";
 import { clientSlice } from "api/clientSlice";
 import { appointmentSlice } from "api/appointmentSlice";
+import { documentSlice } from "api/documentSlice";
 
 // import { userApi, authReducer } from './userSlice';
 
@@ -54,6 +55,7 @@ export const store = configureStore({
     [adsApi.reducerPath]:adsApi.reducer,
     [clientSlice.reducerPath]:clientSlice.reducer,
     [appointmentSlice.reducerPath]:appointmentSlice.reducer,
+    [documentSlice.reducerPath]:appointmentSlice.reducer,
 
   },
   middleware: (getDefaultMiddleware) =>
@@ -82,6 +84,7 @@ export const store = configureStore({
       adsApi.middleware,
       clientSlice.middleware,
       appointmentSlice.middleware,
+      documentSlice.middleware,
     ),
 });
 

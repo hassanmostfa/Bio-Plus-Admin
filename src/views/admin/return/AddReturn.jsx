@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaUpload } from 'react-icons/fa6';
 import { useAddReturnMutation } from 'api/returnSlice';
 import Swal from 'sweetalert2';
+import { useAddFileMutation } from 'api/filesSlice';
 
 
 const AddReturn = () => {
@@ -34,6 +35,7 @@ const AddReturn = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const [error, setError] = useState(null);
+  const [addFile] = useAddFileMutation();
 
   // Mutation hook for creating return policy
   const [createReturnPolicy, { isLoading }] = useAddReturnMutation();
@@ -46,10 +48,6 @@ const AddReturn = () => {
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
       setImage(files[0]);
-      setFormData((prevData) => ({
-        ...prevData,
-        imageKey: files[0].name, // Or your actual image key logic
-      }));
     }
   };
 
@@ -76,11 +74,22 @@ const AddReturn = () => {
 
   const handleSend = async () => {
     try {
+       // First upload the image
+       const file = new FormData();
+       file.append('file', image);
+ 
+       const uploadResponse = await addFile(file).unwrap();
+       
+       if (!uploadResponse.success || !uploadResponse.data.uploadedFiles[0]?.url) {
+         throw new Error('Failed to upload image');
+       }
+       const imageKey = uploadResponse.data.uploadedFiles[0]?.url;
+ 
       // Prepare the payload in the required format
       const payload = {
         contentEn: formData.contentEn,
         contentAr: formData.contentAr,
-        image: formData.imageKey, // Or your actual image handling logic
+        image: imageKey, // Or your actual image handling logic
       };
 
       // Send the data to the API
