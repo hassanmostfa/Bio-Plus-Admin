@@ -163,7 +163,7 @@ const AddNotification = () => {
 
           {/* English Description and Arabic Description Fields */}
           <div className="row col-md-12">
-            <div className="mb-3 col-md-6">
+            <div className="mb-3 col-md-12">
               <Text color={textColor} fontSize="sm" fontWeight="700">
                 English Description
                 <span className="text-danger mx-1">*</span>
@@ -174,10 +174,11 @@ const AddNotification = () => {
                 value={englishDescription}
                 onChange={(e) => setEnglishDescription(e.target.value)}
                 required
+                rows={4}
                 mt={"8px"}
               />
             </div>
-            <div className="mb-3 col-md-6 pr-0">
+            <div className="mb-3 col-md-12 pr-0">
               <Text color={textColor} fontSize="sm" fontWeight="700">
                 Arabic Description
                 <span className="text-danger mx-1">*</span>
@@ -189,6 +190,7 @@ const AddNotification = () => {
                 onChange={(e) => setArabicDescription(e.target.value)}
                 dir="rtl"
                 required
+                rows={4}
                 mt={"8px"}
               />
             </div>

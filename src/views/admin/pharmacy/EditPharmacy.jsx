@@ -27,14 +27,14 @@ import {
 import { useAddFileMutation } from 'api/filesSlice';
 
 const EditPharmacy = () => {
-  const { id } = useParams(); // Get the pharmacy ID from the URL
+  const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
   const [addFile] = useAddFileMutation();
-  // Fetch pharmacy data by ID
+
   const {
     data,
     isLoading: isFetching,
@@ -42,13 +42,9 @@ const EditPharmacy = () => {
     error: fetchError,
   } = useGetPharmacyQuery(id);
   const pharmacy = data?.data;
-  console.log("pharmacy Data:", pharmacy);
   
-  // Mutation for updating a pharmacy
-  const [updatePharmacy, { isLoading: isUpdating }] =
-    useUpdatePharmacyMutation();
+  const [updatePharmacy, { isLoading: isUpdating }] = useUpdatePharmacyMutation();
 
-  // State for form data
   const [formData, setFormData] = useState({
     name: '',
     imageKey: '',
@@ -82,14 +78,25 @@ const EditPharmacy = () => {
   const [image, setImage] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState(null);
+
   useEffect(() => {
     refetch();
   }, []);
-  // Pre-fill form data when pharmacy data is fetched
+
   useEffect(() => {
     if (pharmacy) {
+      // Parse dates to YYYY-MM-DD format for date inputs
+      const feesStartDate = pharmacy.feesStartDate 
+        ? pharmacy.feesStartDate.split('T')[0] 
+        : '';
+      const feesEndDate = pharmacy.feesEndDate 
+        ? pharmacy.feesEndDate.split('T')[0] 
+        : '';
+      
       setFormData({
         ...pharmacy,
+        feesStartDate,
+        feesEndDate,
         translations: [
           {
             languageId: 'ar',
@@ -122,13 +129,11 @@ const EditPharmacy = () => {
     }
   }, [pharmacy]);
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  // Handle translation changes
   const handleTranslationChange = (languageId, field, value) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -140,7 +145,6 @@ const EditPharmacy = () => {
     }));
   };
 
-  // Handle branch translation changes
   const handleBranchTranslationChange = (index, languageId, field, value) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -162,23 +166,10 @@ const EditPharmacy = () => {
     }));
   };
 
-  // Handle image upload
-  // const handleImageUpload = (files) => {
-  //   if (files && files.length > 0) {
-  //     setImage(files[0]);
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       imageKey: files[0].name, // Update with the actual image key logic
-  //     }));
-  //   }
-  // };
-
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
       const selectedFile = files[0];
       setImage(selectedFile);
-
-      // Update the form data with the file name (temporary until we get the actual key from API)
       setFormData((prevData) => ({
         ...prevData,
         imageKey: selectedFile.name,
@@ -186,7 +177,6 @@ const EditPharmacy = () => {
     }
   };
 
-  // Handle drag-and-drop events
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -203,18 +193,15 @@ const EditPharmacy = () => {
     handleImageUpload(files);
   };
 
-  // Handle file input change
   const handleFileInputChange = (e) => {
     const files = e.target.files;
     handleImageUpload(files);
   };
 
-  // Handle number of branches change
   const handleNumberOfBranchesChange = (e) => {
     const value = parseInt(e.target.value, 10);
     setNumberOfBranches(value >= 0 ? value : 0);
 
-    // Initialize branches array with empty objects
     setFormData((prevData) => ({
       ...prevData,
       numOfBranches: value,
@@ -239,68 +226,10 @@ const EditPharmacy = () => {
     }));
   };
 
-  // const handleSubmit = async () => {
-  //   try {
-  //     // Filter out unnecessary fields from branches
-  //     const filteredBranches = formData.branches?.map((branch) => {
-  //       const { id, createdAt, updatedAt, ...rest } = branch;
-  //       return rest;
-  //     });
-
-  //     // Prepare the payload
-  //     const payload = {
-  //       ...formData,
-  //       branches: filteredBranches, // Use the filtered branches
-  //       feesStartDate: formData.feesStartDate
-  //         ? formData.feesStartDate + 'T00:00:00Z'
-  //         : '2024-05-01T00:00:00Z',
-  //       feesEndDate: formData.feesEndDate
-  //         ? formData.feesEndDate + 'T00:00:00Z'
-  //         : '2025-05-01T00:00:00Z',
-  //       name: formData.translations.find((t) => t.languageId === 'en').name,
-  //       description: formData.translations.find((t) => t.languageId === 'en')
-  //         .description,
-  //       revenueShare: parseInt(formData.revenueShare),
-  //       fixedFees: formData.fixedFees ? parseInt(formData.fixedFees) : 0,
-  //     };
-
-  //     // Remove additional unwanted fields from the payload
-  //     delete payload.revenueShareType;
-  //     delete payload.createdAt;
-  //     delete payload.updatedAt;
-  //     delete payload.id;
-
-  //     // Send the update request
-  //     const response = await updatePharmacy({ id, pharmacy: payload }).unwrap();
-
-  //     // Show success message
-  //     toast({
-  //       title: 'Success',
-  //       description: 'Pharmacy updated successfully',
-  //       status: 'success',
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-
-  //     // Navigate back
-  //     navigate('/admin/pharmacy');
-  //   } catch (error) {
-  //     setError(error.data);
-  //     toast({
-  //       title: 'Error',
-  //       description: error.data?.message || 'Failed to update pharmacy',
-  //       status: 'error',
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-  //   }
-  // };
-
   const handleSubmit = async () => {
     try {
       let imageKey = formData.imageKey;
 
-      // Upload new image if it exists
       if (image) {
         const formDataFile = new FormData();
         formDataFile.append('file', image);
@@ -315,16 +244,14 @@ const EditPharmacy = () => {
         }
       }
 
-      // Filter out unnecessary fields from branches
       const filteredBranches = formData.branches?.map((branch) => {
         const { id, createdAt, updatedAt, ...rest } = branch;
         return rest;
       });
 
-      // Prepare the payload
       const payload = {
         ...formData,
-        imageKey, // Use the new or existing image key
+        imageKey,
         branches: filteredBranches,
         feesStartDate: formData.feesStartDate
           ? formData.feesStartDate + 'T00:00:00Z'
@@ -339,16 +266,13 @@ const EditPharmacy = () => {
         fixedFees: formData.fixedFees ? parseInt(formData.fixedFees) : 0,
       };
 
-      // Remove additional unwanted fields from the payload
       delete payload.revenueShareType;
       delete payload.createdAt;
       delete payload.updatedAt;
       delete payload.id;
 
-      // Send the update request
       const response = await updatePharmacy({ id, pharmacy: payload }).unwrap();
 
-      // Show success message
       toast({
         title: 'Success',
         description: 'Pharmacy updated successfully',
@@ -357,7 +281,6 @@ const EditPharmacy = () => {
         isClosable: true,
       });
 
-      // Navigate back
       navigate('/admin/pharmacy');
     } catch (error) {
       setError(error.data);
@@ -370,6 +293,7 @@ const EditPharmacy = () => {
       });
     }
   };
+
   if (isFetching) return <Text>Loading...</Text>;
   if (fetchError) return <Text>Error loading pharmacy data.</Text>;
 
@@ -391,7 +315,6 @@ const EditPharmacy = () => {
           </Button>
         </Box>
         <form>
-          {/* Error Display */}
           {error?.success === false && (
             <div className="alert alert-danger" role="alert">
               <h4 className="alert-heading">Validation failed</h4>
@@ -405,7 +328,6 @@ const EditPharmacy = () => {
             </div>
           )}
 
-          {/* Pharmacy Name (En & Ar) */}
           <Grid templateColumns="repeat(2, 1fr)" gap={4}>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
@@ -441,7 +363,6 @@ const EditPharmacy = () => {
             </GridItem>
           </Grid>
 
-          {/* Email & WhatsApp Number */}
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mt={4}>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
@@ -471,7 +392,6 @@ const EditPharmacy = () => {
             </GridItem>
           </Grid>
 
-          {/* Password & Working Hours */}
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mt={4}>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
@@ -502,7 +422,6 @@ const EditPharmacy = () => {
             </GridItem>
           </Grid>
 
-          {/* Revenue Share Type */}
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mt={4}>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
@@ -539,7 +458,6 @@ const EditPharmacy = () => {
             </GridItem>
           </Grid>
 
-          {/* Revenue Share or Fixed Fees */}
           {formData.revenueShareType === 'percentage' ? (
             <GridItem colSpan={2} mt={2}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
@@ -580,7 +498,7 @@ const EditPharmacy = () => {
                   color={textColor}
                   type="date"
                   name="feesStartDate"
-                  value={formData.feesStartDate}
+                  value={formData.feesStartDate || ''}
                   onChange={handleChange}
                   mt={2}
                 />
@@ -594,7 +512,7 @@ const EditPharmacy = () => {
                   color={textColor}
                   type="date"
                   name="feesEndDate"
-                  value={formData.feesEndDate}
+                  value={formData.feesEndDate || ''}
                   onChange={handleChange}
                   mt={2}
                 />
@@ -602,7 +520,6 @@ const EditPharmacy = () => {
             </>
           )}
 
-          {/* Description (En & Ar) */}
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mt={4}>
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
@@ -644,7 +561,6 @@ const EditPharmacy = () => {
             </Box>
           </Grid>
 
-          {/* Image Upload */}
           <Box
             border="1px dashed"
             borderColor="gray.300"
@@ -703,9 +619,6 @@ const EditPharmacy = () => {
                 justifyContent="center"
                 alignItems="center"
               >
-                {/* <Text color="gray.500" mb={2}>
-                  Current Image:
-                </Text> */}
                 <img
                   src={pharmacy.imageKey}
                   alt="Current pharmacy"
@@ -717,7 +630,6 @@ const EditPharmacy = () => {
             ) : null}
           </Box>
 
-          {/* Number of Branches */}
           <Box mt={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
               Number of Branches <span className="text-danger">*</span>
@@ -733,7 +645,6 @@ const EditPharmacy = () => {
             />
           </Box>
 
-          {/* Branches */}
           {Array.from({ length: numberOfBranches })?.map((_, index) => (
             <Box
               key={index}
@@ -846,7 +757,6 @@ const EditPharmacy = () => {
                 </Box>
               </SimpleGrid>
 
-              {/* Branch Location Link */}
               <Box mt={4}>
                 <Text color={textColor} fontSize="sm" fontWeight="700">
                   Location Link <span className="text-danger">*</span>
@@ -872,7 +782,6 @@ const EditPharmacy = () => {
             </Box>
           ))}
 
-          {/* Save and Cancel Buttons */}
           <Flex justify="center" mt={6}>
             <Button
               variant="outline"
