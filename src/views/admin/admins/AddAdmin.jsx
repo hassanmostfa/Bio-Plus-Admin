@@ -127,6 +127,21 @@ const AddAdmin = () => {
               required
             />
           </Box>
+          {/* Phone Field */}
+          <Box mb="3">
+            <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+              Phone <span style={{ color: 'red' }}>*</span>
+            </Text>
+            <Input
+              type="email"
+              name="email"
+              placeholder="Enter Phone"
+              bg={inputBg}
+              color={textColor}
+              borderColor={inputBorder}
+              required
+            />
+          </Box>
 
           {/* Password Field */}
           <Box mb="3">

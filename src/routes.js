@@ -102,6 +102,12 @@ import EditDoctor from 'views/admin/doctors/EditDoctor';
 import ShowProduct from 'views/admin/products/ShowProduct';
 import EditProduct from 'views/admin/products/EditProduct';
 import EditAd from 'views/admin/ads/EditAd';
+import ActvityLog from 'views/admin/activityLog/ActivityLog';
+import AddUser from 'views/admin/users/AddUser';
+import AddOrder from 'views/admin/orders/AddOrder';
+import FileManager from 'views/admin/pharmacy/FileManger';
+import AddFile from 'views/admin/pharmacy/AddFile';
+import Reports from 'views/admin/reports/Reports';
 
 
 const routes = [
@@ -140,6 +146,13 @@ const routes = [
         path: '/rules',
         icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
         component: <Roles />,
+        showInSidebar: true,
+      },
+      {
+        name: 'Activity Logs',
+        path: '/logs',
+        icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
+        component: <ActvityLog />,
         showInSidebar: true,
       },
     ],
@@ -222,6 +235,20 @@ const routes = [
     layout: '/admin',
     path: '/add-branch',
     component: <AddBranch />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Pharmacy Management',
+    layout: '/admin',
+    path: '/pharmacy/fileManager',
+    component: <FileManager />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Pharmacy Management',
+    layout: '/admin',
+    path: '/pharmacy/add-file',
+    component: <AddFile />,
     showInSidebar: false,
   },
 
@@ -335,6 +362,13 @@ const routes = [
     icon: <Icon as={MdPeople} width="20px" height="20px" color="inherit" />,
     component: <Users />,
     showInSidebar: true,
+  },
+  {
+    name: 'User Management',
+    layout: '/admin',
+    path: '/add-user',
+    component: <AddUser />,
+    showInSidebar: false,
   },
   {
     name: 'Categories',
@@ -542,6 +576,13 @@ const routes = [
     showInSidebar: true,
   },
   {
+    name: 'Orders',
+    layout: '/admin',
+    path: '/add-order',
+    component: <AddOrder />,
+    showInSidebar: false,
+  },
+  {
     name: 'Pharmacy Requests',
     layout: '/admin',
     path: '/pharmacy-requests',
@@ -618,14 +659,14 @@ const routes = [
     component: <Appointments />,
     showInSidebar: true,
   },
-  // {
-  //   name: 'Reports',
-  //   layout: '/admin',
-  //   path: '/reports',
-  //   icon: <Icon as={MdBarChart} width="20px" height="20px" color="inherit" />,
-  //   component: <NFTMarketplace />,
-  //   showInSidebar: true,
-  // },
+  {
+    name: 'Reports',
+    layout: '/admin',
+    path: '/reports',
+    icon: <Icon as={MdBarChart} width="20px" height="20px" color="inherit" />,
+    component: <Reports />,
+    showInSidebar: true,
+  },
   {
     name: 'CMS',
     layout: '/admin',

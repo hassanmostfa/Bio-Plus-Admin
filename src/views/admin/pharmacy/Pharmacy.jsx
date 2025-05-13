@@ -34,7 +34,7 @@ import { useState } from 'react';
 import { useGetPharmaciesQuery } from 'api/pharmacySlice'; // Replace with your actual API slice
 import { useDeletePharmacyMutation } from 'api/pharmacySlice';
 import Swal from 'sweetalert2';
-
+import { FaRegFolderClosed } from "react-icons/fa6";
 const columnHelper = createColumnHelper();
 
 const Pharmacy = () => {
@@ -187,6 +187,15 @@ const Pharmacy = () => {
             as={FaEye}
             cursor="pointer"
             onClick={() => navigate(`/admin/pharmacy-branches/${info.row.original.id}`)}
+          />
+          <Icon
+            w="18px"
+            h="18px"
+            me="10px"
+            color="black"
+            as={FaRegFolderClosed}
+            cursor="pointer"
+            onClick={() => navigate(`/admin/pharmacy/fileManager`)}
           />
         </Flex>
       ),

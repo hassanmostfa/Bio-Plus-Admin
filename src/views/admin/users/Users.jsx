@@ -202,6 +202,20 @@ const Users = () => {
               />
             </InputGroup>
           </Box>
+
+           <Button
+            variant="darkBrand"
+            color="white"
+            fontSize="sm"
+            fontWeight="500"
+            borderRadius="70px"
+            px="24px"
+            py="5px"
+            onClick={() => navigate("/admin/add-user")}
+            width={"200px"}
+          >
+            Add User
+          </Button>
         </Flex>
         <Box>
           <Table variant="simple" color="gray.500" mb="24px" mt="12px">

@@ -482,7 +482,7 @@ const AddProduct = () => {
             </Box>
           </SimpleGrid>
 
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
+          <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
             <Box>
               <FormControl isRequired>
                 <FormLabel>Cost</FormLabel>
@@ -513,6 +513,15 @@ const AddProduct = () => {
                   placeholder="0"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
+                />
+              </FormControl>
+            </Box>
+            <Box>
+              <FormControl isRequired>
+                <FormLabel>SKU</FormLabel>
+                <Input
+                  type="number"
+                  placeholder="0"
                 />
               </FormControl>
             </Box>

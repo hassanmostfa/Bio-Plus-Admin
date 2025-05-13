@@ -273,6 +273,22 @@ const Orders = () => {
       <Card flexDirection="column" w="100%" px="0px" overflowX={{ sm: 'scroll', lg: 'hidden' }}>
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700">All Orders</Text>
+          <Box display="flex" gap="10px">
+
+            <Button
+            variant="darkBrand"
+            color="white"
+            fontSize="sm"
+            fontWeight="500"
+            borderRadius="70px"
+            px="24px"
+            py="5px"
+            onClick={() => navigate('/admin/add-order')}
+            width={'200px'}
+          >
+            Add Order
+          </Button>
+
           <Button
             variant="darkBrand"
             color="white"
@@ -287,6 +303,7 @@ const Orders = () => {
           >
             Print Selected
           </Button>
+          </Box>
         </Flex>
 
         {/* Filters */}
