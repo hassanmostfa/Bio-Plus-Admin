@@ -33,6 +33,7 @@ const EditAdmin = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phoneNumber: '',
     password: '',
     roleId: '',
   });
@@ -44,6 +45,7 @@ const EditAdmin = () => {
         name: admin.data.name,
         email: admin.data.email,
         password: '', // Password is not pre-filled for security reasons
+        phoneNumber: admin.data.phoneNumber,
         roleId: admin.data.roleId,
       });
       // Set the selected role name
@@ -70,6 +72,16 @@ const EditAdmin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate phone number format (basic example)
+    if (!formData.phoneNumber || !/^[\d\s\+\-\(\)]{10,15}$/.test(formData.phoneNumber)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Please enter a valid phone number (10-15 digits)',
+        confirmButtonText: 'OK',
+      });
+      return;
+    }
     // Create a copy of formData
     const dataToSend = { ...formData };
 
@@ -85,12 +97,7 @@ const EditAdmin = () => {
         title: 'Success',
         text: 'Admin updated successfully',
         confirmButtonText: 'OK',
-        customClass: {
-          popup: 'custom-swal-popup', // Add a custom class for the popup
-          title: 'custom-swal-title', // Add a custom class for the title
-          content: 'custom-swal-content', // Add a custom class for the content
-          confirmButton: 'custom-swal-confirm-button', // Add a custom class for the confirm button
-        },
+        
       }).then((result) => {
         if (result.isConfirmed) {
           navigate(`/admin/undefined/admins`); // Redirect to the admins page after successful submission
@@ -172,6 +179,24 @@ const EditAdmin = () => {
               placeholder="Enter new password (leave blank to keep current)"
               value={formData.password}
               onChange={handleInputChange}
+            />
+          </Box>
+           {/* Phone Field */}
+          <Box mb="3">
+            <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+              Phone <span style={{ color: 'red' }}>*</span>
+            </Text>
+            <Input
+              type="tel"  // Changed from "text" to "tel" for better mobile keyboard
+              name="phoneNumber"
+              onChange={handleInputChange}
+              value={formData.phoneNumber}
+              placeholder="Enter Phone (e.g., +1234567890)"
+              bg={inputBg}
+              color={textColor}
+              borderColor={inputBorder}
+              required
+              pattern="[\d\s\+\-\(\)]{10,15}"  // Basic HTML5 validation
             />
           </Box>
 

@@ -32,6 +32,7 @@ const AddAdmin = () => {
     name: '',
     email: '',
     password: '',
+    phoneNumber: '',
     roleId: '',
   });
 
@@ -50,7 +51,16 @@ const AddAdmin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  // Validate phone number format (basic example)
+  if (!formData.phoneNumber || !/^[\d\s\+\-\(\)]{10,15}$/.test(formData.phoneNumber)) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Please enter a valid phone number (10-15 digits)',
+      confirmButtonText: 'OK',
+    });
+    return;
+  }
     // Validate role selection
     if (!formData.roleId) {
       Swal.fire({
@@ -133,13 +143,16 @@ const AddAdmin = () => {
               Phone <span style={{ color: 'red' }}>*</span>
             </Text>
             <Input
-              type="email"
-              name="email"
-              placeholder="Enter Phone"
+              type="tel"  // Changed from "text" to "tel" for better mobile keyboard
+              name="phoneNumber"
+              onChange={handleInputChange}
+              value={formData.phoneNumber}
+              placeholder="Enter Phone (e.g., +1234567890)"
               bg={inputBg}
               color={textColor}
               borderColor={inputBorder}
               required
+              pattern="[\d\s\+\-\(\)]{10,15}"  // Basic HTML5 validation
             />
           </Box>
 
