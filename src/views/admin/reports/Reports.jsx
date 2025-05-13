@@ -22,7 +22,6 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
-
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -35,7 +34,7 @@ import {
 import * as React from 'react';
 import Card from 'components/card/Card';
 import { EditIcon, SearchIcon } from '@chakra-ui/icons';
-import { FaEye, FaTrash , FaDownload} from 'react-icons/fa6';
+import { FaEye, FaTrash, FaDownload } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
@@ -54,9 +53,9 @@ const Reports = () => {
 
   // Mock data for demonstration - replace with your actual data fetching logic
   const inventoryData = React.useMemo(() => [
-    { id: 1, product_name: 'Product A', sku: 'SKU001', variant: 'Variant 1', qty: 100, status: 'In Stock' },
-    { id: 2, product_name: 'Product B', sku: 'SKU002', variant: 'Variant 2', qty: 50, status: 'Low Stock' },
-    { id: 3, product_name: 'Product C', sku: 'SKU003', variant: 'Variant 1', qty: 0, status: 'Out of Stock' },
+    { id: 1, product_name: 'Product A', sku: 'SKU001', variant: 'Variant 1', category: 'Medication', qty: 100, status: 'In Stock' },
+    { id: 2, product_name: 'Product B', sku: 'SKU002', variant: 'Variant 2', category: 'Equipment', qty: 50, status: 'Low Stock' },
+    { id: 3, product_name: 'Product C', sku: 'SKU003', variant: 'Variant 1', category: 'Supplies', qty: 0, status: 'Out of Stock' },
   ], []);
 
   const pharmacyData = React.useMemo(() => [
@@ -91,12 +90,57 @@ const Reports = () => {
     setGlobalFilter(''); // Reset search filter when changing tabs
   }, [activeTab, inventoryData, pharmacyData, clinicData]);
 
+  const handleDownload = () => {
+    // Combine all data from all tabs
+    const allData = {
+      inventory: inventoryData,
+      pharmacy: pharmacyData,
+      clinics: clinicData
+    };
+    
+    // Create a blob with the data
+    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create a temporary anchor element to trigger the download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'reports_data.json';
+    document.body.appendChild(a);
+    a.click();
+    
+    // Clean up
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: 'Download Started',
+      description: 'All records from all tabs are being downloaded.',
+      status: 'success',
+      duration: 3000,
+      isClosable: true,
+    });
+  };
+
   const inventoryColumns = [
     columnHelper.accessor('product_name', {
       id: 'product_name',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
           Product Name
+        </Text>
+      ),
+      cell: (info) => (
+        <Text color={textColor} fontSize="sm">
+          {info.getValue()}
+        </Text>
+      ),
+    }),
+    columnHelper.accessor('category', {
+      id: 'category',
+      header: () => (
+        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
+          Category
         </Text>
       ),
       cell: (info) => (
@@ -161,24 +205,6 @@ const Reports = () => {
         </Text>
       ),
     }),
-    columnHelper.accessor('actions', {
-      id: 'actions',
-      header: () => (
-        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Actions
-        </Text>
-      ),
-      cell: () => (
-        <Td borderColor="transparent" fontSize="14px">
-            <IconButton
-                aria-label="Download"
-                icon={<FaDownload />}
-                colorScheme="green"
-                variant="outline"
-            />
-            </Td>
-      ),
-    }),
   ];
 
   const pharmacyColumns = [
@@ -234,24 +260,6 @@ const Reports = () => {
         </Text>
       ),
     }),
-    columnHelper.accessor('actions', {
-      id: 'actions',
-      header: () => (
-        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Actions
-        </Text>
-      ),
-      cell: () => (
-         <Td borderColor="transparent" fontSize="14px">
-            <IconButton
-                aria-label="Download"
-                icon={<FaDownload />}
-                colorScheme="green"
-                variant="outline"
-            />
-            </Td>
-      ),
-    }),
   ];
 
   const clinicColumns = [
@@ -292,24 +300,6 @@ const Reports = () => {
         <Text color={textColor} fontSize="sm">
           {info.getValue()}
         </Text>
-      ),
-    }),
-    columnHelper.accessor('actions', {
-      id: 'actions',
-      header: () => (
-        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Actions
-        </Text>
-      ),
-      cell: () => (
-         <Td borderColor="transparent" fontSize="14px">
-            <IconButton
-                aria-label="Download"
-                icon={<FaDownload />}
-                colorScheme="green"
-                variant="outline"
-            />
-            </Td>
       ),
     }),
   ];
@@ -355,6 +345,13 @@ const Reports = () => {
           >
             Reports
           </Text>
+          <IconButton
+            aria-label="Download all reports"
+            icon={<FaDownload />}
+            colorScheme="green"
+            variant="outline"
+            onClick={handleDownload}
+          />
         </Flex>
 
         <Tabs variant="soft-rounded" my={"20px"} colorScheme="brand" onChange={(index) => setActiveTab(index)}>
@@ -370,7 +367,7 @@ const Reports = () => {
                 <SearchIcon color="gray.300" />
               </InputLeftElement>
               <Input
-              borderRadius={"20px"}
+                borderRadius={"20px"}
                 placeholder="Search..."
                 value={globalFilter ?? ''}
                 onChange={(e) => setGlobalFilter(e.target.value)}

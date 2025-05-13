@@ -35,7 +35,8 @@
     "stylis-plugin-rtl": "^2.0.2",
     "sweetalert": "^2.1.2",
     "sweetalert2": "^11.16.1",
-    "web-vitals": "^4.2.2"
+    "web-vitals": "^4.2.2",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",

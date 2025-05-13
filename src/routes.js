@@ -24,7 +24,7 @@ import { IoNotificationsOutline } from 'react-icons/io5';
 import { CiDiscount1 } from 'react-icons/ci';
 import { BsEnvelopeArrowUpFill } from "react-icons/bs";
 import { FaIdCard } from "react-icons/fa6";
-
+import { LuDatabaseBackup } from "react-icons/lu";
 // Admin Imports
 import MainDashboard from 'views/admin/default';
 import NFTMarketplace from 'views/admin/marketplace';
@@ -108,6 +108,7 @@ import AddOrder from 'views/admin/orders/AddOrder';
 import FileManager from 'views/admin/pharmacy/FileManger';
 import AddFile from 'views/admin/pharmacy/AddFile';
 import Reports from 'views/admin/reports/Reports';
+import BackupAndRestore from 'views/admin/backup/BackupAndRestore';
 
 
 const routes = [
@@ -727,6 +728,14 @@ const routes = [
     ],
   },
   {
+    name: 'Backup And Restore',
+    layout: '/admin',
+    path: '/backup-and-restore',
+    icon: <Icon as={LuDatabaseBackup} width="20px" height="20px" color="inherit" />,
+    component: <BackupAndRestore />,
+    showInSidebar: true,
+  },
+  {
     name: 'Add tag',
     layout: '/admin',
     path: '/add-tag',
@@ -835,6 +844,7 @@ const routes = [
     component: <FamilyAccounts />,
     showInSidebar: false,
   },
+
 ];
 
 export default routes;
