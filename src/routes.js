@@ -109,6 +109,7 @@ import FileManager from 'views/admin/pharmacy/FileManger';
 import AddFile from 'views/admin/pharmacy/AddFile';
 import Reports from 'views/admin/reports/Reports';
 import BackupAndRestore from 'views/admin/backup/BackupAndRestore';
+import DeliveryFees from 'views/admin/deliveryFees/DeliveryFees';
 
 
 const routes = [
@@ -689,7 +690,13 @@ const routes = [
         component: <Blogs />,
         showInSidebar: true,
       },
-      
+      {
+        name: 'Delivery Fees',
+        path: '/delivery-fees',
+        icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
+        component: <DeliveryFees />,
+        showInSidebar: true,
+      },
       {
         name: 'Banners',
         path: '/cms/banners',
