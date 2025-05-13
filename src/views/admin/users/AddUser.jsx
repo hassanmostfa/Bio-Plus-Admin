@@ -14,13 +14,16 @@ import {
 import { IoMdArrowBack, IoIosArrowDown } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { useCreateUserMutation } from 'api/clientSlice';
+
 
 const AddUser = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [gender, setGender] = useState('Select Gender');
   const [phone, setPhone] = useState('');
-
+  const [password, setPassword] = useState('');
+  const [addUser] = useCreateUserMutation();
   const navigate = useNavigate();
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
@@ -31,18 +34,49 @@ const AddUser = () => {
     setEmail('');
     setGender('Select Gender');
     setPhone('');
+    setPassword('');
   };
 
-  const handleSubmit = () => {
-    if (!name || !email || gender === 'Select Gender' || !phone) {
+  const handleSubmit = async () => {
+    // Validate phone number format
+    if (!phone || !/^[\d\s\+\-\(\)]{10,15}$/.test(phone)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Please enter a valid phone number (10-15 digits)',
+        confirmButtonText: 'OK',
+      });
+      return;
+    }
+
+    if (!name || !email || gender === 'Select Gender' || !phone || !password) {
       Swal.fire('Error!', 'Please fill all required fields.', 'error');
       return;
     }
 
-    // Replace this with your API call to save the user
-    console.log({ name, email, gender, phone });
-    Swal.fire('Success!', 'User added successfully.', 'success');
-    navigate('/admin/users');
+    try {
+      // Prepare data in required format
+      const userData = {
+        name,
+        email,
+        phoneNumber: phone, // Map to phoneNumber
+        gender: gender.toUpperCase(), // Convert to uppercase
+        password
+      };
+
+      // Call API
+      const response = await addUser(userData).unwrap();
+      
+      Swal.fire('Success!', 'User added successfully.', 'success');
+      navigate('/admin/users');
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.data?.message || 'Failed to add user',
+        confirmButtonText: 'OK',
+      });
+    }
   };
 
   return (
@@ -144,9 +178,25 @@ const AddUser = () => {
             </Text>
             <Input
               type="tel"
-              placeholder="Enter Phone Number"
+              placeholder="Enter Phone Number (e.g., +1234567890)"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              required
+              mt={'8px'}
+              bg={inputBg}
+            />
+          </div>
+
+          {/* Password */}
+          <div className="mb-3">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              Password <span className="text-danger mx-1">*</span>
+            </Text>
+            <Input
+              type="password"
+              placeholder="Enter Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               mt={'8px'}
               bg={inputBg}

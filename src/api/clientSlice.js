@@ -44,6 +44,14 @@ export const clientSlice = createApi({
         body: data,
       }),
     }),
+
+    createUser: builder.mutation({
+      query: (user) => ({
+        url: '/admin/users',
+        method: 'POST',
+        body: user,
+      }),
+    }),
   }),
 });
 
@@ -52,5 +60,5 @@ export const {
   useGetUsersQuery,
   useGetUserFamilyQuery,
   useUpdateUserMutation,
-
+useCreateUserMutation,
 } = clientSlice;

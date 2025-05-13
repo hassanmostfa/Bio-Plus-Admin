@@ -110,6 +110,7 @@ import AddFile from 'views/admin/pharmacy/AddFile';
 import Reports from 'views/admin/reports/Reports';
 import BackupAndRestore from 'views/admin/backup/BackupAndRestore';
 import DeliveryFees from 'views/admin/deliveryFees/DeliveryFees';
+import EditFile from 'views/admin/pharmacy/EditFile';
 
 
 const routes = [
@@ -240,17 +241,24 @@ const routes = [
     showInSidebar: false,
   },
   {
-    name: 'Pharmacy Management',
+    name: 'Pharmacy',
     layout: '/admin',
-    path: '/pharmacy/fileManager',
+    path: '/pharmacy/:pharmacyId/files',
     component: <FileManager />,
     showInSidebar: false,
   },
   {
-    name: 'Pharmacy Management',
+    name: 'Files',
     layout: '/admin',
-    path: '/pharmacy/add-file',
+    path: '/pharmacy/:pharmacyId/add-file',
     component: <AddFile />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Files',
+    layout: '/admin',
+    path: '/pharmacy/:pharmacyId/edit-file/:id',
+    component: <EditFile />,
     showInSidebar: false,
   },
 

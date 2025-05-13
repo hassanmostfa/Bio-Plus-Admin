@@ -15,8 +15,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAddFileMutation } from 'api/filesSlice';
 import Swal from 'sweetalert2';
 import { useAddPharmacyFileMutation } from 'api/pharmacyFiles';
+import { useUpdatePharmacyFileMutation } from 'api/pharmacyFiles';
+import { useGetPharmacyFilesQuery } from 'api/pharmacyFiles';
 
-const AddFile = () => {
+const EditFile = () => {
   const [fileName, setFileName] = useState(''); // State for file name
   const [image, setImage] = useState(null); // State for image file
   const [isDragging, setIsDragging] = useState(false); // State for drag-and-drop
@@ -25,8 +27,29 @@ const AddFile = () => {
   const navigate = useNavigate();
 
   const {pharmacyId} = useParams();
+  const {id} = useParams();
+  const { data: files, refetch, isLoading } = useGetPharmacyFilesQuery({ id: pharmacyId, page: 1, limit: 10 });
+
+  React.useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  const [fileData, setFileData] = React.useState([]);
+
+  React.useEffect(() => {
+    const updatedFileData = files?.data?.filter((file) => file.id === id).map((file) => ({
+      id: file.id,
+      fileName: file.name,
+      fileUrl: file.fileKey,
+    })) || [];
+    setFileData(updatedFileData);
+    setFileName(updatedFileData[0]?.fileName || '');
+    setImage(updatedFileData[0]?.fileUrl || null);
+  }, [files, id]);
+
+  console.log(fileData);
   const [addPharmacyFile] = useAddPharmacyFileMutation();
-  
+  const [updatePharmacyFile] = useUpdatePharmacyFileMutation();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
@@ -82,16 +105,21 @@ const AddFile = () => {
 
     try {
       // First upload the image
-      const formData = new FormData();
-      formData.append('file', image);
+      let imageKey = image;
 
-      const uploadResponse = await addFile(formData).unwrap();
+      // Check if the image is a new file or an existing one
+      if (typeof image !== 'string') {
+        const formData = new FormData();
+        formData.append('file', image);
 
-      if (!uploadResponse.success || uploadResponse.data.uploadedFiles.length === 0) {
-        throw new Error('Failed to upload image');
+        const uploadResponse = await addFile(formData).unwrap();
+
+        if (!uploadResponse.success || uploadResponse.data.uploadedFiles.length === 0) {
+          throw new Error('Failed to upload image');
+        }
+
+        imageKey = uploadResponse.data.uploadedFiles[0].url;
       }
-
-      const imageKey = uploadResponse.data.uploadedFiles[0].url;
 
       // Prepare the payload for saving
       const payload = {
@@ -99,7 +127,7 @@ const AddFile = () => {
         fileKey: imageKey,
         isActive: true,
       };
-      const response = await addPharmacyFile({id:pharmacyId,data:payload}).unwrap();
+      const response = await updatePharmacyFile({id:pharmacyId,fileId:id,data:payload}).unwrap();
       if (!response.success) {
         Swal.fire('Error!', 'Failed to save file.', 'error');
       }
@@ -143,50 +171,52 @@ const AddFile = () => {
           </div>
 
           {/* Drag-and-Drop Upload Section */}
-          <Box
-            border="1px dashed"
-            borderColor={isDragging ? 'brand.500' : 'gray.300'}
-            borderRadius="md"
-            p={4}
-            textAlign="center"
-            backgroundColor={isDragging ? 'brand.50' : inputBg}
-            cursor="pointer"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            mb={4}
-          >
-            {image ? (
-              <Flex direction="column" align="center">
-                <Image src={URL.createObjectURL(image)} alt="File" maxH="200px" mb={2} borderRadius="md" />
-                <Button variant="outline" colorScheme="red" size="sm" onClick={() => setImage(null)}>
-                  Remove Image
-                </Button>
-              </Flex>
-            ) : (
-              <>
-                <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
-                <Text color="gray.500" mb={2}>
-                  Drag & Drop Image Here
-                </Text>
-                <Text color="gray.500" mb={2}>
-                  or
-                </Text>
-                <Button variant="outline" color="#422afb" border="none" onClick={() => document.getElementById('fileInput').click()}>
-                  Upload Image
-                  <input
+                <Box
+                border="1px dashed"
+                borderColor={isDragging ? 'brand.500' : 'gray.300'}
+                borderRadius="md"
+                p={4}
+                textAlign="center"
+                backgroundColor={isDragging ? 'brand.50' : inputBg}
+                cursor="pointer"
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                mb={4}
+                >
+                {image ? (
+                  <Flex direction="column" align="center">
+                  <a href={typeof image === 'string' ? image : URL.createObjectURL(image)} target="_blank" rel="noopener noreferrer">
+                    <Image src={typeof image === 'string' ? image : URL.createObjectURL(image)} alt="File" maxH="200px" mb={2} borderRadius="md" />
+                  </a>
+                  <Button variant="outline" colorScheme="red" size="sm" onClick={() => setImage(null)}>
+                    Remove Image
+                  </Button>
+                  </Flex>
+                ) : (
+                  <>
+                  <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
+                  <Text color="gray.500" mb={2}>
+                    Drag & Drop Image Here
+                  </Text>
+                  <Text color="gray.500" mb={2}>
+                    or
+                  </Text>
+                  <Button variant="outline" color="#422afb" border="none" onClick={() => document.getElementById('fileInput').click()}>
+                    Upload Image
+                    <input
                     type="file"
                     id="fileInput"
                     hidden
                     accept="image/*"
                     onChange={handleFileInputChange}
-                  />
-                </Button>
-              </>
-            )}
-          </Box>
+                    />
+                  </Button>
+                  </>
+                )}
+                </Box>
 
-          {/* Action Buttons */}
+                {/* Action Buttons */}
           <Flex justify="center" mt={4}>
             <Button variant="outline" colorScheme="red" onClick={handleCancel} mr={2}>
               Cancel
@@ -210,4 +240,4 @@ const AddFile = () => {
   );
 };
 
-export default AddFile;
+export default EditFile;

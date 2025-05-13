@@ -28,6 +28,7 @@ import { appointmentSlice } from "api/appointmentSlice";
 import { documentSlice } from "api/documentSlice";
 import { orderSlice } from "api/orderSlice";
 import { statsApi } from "api/statsSlice";
+import { pharmacyFiles } from "api/pharmacyFiles";
 
 // import { userApi, authReducer } from './userSlice';
 
@@ -59,7 +60,8 @@ export const store = configureStore({
     [appointmentSlice.reducerPath]:appointmentSlice.reducer,
     [documentSlice.reducerPath]:documentSlice.reducer,
     [orderSlice.reducerPath]:orderSlice.reducer,
-    [statsApi.reducerPath]:statsApi.reducer
+    [statsApi.reducerPath]:statsApi.reducer,
+    [pharmacyFiles.reducerPath]:pharmacyFiles.reducer
 
   },
   middleware: (getDefaultMiddleware) =>
@@ -90,7 +92,8 @@ export const store = configureStore({
       appointmentSlice.middleware,
       documentSlice.middleware,
       orderSlice.middleware,
-      statsApi.middleware
+      statsApi.middleware,
+      pharmacyFiles.middleware,
     ),
 });
 

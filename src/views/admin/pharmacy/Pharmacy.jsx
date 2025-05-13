@@ -195,7 +195,7 @@ const Pharmacy = () => {
             color="black"
             as={FaRegFolderClosed}
             cursor="pointer"
-            onClick={() => navigate(`/admin/pharmacy/fileManager`)}
+            onClick={() => navigate(`/admin/pharmacy/${info.row.original.id}/files`)}
           />
         </Flex>
       ),
