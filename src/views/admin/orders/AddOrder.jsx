@@ -10,8 +10,15 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  IconButton,
 } from '@chakra-ui/react';
-import { IoMdArrowBack, IoIosArrowDown } from 'react-icons/io';
+import { IoMdArrowBack, IoIosArrowDown, IoIosAdd, IoIosRemove } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
@@ -23,6 +30,16 @@ const AddOrder = () => {
   const [status, setStatus] = useState('Select Status');
   const [payment, setPayment] = useState('Select Payment Method');
   const [total, setTotal] = useState('');
+  const [orderItems, setOrderItems] = useState([{ product: '', quantity: '' }]);
+
+  // Fake users data
+  const fakeClients = [
+    { id: 1, name: 'John Doe' },
+    { id: 2, name: 'Jane Smith'},
+    { id: 3, name: 'Mohammed Ali' },
+    { id: 4, name: 'Sarah Johnson' },
+    { id: 5, name: 'Ahmed Hassan',},
+  ];
 
   const navigate = useNavigate();
   const cardBg = useColorModeValue('white', 'navy.700');
@@ -37,18 +54,48 @@ const AddOrder = () => {
     setStatus('Select Status');
     setPayment('Select Payment Method');
     setTotal('');
+    setOrderItems([{ product: '', quantity: '' }]);
   };
 
   const handleSubmit = () => {
-    if (!date || !customer || !phone || !pharmacy || status === 'Select Status' || payment === 'Select Payment Method' || !total) {
+    if (!date || !customer || !phone || !pharmacy || status === 'Select Status' || 
+        payment === 'Select Payment Method' || !total || orderItems.some(item => !item.product || !item.quantity)) {
       Swal.fire('Error!', 'Please fill all required fields.', 'error');
       return;
     }
 
-    // Replace with your API logic
-    console.log({ date, customer, phone, pharmacy, status, payment, total });
+    const orderData = {
+      date,
+      customer,
+      phone,
+      pharmacy,
+      status,
+      payment,
+      total,
+      items: orderItems
+    };
+
+    console.log('Order data:', orderData);
     Swal.fire('Success!', 'Order added successfully.', 'success');
     navigate('/admin/orders');
+  };
+
+  const handleAddItem = () => {
+    setOrderItems([...orderItems, { product: '', quantity: '' }]);
+  };
+
+  const handleRemoveItem = (index) => {
+    if (orderItems.length > 1) {
+      const newItems = [...orderItems];
+      newItems.splice(index, 1);
+      setOrderItems(newItems);
+    }
+  };
+
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...orderItems];
+    newItems[index][field] = value;
+    setOrderItems(newItems);
   };
 
   return (
@@ -90,20 +137,39 @@ const AddOrder = () => {
             />
           </div>
 
-          {/* Customer */}
+          {/* Customer - Using fake clients data */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
               Customer <span className="text-danger mx-1">*</span>
             </Text>
-            <Input
-              type="text"
-              placeholder="Enter Customer Name"
-              value={customer}
-              onChange={(e) => setCustomer(e.target.value)}
-              required
-              mt="8px"
-              bg={inputBg}
-            />
+            <Menu>
+              <MenuButton
+                as={Button}
+                rightIcon={<IoIosArrowDown />}
+                width="100%"
+                bg={inputBg}
+                border="1px solid #ddd"
+                borderRadius="md"
+                _hover={{ bg: 'gray.200' }}
+                textAlign="left"
+                fontSize="sm"
+              >
+                {customer || 'Select Customer'}
+              </MenuButton>
+              <MenuList maxH="300px" overflowY="auto">
+                {fakeClients.map(client => (
+                  <MenuItem 
+                    key={client.id} 
+                    onClick={() => {
+                      setCustomer(client.name);
+                      setPhone(client.phone || '');
+                    }}
+                  >
+                    {client.name}
+                  </MenuItem>
+                ))}
+              </MenuList>
+            </Menu>
           </div>
 
           {/* Phone */}
@@ -122,34 +188,33 @@ const AddOrder = () => {
             />
           </div>
 
-         {/* Pharmacy */}
-        <div className="mb-3">
-        <Text color={textColor} fontSize="sm" fontWeight="700">
-            Pharmacy <span className="text-danger mx-1">*</span>
-        </Text>
-        <Menu>
-            <MenuButton
-            as={Button}
-            rightIcon={<IoIosArrowDown />}
-            width="100%"
-            bg={inputBg}
-            border="1px solid #ddd"
-            borderRadius="md"
-            _hover={{ bg: 'gray.200' }}
-            textAlign="left"
-            fontSize="sm"
-            >
-            {pharmacy || 'Select Pharmacy'}
-            </MenuButton>
-            <MenuList>
-            <MenuItem onClick={() => setPharmacy('Al Nahdi Pharmacy')}>Al Nahdi Pharmacy</MenuItem>
-            <MenuItem onClick={() => setPharmacy('Al Dawaa Pharmacy')}>Al Dawaa Pharmacy</MenuItem>
-            <MenuItem onClick={() => setPharmacy('White Pharmacy')}>White Pharmacy</MenuItem>
-            <MenuItem onClick={() => setPharmacy('Tadawi Pharmacy')}>Tadawi Pharmacy</MenuItem>
-            </MenuList>
-        </Menu>
-        </div>
-
+          {/* Pharmacy */}
+          <div className="mb-3">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              Pharmacy <span className="text-danger mx-1">*</span>
+            </Text>
+            <Menu>
+              <MenuButton
+                as={Button}
+                rightIcon={<IoIosArrowDown />}
+                width="100%"
+                bg={inputBg}
+                border="1px solid #ddd"
+                borderRadius="md"
+                _hover={{ bg: 'gray.200' }}
+                textAlign="left"
+                fontSize="sm"
+              >
+                {pharmacy || 'Select Pharmacy'}
+              </MenuButton>
+              <MenuList>
+                <MenuItem onClick={() => setPharmacy('Al Nahdi Pharmacy')}>Al Nahdi Pharmacy</MenuItem>
+                <MenuItem onClick={() => setPharmacy('Al Dawaa Pharmacy')}>Al Dawaa Pharmacy</MenuItem>
+                <MenuItem onClick={() => setPharmacy('White Pharmacy')}>White Pharmacy</MenuItem>
+                <MenuItem onClick={() => setPharmacy('Tadawi Pharmacy')}>Tadawi Pharmacy</MenuItem>
+              </MenuList>
+            </Menu>
+          </div>
 
           {/* Status */}
           <div className="mb-3">
