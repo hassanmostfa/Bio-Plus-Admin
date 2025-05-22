@@ -13,33 +13,38 @@ import {
   Button,
 } from '@chakra-ui/react';
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FaDownload } from 'react-icons/fa';
 import Card from 'components/card/Card';
+import { useGetPharmacyFilesQuery } from 'api/pharmacyFiles';
+import { FaFilePen, FaPen, FaTrash } from 'react-icons/fa6';
+import { useDeletePharmacyFileMutation } from 'api/pharmacyFiles';
+import Swal from 'sweetalert2';
 
 const FileManger = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-
+  const {pharmacyId} = useParams();
+  console.log(pharmacyId);
+  const [deleteFile] = useDeletePharmacyFileMutation();
+  const {data:files,refetch,isLoading} = useGetPharmacyFilesQuery({id:pharmacyId,page:1,limit:10});
+  React.useEffect(() => {
+    refetch();
+  }
+  , []);
+    console.log(files);
   // Default data with File Name and File URL
-  const fileData = [
-    {
-      fileName: 'Document 1',
-      fileUrl: 'https://example.com/file1.pdf',
-    },
-    {
-      fileName: 'Document 2',
-      fileUrl: 'https://example.com/file2.pdf',
-    },
-    {
-      fileName: 'Document 3',
-      fileUrl: 'https://example.com/file3.pdf',
-    },
-    {
-      fileName: 'Document 4',
-      fileUrl: 'https://example.com/file4.pdf',
-    },
-  ];
+   const [fileData, setFileData] = React.useState([]);
+
+   React.useEffect(() => {
+     const updatedFileData = files?.data?.map((file) => ({
+       id: file.id,
+       fileName: file.name,
+       fileUrl: file.fileKey,
+     })) || [];
+     setFileData(updatedFileData);
+   }, [files]);
+ 
 
   // Function to handle file download
   const handleDownload = (url) => {
@@ -47,7 +52,30 @@ const FileManger = () => {
   };
 
   const navigate = useNavigate();
-
+  const handleDelete = (fileId) => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You won\'t be able to revert this!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+    }).then((result) => {
+      if (result.isConfirmed) {
+          deleteFile({id:pharmacyId, fileId:fileId})
+          .unwrap()
+          .then(() => {
+            Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+            refetch();
+          })
+          .catch((error) => {
+            Swal.fire('Error!', 'There was an error deleting the file.', 'error');
+            console.error(error);
+          });
+      }
+    });
+  };
   return (
     <div className="container">
       <Card
@@ -74,7 +102,7 @@ const FileManger = () => {
                       borderRadius="70px"
                       px="24px"
                       py="5px"
-                      onClick={() => navigate('/admin/pharmacy/add-file')}
+                      onClick={() => navigate(`/admin/pharmacy/${pharmacyId}/add-file`)}
                       width={'200px'}
                     >
                       Add File
@@ -104,13 +132,28 @@ const FileManger = () => {
                       {file.fileUrl}
                     </a>
                   </Td>
-                  <Td borderColor="transparent" fontSize="14px">
+                  <Td borderColor="transparent" fontSize="14px" display="flex" flexWrap={'nowrap'} alignItems="center" gap={2}>
                     <IconButton
                       aria-label="Download"
                       icon={<FaDownload />}
                       colorScheme="blue"
                       variant="outline"
                       onClick={() => handleDownload(file.fileUrl)}
+                    />
+                    <IconButton
+                      aria-label="Update"
+                      icon={<FaFilePen />}
+                      colorScheme="yellow"
+                      variant="outline"
+                      onClick={() => navigate(`/admin/pharmacy/${pharmacyId}/edit-file/${file.id}`)}
+                     
+                    />
+                    <IconButton
+                      aria-label="Delete"
+                      icon={<FaTrash />}
+                      colorScheme="red"
+                      variant="outline"
+                      onClick={() => handleDelete(file.id)}
                     />
                   </Td>
                 </Tr>

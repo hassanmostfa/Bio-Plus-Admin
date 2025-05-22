@@ -105,6 +105,24 @@ const Admins = () => {
         </Text>
       ),
     }),
+    columnHelper.accessor('phoneNumber', {
+      id: 'phone',
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: '10px', lg: '12px' }}
+          color="gray.400"
+        >
+          Phone Number
+        </Text>
+      ),
+      cell: (info) => (
+        <Text color={textColor}>
+          {info.getValue() ?? "-----"}
+        </Text>
+      ),
+    }),
     columnHelper.accessor('roleName', {
       id: 'roleName',
       header: () => (
