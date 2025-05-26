@@ -50,6 +50,7 @@ export default function HeaderLinks(props) {
    const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.reload();
+    window.location.href = '/admin/auth/sign-in';
    }
   return (
     <Flex
