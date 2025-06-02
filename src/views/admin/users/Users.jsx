@@ -40,7 +40,7 @@ const columnHelper = createColumnHelper();
 const Users = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const { data: usersData, refetch } = useGetUsersQuery({ page: 1, limit: 10 });
+  const { data: usersData,loading:isLoading , refetch } = useGetUsersQuery({ page: 1, limit: 100000 });
   const [updateStatus] = useUpdateUserMutation();
   
   const allUsers = usersData?.data || [];
@@ -49,6 +49,13 @@ const Users = () => {
   
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+
+  // Trigger refetch when component mounts (navigates to)
+  React.useEffect(() => {
+    if (!isLoading) {
+      refetch();
+    }
+  }, [refetch, isLoading]);
 
   // Apply search filter whenever searchTerm or allUsers changes
   useEffect(() => {
@@ -99,11 +106,6 @@ const Users = () => {
   };
 
   const columns = [
-    columnHelper.accessor("id", {
-      id: "id",
-      header: () => <Text color="gray.400">ID</Text>,
-      cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-    }),
     columnHelper.accessor("name", {
       id: "name",
       header: () => <Text color="gray.400">Name</Text>,
@@ -147,10 +149,10 @@ const Users = () => {
             w="18px" 
             h="18px" 
             me="10px" 
-            color="blue.500" 
-            onClick={() => navigate(`/admin/family-Accounts/${info.row.original.id}`)} 
-            title="View Family Accounts" 
-            as={FaEye} 
+            color="green.500" 
+            onClick={() => navigate(`/admin/users/edit/${info.row.original.id}`)} 
+            title="Edit User" 
+            as={EditIcon} 
             cursor="pointer" 
           />
           <Menu>

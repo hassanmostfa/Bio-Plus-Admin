@@ -160,12 +160,33 @@ const Products = () => {
   // Export to Excel function
   const exportToExcel = () => {
     const data = products.map(product => ({
-      Name: product.name,
-      Category: product.categoryName,
-      Price: product.price,
-      Stock: product.quantity,
-      Status: product.isActive ? 'Active' : 'Inactive',
-      Published: product.isPublished ? 'Yes' : 'No'
+      'Product ID': product.id,
+      'Name (English)': product.nameEn,
+      'Name (Arabic)': product.nameAr,
+      'Description (English)': product.descriptionEn,
+      'Description (Arabic)': product.descriptionAr,
+      'Category': product.categoryName,
+      'Product Type': product.productTypeName,
+      'Brand': product.brandName,
+      'SKU': product.sku,
+      'Price': product.price,
+      'Discount': product.discount,
+      'Discount Type': product.discountType,
+      'Stock Quantity': product.quantity,
+      'Lot Number': product.lotNumber,
+      'Expiry Date': product.expiryDate,
+      'Guide Line (English)': product.guideLineEn,
+      'Guide Line (Arabic)': product.guideLineAr,
+      'How To Use (English)': product.howToUseEn,
+      'How To Use (Arabic)': product.howToUseAr,
+      'Treatment (English)': product.treatmentEn,
+      'Treatment (Arabic)': product.treatmentAr,
+      'Ingredients (English)': product.ingredientsEn,
+      'Ingredients (Arabic)': product.ingredientsAr,
+      'Status': product.isActive ? 'Active' : 'Inactive',
+      'Published': product.isPublished ? 'Yes' : 'No',
+      'Created At': product.createdAt,
+      'Updated At': product.updatedAt,
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -340,17 +361,6 @@ const Products = () => {
               <MenuList>
                 <MenuItem icon={<FaDownload />} onClick={exportToExcel}>
                   Export to Excel
-                </MenuItem>
-                <MenuItem icon={<FaDownload />} onClick={() => {
-                  const dataStr = JSON.stringify(products, null, 2);
-                  const blob = new Blob([dataStr], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const link = document.createElement('a');
-                  link.href = url;
-                  link.download = 'products.json';
-                  link.click();
-                }}>
-                  Export to JSON
                 </MenuItem>
               </MenuList>
             </Menu>

@@ -23,6 +23,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateBannerMutation, useGetBannerQuery } from 'api/bannerSlice';
 import { useAddFileMutation } from 'api/filesSlice';
 import Swal from 'sweetalert2';
+import { useGetPharmaciesQuery } from "../../../api/pharmacySlice";
+import { useGetProductsQuery } from "../../../api/productSlice";
+import { useGetDoctorsQuery } from "../../../api/doctorSlice";
 
 const EditBanner = () => {
   const { id } = useParams();
@@ -56,9 +59,20 @@ const EditBanner = () => {
   } = useGetBannerQuery(id);
   const [updateBanner] = useUpdateBannerMutation();
   const [addFile] = useAddFileMutation();
+
+  // Fetch data for dropdowns
+  const { data: pharmaciesData, isLoading: isPharmaciesLoading } = useGetPharmaciesQuery({});
+  const { data: productsData, isLoading: isProductsLoading } = useGetProductsQuery({});
+  const { data: doctorsData, isLoading: isDoctorsLoading } = useGetDoctorsQuery({});
+
+  const pharmacies = pharmaciesData?.data?.items || []; // Adjust based on your API response structure
+  const products = productsData?.data || []; // Adjust based on your API response structure
+  const doctors = doctorsData?.data || []; // Adjust based on your API response structure
+
   useEffect(() => {
     refetch();
-  }, []);
+  }, [refetch]);
+
   // Initialize form with existing data
   useEffect(() => {
     if (banner?.data) {
@@ -66,11 +80,11 @@ const EditBanner = () => {
       setFormData({
         title: bannerData.title,
         arTitle: bannerData.translations?.[0]?.title || '',
-        link: bannerData.link,
-        linkType: bannerData.linkType,
-        linkId: bannerData.linkId,
-        order: bannerData.order,
-        isActive: bannerData.isActive,
+        link: bannerData.link || '', // Initialize link
+        linkType: bannerData.linkType || 'EXTERNAL', // Initialize linkType, default to EXTERNAL
+        linkId: bannerData.linkId || '', // Initialize linkId
+        order: bannerData.order || 1,
+        isActive: bannerData.isActive !== undefined ? bannerData.isActive : true,
       });
       setExistingImage(bannerData.imageKey);
     }
@@ -179,11 +193,12 @@ const EditBanner = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.arTitle || !formData.link) {
+    // Adjust validation based on link type
+    if (!formData.title || !formData.arTitle || (formData.linkType === "EXTERNAL" && !formData.link) || (formData.linkType !== "EXTERNAL" && !formData.linkId)) {
       toast({
-        title: 'Error',
-        description: 'Please fill all required fields',
-        status: 'error',
+        title: "Error",
+        description: "Please fill all required fields",
+        status: "error",
         duration: 5000,
         isClosable: true,
       });
@@ -216,9 +231,7 @@ const EditBanner = () => {
       const payload = {
         title: formData.title,
         imageKey: imageUrl,
-        link: formData.link,
         linkType: formData.linkType,
-        linkId: formData.linkId || null,
         order: parseInt(formData.order),
         isActive: formData.isActive,
         translations: [
@@ -228,6 +241,31 @@ const EditBanner = () => {
           },
         ],
       };
+
+       // Set link and linkId based on linkType
+       if (formData.linkType === "EXTERNAL") {
+        payload.link = formData.link;
+        payload.linkId = null; // Ensure linkId is null for external links
+      } else {
+        // Construct the link based on type and id
+        let linkPath = "";
+        switch (formData.linkType) {
+          case "PHARMACY":
+            linkPath = "/pharmacies/";
+            break;
+          case "PRODUCT":
+            linkPath = "/products/";
+            break;
+          case "DOCTOR":
+            linkPath = "/doctors/";
+            break;
+          default:
+            // Handle unexpected link types if necessary
+            break;
+        }
+        payload.link = `${linkPath}${formData.linkId}`;
+        payload.linkId = formData.linkId; // Ensure linkId is sent for internal types
+      }
 
       // Remove null values
       Object.keys(payload).forEach((key) => {
@@ -344,42 +382,64 @@ const EditBanner = () => {
             />
           </FormControl>
 
-          {/* Link Type */}
-          <FormControl mb={4} isRequired>
-            <FormLabel>Link Type</FormLabel>
-            <Select
-              name="linkType"
-              value={formData.linkType}
-              onChange={handleChange}
-            >
-              <option value="PHARMACY">Pharmacy</option>
-              <option value="PRODUCT">Product</option>
-              <option value="DOCTOR">Doctor</option>
-              <option value="EXTERNAL">External Link</option>
-            </Select>
-          </FormControl>
+          {/* Link Type and Destination Input/Select side-by-side */}
+          <Flex mb={4} gap={4} direction={{ base: "column", md: "row" }}>
+            {/* Link Type */}          
+            <FormControl isRequired flex="1">
+              <FormLabel>Link Type</FormLabel>
+              <Select
+                name="linkType"
+                value={formData.linkType}
+                onChange={handleChange}
+              >
+                <option value="PHARMACY">Pharmacy</option>
+                <option value="PRODUCT">Product</option>
+                <option value="DOCTOR">Doctor</option>
+                <option value="EXTERNAL">External Link</option>
+              </Select>
+            </FormControl>
 
-          {/* Link */}
-          <FormControl mb={4} isRequired>
-            <FormLabel>Link</FormLabel>
-            <Input
-              name="link"
-              placeholder="Enter Link URL"
-              value={formData.link}
-              onChange={handleChange}
-            />
-          </FormControl>
-
-          {/* Link ID */}
-          <FormControl mb={4}>
-            <FormLabel>Link ID (for internal links)</FormLabel>
-            <Input
-              name="linkId"
-              placeholder="Enter Link ID (if applicable)"
-              value={formData.linkId}
-              onChange={handleChange}
-            />
-          </FormControl>
+            {/* Link or Link ID / Select Entity */}          
+            {formData.linkType === "EXTERNAL" ? (
+              <FormControl isRequired flex="1">
+                <FormLabel>Link URL</FormLabel>
+                <Input
+                  name="link"
+                  placeholder="Enter External Link URL"
+                  value={formData.link}
+                  onChange={handleChange}
+                />
+              </FormControl>
+            ) : (
+              <FormControl isRequired flex="1">
+                <FormLabel>{formData.linkType} ID</FormLabel>
+                {formData.linkType === "PHARMACY" && isPharmaciesLoading ? (
+                 <Spinner size="sm" />
+              ) : formData.linkType === "PRODUCT" && isProductsLoading ? (
+                 <Spinner size="sm" />
+              ) : formData.linkType === "DOCTOR" && isDoctorsLoading ? (
+                 <Spinner size="sm" />
+              ) : (
+                <Select
+                  name="linkId"
+                  placeholder={`Select ${formData.linkType}`}
+                  value={formData.linkId}
+                  onChange={handleChange}
+                >
+                  {formData.linkType === "PHARMACY" && pharmacies.map(item => (
+                    <option key={item.id} value={item.id}>{item.name}</option>
+                  ))}
+                  {formData.linkType === "PRODUCT" && products.map(item => (
+                    <option key={item.id} value={item.id}>{item.name}</option>
+                  ))}
+                  {formData.linkType === "DOCTOR" && doctors.map(item => (
+                    <option key={item.id} value={item.id}>{item.fullName}</option>
+                  ))}
+                </Select>
+              )}
+            </FormControl>
+          )}
+          </Flex>
 
           {/* Order */}
           <FormControl mb={4}>
@@ -472,7 +532,7 @@ const EditBanner = () => {
             </Button>
             <Button
               type="submit"
-              colorScheme="blue"
+              variant="darkBrand"
               isLoading={isLoading}
               loadingText="Updating..."
             >

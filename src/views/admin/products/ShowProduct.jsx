@@ -247,6 +247,36 @@ const ShowProduct = () => {
             <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={4}>
               <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
                 <CardHeader>
+                  <Heading size="sm">Details</Heading>
+                </CardHeader>
+                <CardBody>
+                  <Stack spacing={2}>
+                    <Flex justify="space-between">
+                      <Text fontWeight="bold">SKU:</Text>
+                      <Text>{product.sku || 'N/A'}</Text>
+                    </Flex>
+                    <Flex justify="space-between">
+                      <Text fontWeight="bold">Lot Number:</Text>
+                      <Text>{product.lotNumber || 'N/A'}</Text>
+                    </Flex>
+                    <Flex justify="space-between">
+                      <Text fontWeight="bold">Expiry Date:</Text>
+                      <Text>{product.expiryDate ? new Date(product.expiryDate).toLocaleDateString() : 'N/A'}</Text>
+                    </Flex>
+                    <Flex justify="space-between">
+                      <Text fontWeight="bold">Product Type:</Text>
+                      <Text>{product.productType?.name || 'N/A'}</Text>
+                    </Flex>
+                    <Flex justify="space-between">
+                      <Text fontWeight="bold">Discount:</Text>
+                      <Text>{product.discount != null ? `${product.discount}${product.discountType === 'PERCENTAGE' ? '%' : ''}` : 'N/A'}</Text>
+                    </Flex>
+                  </Stack>
+                </CardBody>
+              </Card>
+
+               <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
+                <CardHeader>
                   <Heading size="sm">Creation Details</Heading>
                 </CardHeader>
                 <CardBody>
@@ -262,7 +292,73 @@ const ShowProduct = () => {
                   </Stack>
                 </CardBody>
               </Card>
-              
+            </Grid>
+
+            {/* Descriptive Fields */}
+            <Box mt={4}>
+              <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
+                <CardHeader>
+                  <Heading size="sm">Descriptive Information</Heading>
+                </CardHeader>
+                <CardBody>
+                  <Stack spacing={4}>
+                    <Box>
+                      <Text fontWeight="bold" mb={1}>Guide Line (English):</Text>
+                      <Text>{product.translations?.find(t => t.languageId === 'en')?.guideLine || product.guideLine || 'N/A'}</Text>
+                    </Box>
+                    {arabicTranslation?.guideLine && (
+                       <Box>
+                        <Text fontWeight="bold" mb={1}>Guide Line (Arabic):</Text>
+                        <Text dir="rtl" textAlign="right">{arabicTranslation.guideLine}</Text>
+                       </Box>
+                    )}
+
+                    <Divider />
+
+                    <Box>
+                      <Text fontWeight="bold" mb={1}>How To Use (English):</Text>
+                      <Text>{product.translations?.find(t => t.languageId === 'en')?.howToUse || product.howToUse || 'N/A'}</Text>
+                    </Box>
+                    {arabicTranslation?.howToUse && (
+                      <Box>
+                        <Text fontWeight="bold" mb={1}>How To Use (Arabic):</Text>
+                        <Text dir="rtl" textAlign="right">{arabicTranslation.howToUse}</Text>
+                      </Box>
+                    )}
+
+                    <Divider />
+
+                    <Box>
+                      <Text fontWeight="bold" mb={1}>Treatment (English):</Text>
+                      <Text>{product.translations?.find(t => t.languageId === 'en')?.treatment || product.treatment || 'N/A'}</Text>
+                    </Box>
+                    {arabicTranslation?.treatment && (
+                       <Box>
+                        <Text fontWeight="bold" mb={1}>Treatment (Arabic):</Text>
+                        <Text dir="rtl" textAlign="right">{arabicTranslation.treatment}</Text>
+                       </Box>
+                    )}
+
+                     <Divider />
+
+                    <Box>
+                      <Text fontWeight="bold" mb={1}>Ingredients (English):</Text>
+                      <Text>{product.translations?.find(t => t.languageId === 'en')?.ingredients || product.ingredients || 'N/A'}</Text>
+                    </Box>
+                    {arabicTranslation?.ingredients && (
+                       <Box>
+                        <Text fontWeight="bold" mb={1}>Ingredients (Arabic):</Text>
+                        <Text dir="rtl" textAlign="right">{arabicTranslation.ingredients}</Text>
+                       </Box>
+                    )}
+
+                  </Stack>
+                </CardBody>
+              </Card>
+            </Box>
+
+            {/* Actions */}
+            <Box mt={4}>
               <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
                 <CardHeader>
                   <Heading size="sm">Actions</Heading>
@@ -304,7 +400,7 @@ const ShowProduct = () => {
                   </Flex>
                 </CardBody>
               </Card>
-            </Grid>
+            </Box>
           </TabPanel>
         </TabPanels>
       </Tabs>

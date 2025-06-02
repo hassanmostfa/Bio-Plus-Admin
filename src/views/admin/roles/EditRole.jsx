@@ -9,6 +9,7 @@ import {
   useColorModeValue,
   Button,
   SimpleGrid,
+  Switch,
 } from '@chakra-ui/react';
 import * as React from 'react';
 import './roles.css';
@@ -35,6 +36,8 @@ const EditRole = () => {
 
   // State for categories and subcategories
   const [categories, setCategories] = React.useState([]);
+  // State for active status
+  const [isActive, setIsActive] = React.useState(rolePermissions?.data?.isActive ?? true); // Initialize with data from API if available, default to true
   
   // Transform API data into the required structure
   React.useEffect(() => {
@@ -105,6 +108,7 @@ const EditRole = () => {
     // Prepare the payload
     const payload = {
       name: e.target.roleName.value,
+      isActive: isActive,
       // platform: 'ADMIN', // Replace with the appropriate platform if dynamic
       permissions,
     };
@@ -191,6 +195,20 @@ const EditRole = () => {
               required
               mt="8px"
               defaultValue={rolePermissions?.data?.name}
+            />
+          </Box>
+
+          {/* Active Status Toggle */}
+          <Box mb="20px">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              Active Status
+            </Text>
+            <Switch
+              isChecked={isActive}
+              onChange={() => setIsActive(!isActive)}
+              colorScheme="teal"
+              size="md"
+              mt="8px"
             />
           </Box>
 

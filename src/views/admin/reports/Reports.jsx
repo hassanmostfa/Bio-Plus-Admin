@@ -37,6 +37,13 @@ import { EditIcon, SearchIcon } from '@chakra-ui/icons';
 import { FaEye, FaTrash, FaDownload } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import {
+  useGetProductsStockReportQuery,
+  useGetPharmaciesRevenueReportQuery,
+  useGetClinicsReportQuery,
+} from "../../../api/reportsSlice"; // Import RTK Query hooks
+import Pagination from "theme/components/Pagination"; // Assuming you have a Pagination component
+import * as XLSX from 'xlsx'; // Import xlsx library
 
 const columnHelper = createColumnHelper();
 
@@ -48,40 +55,40 @@ const Reports = () => {
   const [sorting, setSorting] = React.useState([]);
   const toast = useToast();
 
+  // Pagination state for Inventory tab
+  const [inventoryPage, setInventoryPage] = React.useState(1);
+  const [inventoryLimit, setInventoryLimit] = React.useState(10);
+
+  // Pagination state for Pharmacy tab
+  const [pharmacyPage, setPharmacyPage] = React.useState(1);
+  const [pharmacyLimit, setPharmacyLimit] = React.useState(10);
+
+  // Pagination state for Clinics tab
+  const [clinicPage, setClinicPage] = React.useState(1);
+  const [clinicLimit, setClinicLimit] = React.useState(10);
+
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
-  // Mock data for demonstration - replace with your actual data fetching logic
-  const inventoryData = React.useMemo(() => [
-    { id: 1, product_name: 'Product A', sku: 'SKU001', variant: 'Variant 1', category: 'Medication', qty: 100, status: 'In Stock' },
-    { id: 2, product_name: 'Product B', sku: 'SKU002', variant: 'Variant 2', category: 'Equipment', qty: 50, status: 'Low Stock' },
-    { id: 3, product_name: 'Product C', sku: 'SKU003', variant: 'Variant 1', category: 'Supplies', qty: 0, status: 'Out of Stock' },
-  ], []);
+  // Fetch data using RTK Query hooks
+  const { data: inventoryData, isLoading: isInventoryLoading, isError: isInventoryError, error: inventoryError } = useGetProductsStockReportQuery({ page: inventoryPage, limit: inventoryLimit });
+  const { data: pharmacyData, isLoading: isPharmacyLoading, isError: isPharmacyError, error: pharmacyError } = useGetPharmaciesRevenueReportQuery({ page: pharmacyPage, limit: pharmacyLimit });
+  const { data: clinicData, isLoading: isClinicLoading, isError: isClinicError, error: clinicError } = useGetClinicsReportQuery({ page: clinicPage, limit: clinicLimit });
 
-  const pharmacyData = React.useMemo(() => [
-    { id: 1, pharmacy_en_name: 'Pharmacy One', pharmacy_ar_name: 'صيدلية واحد', revenue_share: '15%', created_at: '2023-01-15' },
-    { id: 2, pharmacy_en_name: 'Pharmacy Two', pharmacy_ar_name: 'صيدلية اثنان', revenue_share: '20%', created_at: '2023-02-20' },
-    { id: 3, pharmacy_en_name: 'Pharmacy Three', pharmacy_ar_name: 'صيدلية ثلاثة', revenue_share: '10%', created_at: '2023-03-10' },
-  ], []);
-
-  const clinicData = React.useMemo(() => [
-    { id: 1, clinic_en_name: 'Clinic One', clinic_ar_name: 'العيادة الأولى', created_at: '2023-01-10' },
-    { id: 2, clinic_en_name: 'Clinic Two', clinic_ar_name: 'العيادة الثانية', created_at: '2023-02-15' },
-    { id: 3, clinic_en_name: 'Clinic Three', clinic_ar_name: 'العيادة الثالثة', created_at: '2023-03-20' },
-  ], []);
-
-  // Update table data when tab changes
+  // Update table data when tab changes or data is fetched
   React.useEffect(() => {
     let newData = [];
     switch(activeTab) {
       case 0:
-        newData = inventoryData;
+        newData = inventoryData?.data?.products || []; // Use fetched inventory products
         break;
       case 1:
-        newData = pharmacyData;
+        newData = pharmacyData?.data?.pharmacies || []; // Use fetched pharmacy data
+        console.log(newData);
+        
         break;
       case 2:
-        newData = clinicData;
+        newData = clinicData?.data.clinics || []; // Use fetched clinic data
         break;
       default:
         break;
@@ -91,31 +98,72 @@ const Reports = () => {
   }, [activeTab, inventoryData, pharmacyData, clinicData]);
 
   const handleDownload = () => {
-    // Combine all data from all tabs
-    const allData = {
-      inventory: inventoryData,
-      pharmacy: pharmacyData,
-      clinics: clinicData
-    };
-    
-    // Create a blob with the data
-    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    // Create a temporary anchor element to trigger the download
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'reports_data.json';
-    document.body.appendChild(a);
-    a.click();
-    
-    // Clean up
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
+    const workbook = XLSX.utils.book_new();
+    let fileName = 'report_data.xlsx';
+    let sheetData = [];
+    let sheetName = '';
+
+    switch (activeTab) {
+      case 0: // Inventory Tab
+        sheetData = inventoryData?.data?.products?.map(item => ({
+          'Product Name': item.name,
+          'Category': item.category,
+          'SKU': item.sku,
+          'Quantity': item.quantity,
+          'Stock Status': item.stockStatus,
+          'Created At': item.createdAt, // Assuming createdAt exists in inventory data
+        })) || [];
+        sheetName = 'Inventory Report';
+        fileName = 'inventory_report.xlsx';
+        break;
+      case 1: // Pharmacy Tab
+        sheetData = pharmacyData?.data?.pharmacies?.map(item => ({
+          'Pharmacy Name': item.name,
+          'Revenue Share': item.revenueShare,
+          'Created At': item.createdAt,
+        })) || [];
+        sheetName = 'Pharmacy Report';
+        fileName = 'pharmacy_report.xlsx';
+        break;
+      case 2: // Clinics Tab
+        sheetData = clinicData?.data?.clinics?.map(item => ({
+          'Clinic Name': item.name,
+          'Created At': item.createdAt,
+        })) || [];
+        sheetName = 'Clinics Report';
+        fileName = 'clinics_report.xlsx';
+        break;
+      default:
+        // If no tab is active or an unexpected value, do nothing or show an error
+        toast({
+          title: 'Export Error',
+          description: 'Could not determine which report to export.',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+    }
+
+    if (sheetData.length === 0) {
+      toast({
+        title: 'No Data to Export',
+        description: `No data available in the ${sheetName} to export.`, // Use sheetName for clarity
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(sheetData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+    XLSX.writeFile(workbook, fileName);
+
     toast({
       title: 'Download Started',
-      description: 'All records from all tabs are being downloaded.',
+      description: `${sheetName} is being downloaded as Excel.`, // Use sheetName for clarity
       status: 'success',
       duration: 3000,
       isClosable: true,
@@ -123,8 +171,8 @@ const Reports = () => {
   };
 
   const inventoryColumns = [
-    columnHelper.accessor('product_name', {
-      id: 'product_name',
+    columnHelper.accessor('name', {
+      id: 'name',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
           Product Name
@@ -162,21 +210,8 @@ const Reports = () => {
         </Text>
       ),
     }),
-    columnHelper.accessor('variant', {
-      id: 'variant',
-      header: () => (
-        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Variant
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor} fontSize="sm">
-          {info.getValue()}
-        </Text>
-      ),
-    }),
-    columnHelper.accessor('qty', {
-      id: 'qty',
+    columnHelper.accessor('quantity', {
+      id: 'quantity',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
           Quantity
@@ -188,8 +223,8 @@ const Reports = () => {
         </Text>
       ),
     }),
-    columnHelper.accessor('status', {
-      id: 'status',
+    columnHelper.accessor('stockStatus', {
+      id: 'stockStatus',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
           Status
@@ -208,8 +243,8 @@ const Reports = () => {
   ];
 
   const pharmacyColumns = [
-    columnHelper.accessor('pharmacy_en_name', {
-      id: 'pharmacy_en_name',
+    columnHelper.accessor('name', {
+      id: 'name',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
           Pharmacy (EN)
@@ -221,21 +256,8 @@ const Reports = () => {
         </Text>
       ),
     }),
-    columnHelper.accessor('pharmacy_ar_name', {
-      id: 'pharmacy_ar_name',
-      header: () => (
-        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Pharmacy (AR)
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor} fontSize="sm" dir="rtl">
-          {info.getValue()}
-        </Text>
-      ),
-    }),
-    columnHelper.accessor('revenue_share', {
-      id: 'revenue_share',
+    columnHelper.accessor('revenueShare', {
+      id: 'revenueShare',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
           Revenue Share
@@ -247,8 +269,8 @@ const Reports = () => {
         </Text>
       ),
     }),
-    columnHelper.accessor('created_at', {
-      id: 'created_at',
+    columnHelper.accessor('createdAt', {
+      id: 'createdAt',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
           Created At
@@ -263,8 +285,8 @@ const Reports = () => {
   ];
 
   const clinicColumns = [
-    columnHelper.accessor('clinic_en_name', {
-      id: 'clinic_en_name',
+    columnHelper.accessor('name', {
+      id: 'name',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
           Clinic (EN)
@@ -276,21 +298,8 @@ const Reports = () => {
         </Text>
       ),
     }),
-    columnHelper.accessor('clinic_ar_name', {
-      id: 'clinic_ar_name',
-      header: () => (
-        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Clinic (AR)
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor} fontSize="sm" dir="rtl">
-          {info.getValue()}
-        </Text>
-      ),
-    }),
-    columnHelper.accessor('created_at', {
-      id: 'created_at',
+    columnHelper.accessor('createdAt', {
+      id: 'createdAt',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
           Created At
@@ -377,175 +386,238 @@ const Reports = () => {
 
           <TabPanels>
             <TabPanel>
-              <Table variant="simple" color="gray.500" mb="24px" mt="12px">
-                <Thead>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <Tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <Th
-                            key={header.id}
-                            colSpan={header.colSpan}
-                            pe="10px"
-                            borderColor={borderColor}
-                            cursor="pointer"
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            <Flex
-                              justifyContent="space-between"
-                              align="center"
-                              fontSize={{ sm: '10px', lg: '12px' }}
-                              color="gray.400"
+              {isInventoryLoading ? (
+                <Flex justifyContent="center" alignItems="center" height="200px">
+                  <Spinner size="xl" />
+                </Flex>
+              ) : isInventoryError ? (
+                <Flex justifyContent="center" alignItems="center" height="200px">
+                  <Text color="red.500">Error loading inventory report: {inventoryError.message}</Text>
+                </Flex>
+              ) : (
+                <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+                  <Thead>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <Tr key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => {
+                          return (
+                            <Th
+                              key={header.id}
+                              colSpan={header.colSpan}
+                              pe="10px"
+                              borderColor={borderColor}
+                              cursor="pointer"
+                              onClick={header.column.getToggleSortingHandler()}
                             >
-                              {flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                              {{
-                                asc: ' 🔼',
-                                desc: ' 🔽',
-                              }[header.column.getIsSorted()] ?? null}
-                            </Flex>
-                          </Th>
-                        );
-                      })}
-                    </Tr>
-                  ))}
-                </Thead>
-                <Tbody>
-                  {table.getRowModel().rows.map((row) => (
-                    <Tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
-                        <Td
-                          key={cell.id}
-                          fontSize={{ sm: '14px' }}
-                          minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                          borderColor="transparent"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </Td>
-                      ))}
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
+                              <Flex
+                                justifyContent="space-between"
+                                align="center"
+                                fontSize={{ sm: '10px', lg: '12px' }}
+                                color="gray.400"
+                              >
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                                {{
+                                  asc: ' 🔼',
+                                  desc: ' 🔽',
+                                }[header.column.getIsSorted()] ?? null}
+                              </Flex>
+                            </Th>
+                          );
+                        })}
+                      </Tr>
+                    ))}
+                  </Thead>
+                  <Tbody>
+                    {table.getRowModel().rows.map((row) => (
+                      <Tr key={row.id}>
+                        {row.getVisibleCells().map((cell) => (
+                          <Td
+                            key={cell.id}
+                            fontSize={{ sm: '14px' }}
+                            minW={{ sm: '150px', md: '200px', lg: 'auto' }}
+                            borderColor="transparent"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </Td>
+                        ))}
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              )}
+
+              {/* Pagination for Inventory tab */}
+              {inventoryData?.data?.pagination?.totalPages > 1 && (
+                <Flex justifyContent="center" mt={4} pb={4}>
+                  <Pagination
+                    currentPage={inventoryPage}
+                    totalPages={inventoryData.data.pagination.totalPages}
+                    onPageChange={setInventoryPage}
+                  />
+                </Flex>
+              )}
             </TabPanel>
             <TabPanel>
-              <Table variant="simple" color="gray.500" mb="24px" mt="12px">
-                <Thead>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <Tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <Th
-                            key={header.id}
-                            colSpan={header.colSpan}
-                            pe="10px"
-                            borderColor={borderColor}
-                            cursor="pointer"
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            <Flex
-                              justifyContent="space-between"
-                              align="center"
-                              fontSize={{ sm: '10px', lg: '12px' }}
-                              color="gray.400"
+              {isPharmacyLoading ? (
+                <Flex justifyContent="center" alignItems="center" height="200px">
+                  <Spinner size="xl" />
+                </Flex>
+              ) : isPharmacyError ? (
+                <Flex justifyContent="center" alignItems="center" height="200px">
+                  <Text color="red.500">Error loading pharmacy report: {pharmacyError.message}</Text>
+                </Flex>
+              ) : (
+                <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+                  <Thead>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <Tr key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => {
+                          return (
+                            <Th
+                              key={header.id}
+                              colSpan={header.colSpan}
+                              pe="10px"
+                              borderColor={borderColor}
+                              cursor="pointer"
+                              onClick={header.column.getToggleSortingHandler()}
                             >
-                              {flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                              {{
-                                asc: ' 🔼',
-                                desc: ' 🔽',
-                              }[header.column.getIsSorted()] ?? null}
-                            </Flex>
-                          </Th>
-                        );
-                      })}
-                    </Tr>
-                  ))}
-                </Thead>
-                <Tbody>
-                  {table.getRowModel().rows.map((row) => (
-                    <Tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
-                        <Td
-                          key={cell.id}
-                          fontSize={{ sm: '14px' }}
-                          minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                          borderColor="transparent"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </Td>
-                      ))}
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
+                              <Flex
+                                justifyContent="space-between"
+                                align="center"
+                                fontSize={{ sm: '10px', lg: '12px' }}
+                                color="gray.400"
+                              >
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                                {{
+                                  asc: ' 🔼',
+                                  desc: ' 🔽',
+                                }[header.column.getIsSorted()] ?? null}
+                              </Flex>
+                            </Th>
+                          );
+                        })}
+                      </Tr>
+                    ))}
+                  </Thead>
+                  <Tbody>
+                    {table.getRowModel().rows.map((row) => (
+                      <Tr key={row.id}>
+                        {row.getVisibleCells().map((cell) => (
+                          <Td
+                            key={cell.id}
+                            fontSize={{ sm: '14px' }}
+                            minW={{ sm: '150px', md: '200px', lg: 'auto' }}
+                            borderColor="transparent"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </Td>
+                        ))}
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              )}
+
+              {/* Pagination for Pharmacy tab */}
+              {pharmacyData?.data?.pagination?.totalPages > 1 && (
+                <Flex justifyContent="center" mt={4} pb={4}>
+                  <Pagination
+                    currentPage={pharmacyPage}
+                    totalPages={pharmacyData.data.pagination.totalPages}
+                    onPageChange={setPharmacyPage}
+                  />
+                </Flex>
+              )}
             </TabPanel>
             <TabPanel>
-              <Table variant="simple" color="gray.500" mb="24px" mt="12px">
-                <Thead>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <Tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <Th
-                            key={header.id}
-                            colSpan={header.colSpan}
-                            pe="10px"
-                            borderColor={borderColor}
-                            cursor="pointer"
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            <Flex
-                              justifyContent="space-between"
-                              align="center"
-                              fontSize={{ sm: '10px', lg: '12px' }}
-                              color="gray.400"
+              {isClinicLoading ? (
+                <Flex justifyContent="center" alignItems="center" height="200px">
+                  <Spinner size="xl" />
+                </Flex>
+              ) : isClinicError ? (
+                <Flex justifyContent="center" alignItems="center" height="200px">
+                  <Text color="red.500">Error loading clinics report: {clinicError.message}</Text>
+                </Flex>
+              ) : (
+                <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+                  <Thead>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <Tr key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => {
+                          return (
+                            <Th
+                              key={header.id}
+                              colSpan={header.colSpan}
+                              pe="10px"
+                              borderColor={borderColor}
+                              cursor="pointer"
+                              onClick={header.column.getToggleSortingHandler()}
                             >
-                              {flexRender(
-                                header.column.columnDef.header,
-                                header.getContext(),
-                              )}
-                              {{
-                                asc: ' 🔼',
-                                desc: ' 🔽',
-                              }[header.column.getIsSorted()] ?? null}
-                            </Flex>
-                          </Th>
-                        );
-                      })}
-                    </Tr>
-                  ))}
-                </Thead>
-                <Tbody>
-                  {table.getRowModel().rows.map((row) => (
-                    <Tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
-                        <Td
-                          key={cell.id}
-                          fontSize={{ sm: '14px' }}
-                          minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                          borderColor="transparent"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </Td>
-                      ))}
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
+                              <Flex
+                                justifyContent="space-between"
+                                align="center"
+                                fontSize={{ sm: '10px', lg: '12px' }}
+                                color="gray.400"
+                              >
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                                {{
+                                  asc: ' 🔼',
+                                  desc: ' 🔽',
+                                }[header.column.getIsSorted()] ?? null}
+                              </Flex>
+                            </Th>
+                          );
+                        })}
+                      </Tr>
+                    ))}
+                  </Thead>
+                  <Tbody>
+                    {table.getRowModel().rows.map((row) => (
+                      <Tr key={row.id}>
+                        {row.getVisibleCells().map((cell) => (
+                          <Td
+                            key={cell.id}
+                            fontSize={{ sm: '14px' }}
+                            minW={{ sm: '150px', md: '200px', lg: 'auto' }}
+                            borderColor="transparent"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </Td>
+                        ))}
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              )}
+
+              {/* Pagination for Clinics tab */}
+              {clinicData?.data?.pagination?.totalPages > 1 && (
+                <Flex justifyContent="center" mt={4} pb={4}>
+                  <Pagination
+                    currentPage={clinicPage}
+                    totalPages={clinicData.data.pagination.totalPages}
+                    onPageChange={setClinicPage}
+                  />
+                </Flex>
+              )}
             </TabPanel>
           </TabPanels>
         </Tabs>

@@ -6,6 +6,9 @@ import {
   Input,
   Text,
   useColorModeValue,
+  Switch,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
@@ -21,6 +24,7 @@ const EditType = () => {
   // State for form fields
   const [enName, setEnName] = useState("");
   const [arName, setArName] = useState("");
+  const [isActive, setIsActive] = useState(typeResponse?.data?.isActive ?? true);
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
 
@@ -29,6 +33,7 @@ const EditType = () => {
     if (typeResponse?.data) {
       setEnName(typeResponse.data.name); // Set the English name
       setArName(typeResponse.data.translations.find((t) => t.languageId === "ar")?.name || ""); // Set the Arabic name
+      setIsActive(typeResponse.data.isActive);
     }
   }, [typeResponse]);
 
@@ -51,7 +56,7 @@ const EditType = () => {
     const payload = {
      
       name: enName, // Updated English name
-      isActive: true, // Default to true
+      isActive: isActive,
       translations: [
         { languageId: "ar", name: arName }, // Updated Arabic translation
       ],
@@ -127,6 +132,22 @@ const EditType = () => {
               mt={"8px"}
             />
           </div>
+
+          {/* Active Status Toggle */}
+          <Box mb="20px">
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="isActive" mb="0">
+                Active Status
+              </FormLabel>
+              <Switch
+                id="isActive"
+                isChecked={isActive}
+                onChange={() => setIsActive(!isActive)}
+                colorScheme="teal"
+                size="md"
+              />
+            </FormControl>
+          </Box>
 
           {/* Action Buttons */}
           <Flex justify="start" mt={4}>

@@ -64,13 +64,27 @@ const EditProduct = () => {
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
+  // New states for additional fields
+  const [sku, setSku] = useState('');
+  const [lotNumber, setLotNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [guideLineEn, setGuideLineEn] = useState('');
+  const [guideLineAr, setGuideLineAr] = useState('');
+  const [howToUseEn, setHowToUseEn] = useState('');
+  const [howToUseAr, setHowToUseAr] = useState('');
+  const [treatmentEn, setTreatmentEn] = useState('');
+  const [treatmentAr, setTreatmentAr] = useState('');
+  const [ingredientsEn, setIngredientsEn] = useState('');
+  const [ingredientsAr, setIngredientsAr] = useState('');
+  const [discount, setDiscount] = useState(null);
+  const [discountType, setDiscountType] = useState(null); // Assuming discountType might be needed later, adding state for consistency
 
-
+  // State for variants
+  const [selectedAttributes, setSelectedAttributes] = useState([]);
 
   // API queries
   const { data: productResponse, isLoading: isProductLoading , refetch } =
     useGetProductQuery(id);
-
 
        // Trigger refetch when component mounts (navigates to)
    React.useEffect(() => {
@@ -153,9 +167,28 @@ const EditProduct = () => {
             ? { name: variant.imageKey }
             : null,
           isActive: variant.isActive ?? true,
+          lotNumber: variant.lotNumber || '',
+          expiryDate: variant.expiryDate || '',
+          discount: variant.discount != null ? variant.discount : '',
+          discountType: variant.discountType || '',
         }));
         setSelectedAttributes(attributes);
       }
+
+      // Initialize new fields
+      setSku(product.sku || '');
+      setLotNumber(product.lotNumber || '');
+      setExpiryDate(product.expiryDate || '');
+      setGuideLineEn(product.translations?.find(t => t.languageId === 'en')?.guideLine || '');
+      setGuideLineAr(product.translations?.find(t => t.languageId === 'ar')?.guideLine || '');
+      setHowToUseEn(product.translations?.find(t => t.languageId === 'en')?.howToUse || '');
+      setHowToUseAr(product.translations?.find(t => t.languageId === 'ar')?.howToUse || '');
+      setTreatmentEn(product.translations?.find(t => t.languageId === 'en')?.treatment || '');
+      setTreatmentAr(product.translations?.find(t => t.languageId === 'ar')?.treatment || '');
+      setIngredientsEn(product.translations?.find(t => t.languageId === 'en')?.ingredients || '');
+      setIngredientsAr(product.translations?.find(t => t.languageId === 'ar')?.ingredients || '');
+      setDiscount(product.discount != null ? product.discount : '');
+      setDiscountType(product.discountType || '');
     }
   }, [product]);
 
@@ -248,8 +281,7 @@ const EditProduct = () => {
     setIsDragging(false);
     handleImageUpload(e.dataTransfer.files);
   };
-  // Add this with your other state declarations
-  const [selectedAttributes, setSelectedAttributes] = useState([]);
+
   // Variant handling
   const handleVariantSelect = (e) => {
     const variantId = e.target.value;
@@ -322,18 +354,26 @@ const EditProduct = () => {
 
       // Prepare translations
       const translations = [];
-      if (nameAr || descriptionAr) {
+      if (nameAr || descriptionAr || guideLineAr || howToUseAr || treatmentAr || ingredientsAr) {
         translations.push({
           languageId: 'ar',
           name: nameAr,
           description: descriptionAr,
+          guideLine: guideLineAr,
+          howToUse: howToUseAr,
+          treatment: treatmentAr,
+          ingredients: ingredientsAr,
         });
       }
-      if (nameEn || descriptionEn) {
+      if (nameEn || descriptionEn || guideLineEn || howToUseEn || treatmentEn || ingredientsEn) {
         translations.push({
           languageId: 'en',
           name: nameEn,
           description: descriptionEn,
+          guideLine: guideLineEn,
+          howToUse: howToUseEn,
+          treatment: treatmentEn,
+          ingredients: ingredientsEn,
         });
       }
 
@@ -346,6 +386,10 @@ const EditProduct = () => {
         quantity: parseInt(attr.quantity) || 0,
         imageKey: attr.imageKey || undefined,
         isActive: attr.isActive,
+        lotNumber: attr.lotNumber || undefined,
+        expiryDate: attr.expiryDate || undefined,
+        discount: attr.discount != null ? parseFloat(attr.discount) : undefined,
+        discountType: attr.discountType ? attr.discountType.toUpperCase() : undefined,
       }));
 
       // Prepare product data
@@ -364,9 +408,14 @@ const EditProduct = () => {
         hasVariants,
         isActive,
         isPublished,
-        translations: translations.filter((t) => t.name && t.description),
+        translations: translations.filter((t) => t.name || t.description || t.guideLine || t.howToUse || t.treatment || t.ingredients),
         images: [...existingImagesData, ...uploadedImages],
-        // variants: hasVariants ? variantsData : [],
+        variants: hasVariants ? variantsData : undefined,
+        ...( !hasVariants && { sku: sku || undefined }),
+        ...( !hasVariants && { lotNumber: lotNumber || undefined }),
+        ...( !hasVariants && { expiryDate: expiryDate || undefined }),
+        ...( !hasVariants && { discount: discount != null ? parseFloat(discount) : undefined }),
+        ...( !hasVariants && { discountType: discountType ? discountType.toUpperCase() : undefined }),
       };
 
       // Remove null values
@@ -499,6 +548,106 @@ const EditProduct = () => {
                   placeholder="أدخل وصف المنتج"
                   value={descriptionAr}
                   onChange={(e) => setDescriptionAr(e.target.value)}
+                  dir="rtl"
+                />
+              </FormControl>
+            </Box>
+          </SimpleGrid>
+
+          {/* Guide Line */}
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
+            <Box>
+              <FormControl>
+                <FormLabel>Guide Line (English)</FormLabel>
+                <Textarea
+                  placeholder="Enter Guide Line"
+                  value={guideLineEn}
+                  onChange={(e) => setGuideLineEn(e.target.value)}
+                />
+              </FormControl>
+            </Box>
+            <Box>
+              <FormControl>
+                <FormLabel>Guide Line (Arabic)</FormLabel>
+                <Textarea
+                  placeholder="أدخل دليل الاستخدام"
+                  value={guideLineAr}
+                  onChange={(e) => setGuideLineAr(e.target.value)}
+                  dir="rtl"
+                />
+              </FormControl>
+            </Box>
+          </SimpleGrid>
+
+          {/* How To Use */}
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
+            <Box>
+              <FormControl>
+                <FormLabel>How To Use (English)</FormLabel>
+                <Textarea
+                  placeholder="Enter How To Use"
+                  value={howToUseEn}
+                  onChange={(e) => setHowToUseEn(e.target.value)}
+                />
+              </FormControl>
+            </Box>
+            <Box>
+              <FormControl>
+                <FormLabel>How To Use (Arabic)</FormLabel>
+                <Textarea
+                  placeholder="أدخل طريقة الاستخدام"
+                  value={howToUseAr}
+                  onChange={(e) => setHowToUseAr(e.target.value)}
+                  dir="rtl"
+                />
+              </FormControl>
+            </Box>
+          </SimpleGrid>
+
+          {/* Treatment */}
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
+            <Box>
+              <FormControl>
+                <FormLabel>Treatment (English)</FormLabel>
+                <Textarea
+                  placeholder="Enter Treatment Information"
+                  value={treatmentEn}
+                  onChange={(e) => setTreatmentEn(e.target.value)}
+                />
+              </FormControl>
+            </Box>
+            <Box>
+              <FormControl>
+                <FormLabel>Treatment (Arabic)</FormLabel>
+                <Textarea
+                  placeholder="أدخل معلومات العلاج"
+                  value={treatmentAr}
+                  onChange={(e) => setTreatmentAr(e.target.value)}
+                  dir="rtl"
+                />
+              </FormControl>
+            </Box>
+          </SimpleGrid>
+
+          {/* Ingredients */}
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
+            <Box>
+              <FormControl>
+                <FormLabel>Ingredients (English)</FormLabel>
+                <Textarea
+                  placeholder="Enter Ingredients"
+                  value={ingredientsEn}
+                  onChange={(e) => setIngredientsEn(e.target.value)}
+                />
+              </FormControl>
+            </Box>
+            <Box>
+              <FormControl>
+                <FormLabel>Ingredients (Arabic)</FormLabel>
+                <Textarea
+                  placeholder="أدخل المكونات"
+                  value={ingredientsAr}
+                  onChange={(e) => setIngredientsAr(e.target.value)}
                   dir="rtl"
                 />
               </FormControl>
@@ -771,12 +920,44 @@ const EditProduct = () => {
                                   objectFit="cover"
                                   borderRadius="md"
                                 />
-                                {/* <Text fontSize="xs" color="gray.500" mt={1}>
-                                  {attr.image ? attr.image.name : 'No image selected'}
-                                </Text> */}
                               </Box>
                             )}
                           </FormControl>
+
+                          {/* Variant Lot Number, Expiry Date, Discount */}
+                          <FormControl>
+                            <FormLabel>Lot Number</FormLabel>
+                            <Input
+                              type="text"
+                              placeholder="Enter Lot Number"
+                              value={attr.lotNumber}
+                              onChange={(e) =>
+                                handleAttributeChange(index, 'lotNumber', e.target.value)
+                              }
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel>Expiry Date</FormLabel>
+                            <Input
+                              type="date"
+                              value={attr.expiryDate}
+                              onChange={(e) =>
+                                handleAttributeChange(index, 'expiryDate', e.target.value)
+                              }
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel>Discount</FormLabel>
+                            <Input
+                              type="number"
+                              placeholder="Enter discount value"
+                              value={attr.discount != null ? attr.discount : ''}
+                              onChange={(e) =>
+                                handleAttributeChange(index, 'discount', e.target.value)
+                              }
+                            />
+                          </FormControl>
+
                         </SimpleGrid>
                       </CardBody>
                     </Card>
@@ -907,6 +1088,55 @@ const EditProduct = () => {
               </SimpleGrid>
             )}
           </Box>
+
+          {/* SKU, Lot Number, Expiry Date, Discount (only if no variants) */}
+          {!hasVariants && (
+            <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
+              <Box>
+                <FormControl>
+                  <FormLabel>SKU</FormLabel>
+                  <Input
+                    type="text"
+                    placeholder="Enter SKU"
+                    value={sku}
+                    onChange={(e) => setSku(e.target.value)}
+                  />
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl>
+                  <FormLabel>Lot Number</FormLabel>
+                  <Input
+                    type="text"
+                    placeholder="Enter Lot Number"
+                    value={lotNumber}
+                    onChange={(e) => setLotNumber(e.target.value)}
+                  />
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl>
+                  <FormLabel>Expiry Date</FormLabel>
+                  <Input
+                    type="date"
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                  />
+                </FormControl>
+              </Box>
+               <Box>
+                <FormControl>
+                  <FormLabel>Discount</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="Enter discount value"
+                    value={discount != null ? discount : ''}
+                    onChange={(e) => setDiscount(e.target.value)}
+                  />
+                </FormControl>
+              </Box>
+            </SimpleGrid>
+          )}
 
           {/* Submit Buttons */}
           <Flex justify="flex-end" gap={4}>

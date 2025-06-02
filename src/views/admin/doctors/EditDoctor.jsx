@@ -71,6 +71,7 @@ const EditDoctor = () => {
   const [image, setImage] = useState(null);
   const [certificates, setCertificates] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [isActive, setIsActive] = useState(doctorResponse?.data?.isActive ?? true);
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
@@ -97,6 +98,7 @@ const EditDoctor = () => {
         imageKey: doctor.imageKey,
       });
 
+      setIsActive(doctor.isActive);
       // Set phones
       setPhones(
         doctor.phones.map((phone) => ({ phoneNumber: phone.phoneNumber })),
@@ -306,6 +308,7 @@ const EditDoctor = () => {
           .map((phone) => ({ phoneNumber: phone.phoneNumber })), // Format as array of objects
         clinics: selectedClinics,
         certificates: allCertificates,
+        isActive: isActive,
       };
 
       if (!formData.password) {
@@ -581,6 +584,21 @@ const EditDoctor = () => {
                   id="hasOnlineConsult"
                   isChecked={formData.hasOnlineConsult}
                   onChange={() => handleToggle('hasOnlineConsult')}
+                  colorScheme="brand"
+                />
+              </FormControl>
+            </Box>
+
+            {/* New Box for Active Status */}
+            <Box className="col-md-4">
+              <FormControl display="flex" alignItems="center" mt={4}>
+                <FormLabel htmlFor="isActive" mb="0">
+                  Active
+                </FormLabel>
+                <Switch
+                  id="isActive"
+                  isChecked={isActive}
+                  onChange={() => setIsActive(!isActive)}
                   colorScheme="brand"
                 />
               </FormControl>

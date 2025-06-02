@@ -110,7 +110,10 @@ import AddFile from 'views/admin/pharmacy/AddFile';
 import Reports from 'views/admin/reports/Reports';
 import BackupAndRestore from 'views/admin/backup/BackupAndRestore';
 import DeliveryFees from 'views/admin/deliveryFees/DeliveryFees';
-
+import EditUser from 'views/admin/users/EditUser';
+import HomeBanners from 'views/admin/homeBanner/HomeBanners';
+import EditHomeBanner from 'views/admin/homeBanner/EditHomeBanner';
+import AddHomeBanner from 'views/admin/homeBanner/AddHomeBanner';
 
 const routes = [
   {
@@ -249,7 +252,7 @@ const routes = [
   {
     name: 'Pharmacy add file',
     layout: '/admin',
-    path: '/pharmacy/:pharmacyId/add-file',
+    path: '/pharmacy/fileManager/add-file',
     component: <AddFile />,
     showInSidebar: false,
   },
@@ -370,6 +373,14 @@ const routes = [
     layout: '/admin',
     path: '/add-user',
     component: <AddUser />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Edit User',
+    layout: '/admin',
+    path: '/users/edit/:id',
+    icon: <Icon as={MdPeople} width="20px" height="20px" color="inherit" />,
+    component: <EditUser />,
     showInSidebar: false,
   },
   {
@@ -705,6 +716,14 @@ const routes = [
         showInSidebar: true,
       },
       {
+        name: 'Home Banners',
+        path: '/cms/home-banners',
+        icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
+        component: <HomeBanners />,
+        showInSidebar: true,
+      },
+
+      {
         name: 'Ads',
         path: '/cms/ads',
         icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
@@ -852,6 +871,20 @@ const routes = [
     showInSidebar: false,
   },
 
+  {
+    name: 'Home Banner',
+    layout: '/admin',
+    path: '/home-banner/edit/:id',
+    component: <EditHomeBanner />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Home Banner',
+    layout: '/admin',
+    path: 'home-banner/add',
+    component: <AddHomeBanner />,
+    showInSidebar: false,
+  },
 ];
 
 export default routes;

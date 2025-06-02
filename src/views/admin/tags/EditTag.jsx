@@ -8,6 +8,9 @@ import {
   Text,
   useColorModeValue,
   Spinner,
+  Switch,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
@@ -29,6 +32,7 @@ const EditTag = () => {
     name: "",
     arabicName: ""
   });
+  const [isActive, setIsActive] = useState(false);
 
   // Find and initialize the tag data
   useEffect(() => {
@@ -40,6 +44,7 @@ const EditTag = () => {
           name: tagToEdit.name,
           arabicName: arabicTranslation?.name || ""
         });
+        setIsActive(tagToEdit.isActive);
       } else {
         Swal.fire('Error!', 'Tag not found.', 'error');
         navigate('/admin/tags');
@@ -52,6 +57,7 @@ const EditTag = () => {
     
     const tagData = {
       name: formData.name,
+      isActive: isActive,
       translations: [
         {
           languageId: "ar",
@@ -149,6 +155,22 @@ const EditTag = () => {
                 dir="rtl"
               />
             </Box>
+
+            {/* Active Status Toggle */}
+            <Box>
+              <FormControl display="flex" alignItems="center">
+                <FormLabel htmlFor="isActive" mb="0">
+                  Active Status
+                </FormLabel>
+                <Switch
+                  id="isActive"
+                  isChecked={isActive}
+                  onChange={() => setIsActive(!isActive)}
+                  colorScheme="teal"
+                  size="md"
+                />
+              </FormControl>
+            </Box>
           </Grid>
 
           {/* Action Buttons */}
@@ -156,7 +178,7 @@ const EditTag = () => {
             <Button
               variant="outline"
               colorScheme="red"
-              onClick={() => navigate('/admin/tags')}
+              onClick={() => navigate('/admin/undefined/tags')}
               width="120px"
             >
               Cancel

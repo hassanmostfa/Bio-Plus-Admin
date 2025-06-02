@@ -157,21 +157,6 @@ const Banner = () => {
 
   // Table columns
   const columns = useMemo(() => [
-    columnHelper.accessor('id', {
-      id: 'id',
-      header: () => (
-        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          ID
-        </Text>
-      ),
-      cell: (info) => (
-        <Tooltip label={info.getValue()}>
-          <Text color={textColor} fontSize="sm" noOfLines={1}>
-            {info.getValue().slice(0, 8)}...
-          </Text>
-        </Tooltip>
-      ),
-    }),
     columnHelper.accessor('title', {
       id: 'title',
       header: () => (
