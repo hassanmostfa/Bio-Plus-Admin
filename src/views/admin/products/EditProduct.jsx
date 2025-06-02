@@ -68,8 +68,8 @@ const EditProduct = () => {
   const [sku, setSku] = useState('');
   const [lotNumber, setLotNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
-  const [guideLineEn, setGuideLineEn] = useState('');
-  const [guideLineAr, setGuideLineAr] = useState('');
+  // const [guideLineEn, setGuideLineEn] = useState('');
+  // const [guideLineAr, setGuideLineAr] = useState('');
   const [howToUseEn, setHowToUseEn] = useState('');
   const [howToUseAr, setHowToUseAr] = useState('');
   const [treatmentEn, setTreatmentEn] = useState('');
@@ -178,9 +178,9 @@ const EditProduct = () => {
       // Initialize new fields
       setSku(product.sku || '');
       setLotNumber(product.lotNumber || '');
-      setExpiryDate(product.expiryDate || '');
-      setGuideLineEn(product.translations?.find(t => t.languageId === 'en')?.guideLine || '');
-      setGuideLineAr(product.translations?.find(t => t.languageId === 'ar')?.guideLine || '');
+      setExpiryDate(product.expiryDate ? new Date(product.expiryDate).toISOString().split('T')[0] : '');
+      // setGuideLineEn(product.translations?.find(t => t.languageId === 'en')?.guideLine || '');
+      // setGuideLineAr(product.translations?.find(t => t.languageId === 'ar')?.guideLine || '');
       setHowToUseEn(product.translations?.find(t => t.languageId === 'en')?.howToUse || '');
       setHowToUseAr(product.translations?.find(t => t.languageId === 'ar')?.howToUse || '');
       setTreatmentEn(product.translations?.find(t => t.languageId === 'en')?.treatment || '');
@@ -354,23 +354,22 @@ const EditProduct = () => {
 
       // Prepare translations
       const translations = [];
-      if (nameAr || descriptionAr || guideLineAr || howToUseAr || treatmentAr || ingredientsAr) {
+      if (nameAr || descriptionAr || howToUseAr || treatmentAr || ingredientsAr) {
         translations.push({
           languageId: 'ar',
           name: nameAr,
           description: descriptionAr,
-          guideLine: guideLineAr,
           howToUse: howToUseAr,
           treatment: treatmentAr,
           ingredients: ingredientsAr,
         });
       }
-      if (nameEn || descriptionEn || guideLineEn || howToUseEn || treatmentEn || ingredientsEn) {
+      if (nameEn || descriptionEn || howToUseEn || treatmentEn || ingredientsEn) {
         translations.push({
           languageId: 'en',
           name: nameEn,
           description: descriptionEn,
-          guideLine: guideLineEn,
+         
           howToUse: howToUseEn,
           treatment: treatmentEn,
           ingredients: ingredientsEn,
@@ -555,7 +554,7 @@ const EditProduct = () => {
           </SimpleGrid>
 
           {/* Guide Line */}
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
+          {/* <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
             <Box>
               <FormControl>
                 <FormLabel>Guide Line (English)</FormLabel>
@@ -577,7 +576,7 @@ const EditProduct = () => {
                 />
               </FormControl>
             </Box>
-          </SimpleGrid>
+          </SimpleGrid> */}
 
           {/* How To Use */}
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>

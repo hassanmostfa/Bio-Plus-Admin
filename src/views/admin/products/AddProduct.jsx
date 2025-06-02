@@ -62,8 +62,8 @@ const AddProduct = () => {
   const [sku, setSku] = useState('');
   const [lotNumber, setLotNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
-  const [guideLineEn, setGuideLineEn] = useState('');
-  const [guideLineAr, setGuideLineAr] = useState('');
+  // const [guideLineEn, setGuideLineEn] = useState('');
+  // const [guideLineAr, setGuideLineAr] = useState('');
   const [howToUseEn, setHowToUseEn] = useState('');
   const [howToUseAr, setHowToUseAr] = useState('');
   const [treatmentEn, setTreatmentEn] = useState('');
@@ -313,7 +313,7 @@ const AddProduct = () => {
         isPublished,
         translations: translations.filter((t) => t.name || t.description || t.guideLine || t.howToUse || t.treatment || t.ingredients).map(t => ({
           ...t,
-          guideLine: t.languageId === 'en' ? guideLineEn : guideLineAr,
+          // guideLine: t.languageId === 'en' ? guideLineEn : guideLineAr,
           howToUse: t.languageId === 'en' ? howToUseEn : howToUseAr,
           treatment: t.languageId === 'en' ? treatmentEn : treatmentAr,
           ingredients: t.languageId === 'en' ? ingredientsEn : ingredientsAr,
@@ -448,7 +448,7 @@ const AddProduct = () => {
             </Box>
 
             {/* Guide Line */}
-            <Box>
+            {/* <Box>
               <FormControl>
                 <FormLabel>Guide Line (English)</FormLabel>
                 <Textarea
@@ -468,7 +468,7 @@ const AddProduct = () => {
                   dir="rtl"
                 />
               </FormControl>
-            </Box>
+            </Box> */}
 
             {/* How To Use */}
             <Box>
@@ -647,7 +647,7 @@ const AddProduct = () => {
             </Box>
           </SimpleGrid>
 
-          <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
+          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
             <Box>
               <FormControl isRequired>
                 <FormLabel>Cost</FormLabel>
@@ -681,15 +681,7 @@ const AddProduct = () => {
                 />
               </FormControl>
             </Box>
-            <Box>
-              <FormControl isRequired>
-                <FormLabel>SKU</FormLabel>
-                <Input
-                  type="number"
-                  placeholder="0"
-                />
-              </FormControl>
-            </Box>
+            
           </SimpleGrid>
 
           {/* Offer Type */}

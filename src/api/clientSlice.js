@@ -27,9 +27,9 @@ export const clientSlice = createApi({
   endpoints: (builder) => ({
    
     getUsers: builder.query({
-      query: ({ page, limit }) => ({
+      query: ({ page, limit, status, search }) => ({
         url: '/admin/users',
-        params: { page, limit }, // Pass page and limit as query parameters
+        params: { page, limit, status, search }, // Pass page and limit as query parameters
       }),
     }),
     // You can add more endpoints here as needed

@@ -20,6 +20,8 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
+  Select,
+  HStack,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -40,36 +42,41 @@ const columnHelper = createColumnHelper();
 const Users = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const { data: usersData,loading:isLoading , refetch } = useGetUsersQuery({ page: 1, limit: 100000 });
-  const [updateStatus] = useUpdateUserMutation();
-  
-  const allUsers = usersData?.data || [];
-  const [filteredUsers, setFilteredUsers] = useState(allUsers);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  
+  const [statusFilter, setStatusFilter] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  const { data: usersData, isLoading, refetch } = useGetUsersQuery({
+    page:1,
+    limit:10000000000000,
+    search: debouncedSearchTerm,
+    status: statusFilter,
+  });
+  const [updateStatus] = useUpdateUserMutation();
+
+  const allUsers = usersData?.data || [];
+  const totalPages = usersData?.totalPages || 1;
+  const totalItems = usersData?.totalItems || 0;
+
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
 
-  // Trigger refetch when component mounts (navigates to)
-  React.useEffect(() => {
-    if (!isLoading) {
-      refetch();
-    }
-  }, [refetch, isLoading]);
-
-  // Apply search filter whenever searchTerm or allUsers changes
+  // Debounce search term
   useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredUsers(allUsers);
-    } else {
-      const filtered = allUsers.filter(user => 
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredUsers(filtered);
-    }
-  }, [searchTerm, allUsers]);
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setPage(1); // Reset to first page on new search
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Reset to first page when status filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter]);
 
   const handleStatusUpdate = async (userId, newStatus) => {
     try {
@@ -178,7 +185,7 @@ const Users = () => {
   ];
 
   const table = useReactTable({
-    data: filteredUsers,
+    data: allUsers,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -189,23 +196,37 @@ const Users = () => {
       <Card flexDirection="column" w="100%" px="0px" overflowX="auto">
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700">Users</Text>
-          <Box width="300px">
-            <InputGroup>
-              <InputLeftElement pointerEvents="none">
-                <Icon as={FaSearch} color="gray.400" />
-              </InputLeftElement>
-              <Input
-                type="text"
-                placeholder="Search users..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                bg={useColorModeValue("white", "gray.700")}
-                borderRadius="10px"
-              />
-            </InputGroup>
-          </Box>
+          <HStack spacing={4}>
+            <Box width="300px">
+              <InputGroup>
+                <InputLeftElement pointerEvents="none">
+                  <Icon as={FaSearch} color="gray.400" />
+                </InputLeftElement>
+                <Input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  bg={useColorModeValue("white", "gray.700")}
+                  borderRadius="10px"
+                />
+              </InputGroup>
+            </Box>
+            <Select
+              placeholder="Filter by status"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              width="200px"
+            >
+              <option value="">All Status</option>
+              <option value="PENDING">PENDING</option>
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="SUSPENDED">SUSPENDED</option>
+              <option value="BLOCKED">BLOCKED</option>
+            </Select>
+          </HStack>
 
-           <Button
+          <Button
             variant="darkBrand"
             color="white"
             fontSize="sm"
@@ -219,6 +240,7 @@ const Users = () => {
             Add User
           </Button>
         </Flex>
+
         <Box>
           <Table variant="simple" color="gray.500" mb="24px" mt="12px">
             <Thead>
@@ -246,12 +268,36 @@ const Users = () => {
               ) : (
                 <Tr>
                   <Td colSpan={columns.length} textAlign="center" py="40px">
-                    <Text color={textColor}>No users found matching your search</Text>
+                    <Text color={textColor}>No users found</Text>
                   </Td>
                 </Tr>
               )}
             </Tbody>
           </Table>
+
+          {/* Pagination Controls */}
+          <Flex justifyContent="space-between" alignItems="center" px="25px" pb="20px">
+            <Text color={textColor}>
+              Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, totalItems)} of {totalItems} entries
+            </Text>
+            <HStack spacing={2}>
+              <Button
+                size="sm"
+                onClick={() => setPage(page - 1)}
+                isDisabled={page === 1}
+              >
+                Previous
+              </Button>
+              <Text color={textColor}>Page {page} of {totalPages}</Text>
+              <Button
+                size="sm"
+                onClick={() => setPage(page + 1)}
+                isDisabled={page === totalPages}
+              >
+                Next
+              </Button>
+            </HStack>
+          </Flex>
         </Box>
       </Card>
     </div>
