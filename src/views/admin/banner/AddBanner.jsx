@@ -22,6 +22,9 @@ import { useNavigate } from "react-router-dom";
 import { useAddBannerMutation } from "api/bannerSlice";
 import { useAddFileMutation } from "api/filesSlice";
 import Swal from "sweetalert2";
+import { useGetPharmaciesQuery } from "../../../api/pharmacySlice";
+import { useGetProductsQuery } from "../../../api/productSlice";
+import { useGetDoctorsQuery } from "../../../api/doctorSlice";
 
 const AddBanner = () => {
   const [formData, setFormData] = useState({
@@ -43,6 +46,16 @@ const AddBanner = () => {
   const toast = useToast();
   const [createBanner] = useAddBannerMutation();
   const [addFile] = useAddFileMutation();
+
+  // Fetch data for dropdowns
+  const { data: pharmaciesData, isLoading: isPharmaciesLoading } = useGetPharmaciesQuery({});
+  
+  const { data: productsData, isLoading: isProductsLoading } = useGetProductsQuery({});
+  const { data: doctorsData, isLoading: isDoctorsLoading } = useGetDoctorsQuery({});
+
+  const pharmacies = pharmaciesData?.data?.items || [];
+  const products = productsData?.data || []; // Assuming products are nested under 'products' in the response
+  const doctors = doctorsData?.data || []; // Assuming doctors are nested under 'doctors' in the response
 
   // Clean up object URLs when component unmounts
   React.useEffect(() => {
@@ -147,7 +160,8 @@ const AddBanner = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.arTitle || !formData.link) {
+    // Adjust validation based on link type
+    if (!formData.title || !formData.arTitle || (formData.linkType === "EXTERNAL" && !formData.link) || (formData.linkType !== "EXTERNAL" && !formData.linkId)) {
       toast({
         title: "Error",
         description: "Please fill all required fields",
@@ -188,9 +202,7 @@ const AddBanner = () => {
       const bannerData = {
         title: formData.title,
         imageKey: imageUrl,
-        link: formData.link,
         linkType: formData.linkType,
-        linkId: formData.linkId || null,
         order: parseInt(formData.order),
         isActive: formData.isActive,
         translations: [
@@ -200,6 +212,30 @@ const AddBanner = () => {
           }
         ]
       };
+
+      // Set link and linkId based on linkType
+      if (formData.linkType === "EXTERNAL") {
+        bannerData.link = formData.link;
+      } else {
+        // Construct the link based on type and id
+        let linkPath = "";
+        switch (formData.linkType) {
+          case "PHARMACY":
+            linkPath = "/pharmacies/";
+            break;
+          case "PRODUCT":
+            linkPath = "/products/";
+            break;
+          case "DOCTOR":
+            linkPath = "/doctors/";
+            break;
+          default:
+            // Handle unexpected link types if necessary
+            break;
+        }
+        bannerData.link = `${linkPath}${formData.linkId}`;
+        bannerData.linkId = formData.linkId; // Ensure linkId is sent for internal types
+      }
 
       // Remove null values
       Object.keys(bannerData).forEach(key => {
@@ -280,42 +316,64 @@ const AddBanner = () => {
             />
           </FormControl>
 
-          {/* Link Type */}
-          <FormControl mb={4} isRequired>
-            <FormLabel>Link Type</FormLabel>
-            <Select
-              name="linkType"
-              value={formData.linkType}
-              onChange={handleChange}
-            >
-              <option value="PHARMACY">Pharmacy</option>
-              <option value="PRODUCT">Product</option>
-              <option value="DOCTOR">Doctor</option>
-              <option value="EXTERNAL">External Link</option>
-            </Select>
-          </FormControl>
+          {/* Link Type and Destination Input/Select side-by-side */}
+          <Flex mb={4} gap={4} direction={{ base: "column", md: "row" }}>
+            {/* Link Type */}          
+            <FormControl isRequired flex="1">
+              <FormLabel>Link Type</FormLabel>
+              <Select
+                name="linkType"
+                value={formData.linkType}
+                onChange={handleChange}
+              >
+                <option value="PHARMACY">Pharmacy</option>
+                <option value="PRODUCT">Product</option>
+                <option value="DOCTOR">Doctor</option>
+                <option value="EXTERNAL">External Link</option>
+              </Select>
+            </FormControl>
 
-          {/* Link */}
-          <FormControl mb={4} isRequired>
-            <FormLabel>Link</FormLabel>
-            <Input
-              name="link"
-              placeholder="Enter Link URL"
-              value={formData.link}
-              onChange={handleChange}
-            />
-          </FormControl>
-
-          {/* Link ID */}
-          <FormControl mb={4}>
-            <FormLabel>Link ID (for internal links)</FormLabel>
-            <Input
-              name="linkId"
-              placeholder="Enter Link ID (if applicable)"
-              value={formData.linkId}
-              onChange={handleChange}
-            />
-          </FormControl>
+            {/* Link or Link ID / Select Entity */}          
+            {formData.linkType === "EXTERNAL" ? (
+              <FormControl isRequired flex="1">
+                <FormLabel>Link URL</FormLabel>
+                <Input
+                  name="link"
+                  placeholder="Enter External Link URL"
+                  value={formData.link}
+                  onChange={handleChange}
+                />
+              </FormControl>
+            ) : (
+              <FormControl isRequired flex="1">
+                <FormLabel>{formData.linkType} ID</FormLabel>
+                {formData.linkType === "PHARMACY" && isPharmaciesLoading ? (
+                   <Spinner size="sm" />
+                ) : formData.linkType === "PRODUCT" && isProductsLoading ? (
+                   <Spinner size="sm" />
+                ) : formData.linkType === "DOCTOR" && isDoctorsLoading ? (
+                   <Spinner size="sm" />
+                ) : (
+                  <Select
+                    name="linkId"
+                    placeholder={`Select ${formData.linkType}`}
+                    value={formData.linkId}
+                    onChange={handleChange}
+                  >
+                    {formData.linkType === "PHARMACY" && pharmacies.map(item => (
+                      <option key={item.id} value={item.id}>{item.name}</option>
+                    ))}
+                    {formData.linkType === "PRODUCT" && products.map(item => (
+                      <option key={item.id} value={item.id}>{item.name}</option>
+                    ))}
+                    {formData.linkType === "DOCTOR" && doctors.map(item => (
+                      <option key={item.id} value={item.id}>{item.fullName}</option>
+                    ))}
+                  </Select>
+                )}
+              </FormControl>
+            )}
+          </Flex>
 
           {/* Order */}
           <FormControl mb={4}>

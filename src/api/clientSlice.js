@@ -52,6 +52,14 @@ export const clientSlice = createApi({
         body: user,
       }),
     }),
+
+    updateUserProfile: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/admin/users/${id}/profile`,
+        method: 'PATCH',
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -60,5 +68,6 @@ export const {
   useGetUsersQuery,
   useGetUserFamilyQuery,
   useUpdateUserMutation,
-useCreateUserMutation,
+  useCreateUserMutation,
+  useUpdateUserProfileMutation,
 } = clientSlice;

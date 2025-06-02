@@ -211,7 +211,7 @@ const AddUser = () => {
               onClick={handleCancel}
               mr={2}
             >
-              Cancel
+              Reset
             </Button>
             <Button
               variant="darkBrand"
