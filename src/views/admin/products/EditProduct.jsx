@@ -181,12 +181,12 @@ const EditProduct = () => {
       setExpiryDate(product.expiryDate ? new Date(product.expiryDate).toISOString().split('T')[0] : '');
       // setGuideLineEn(product.translations?.find(t => t.languageId === 'en')?.guideLine || '');
       // setGuideLineAr(product.translations?.find(t => t.languageId === 'ar')?.guideLine || '');
-      setHowToUseEn(product.translations?.find(t => t.languageId === 'en')?.howToUse || '');
+      setHowToUseEn(product.howToUse || '');
       setHowToUseAr(product.translations?.find(t => t.languageId === 'ar')?.howToUse || '');
-      setTreatmentEn(product.translations?.find(t => t.languageId === 'en')?.treatment || '');
+      setTreatmentEn(product.treatment || '');
       setTreatmentAr(product.translations?.find(t => t.languageId === 'ar')?.treatment || '');
-      setIngredientsEn(product.translations?.find(t => t.languageId === 'en')?.ingredients || '');
-      setIngredientsAr(product.translations?.find(t => t.languageId === 'ar')?.ingredients || '');
+      setIngredientsEn(product.ingredient || '');
+      setIngredientsAr(product.translations?.find(t => t.languageId === 'ar')?.ingredient || '');
       setDiscount(product.discount != null ? product.discount : '');
       setDiscountType(product.discountType || '');
     }

@@ -228,106 +228,52 @@ const AddProduct = () => {
         uploadedImages.push(...results.filter((img) => img !== null));
       }
 
-      // Upload variant images if they exist
-      const variantsWithImages = await Promise.all(
-        selectedAttributes.map(async (attr) => {
-          if (attr.image) {
-            const formData = new FormData();
-            formData.append('file', attr.image);
-
-            const uploadResponse = await addFile(formData).unwrap();
-
-            if (
-              uploadResponse.success &&
-              uploadResponse.data.uploadedFiles.length > 0
-            ) {
-              return {
-                ...attr,
-                imageKey: uploadResponse.data.uploadedFiles[0].url,
-              };
-            }
-          }
-          return attr;
-        }),
-      );
-
       // Prepare translations
       const translations = [];
-      if (nameAr || descriptionAr) {
+      if (nameAr || descriptionAr || howToUseAr || treatmentAr || ingredientsAr) {
         translations.push({
           languageId: 'ar',
           name: nameAr,
           description: descriptionAr,
+          howToUse: howToUseAr,
+          treatment: treatmentAr,
+          ingredient: ingredientsAr
         });
       }
-      if (nameEn || descriptionEn) {
-        translations.push({
-          languageId: 'en',
-          name: nameEn,
-          description: descriptionEn,
-        });
-      }
-
-      // Prepare variants data
-      const variantsData = variantsWithImages.map((attr) => {
-        if (!attr.price) {
-          throw new Error('Price is required for each variant.');
-        }
-        return {
-          variantId: attr.variantId,
-          attributeId: attr.attributeId,
-          cost: attr.cost ? parseFloat(attr.cost) : 0,
-          price: parseFloat(attr.price),
-          quantity: attr.quantity ? parseInt(attr.quantity) : 0,
-          imageKey: attr.imageKey || undefined,
-          isActive: attr.isActive,
-          lotNumber: attr.lotNumber || undefined,
-          expiryDate: attr.expiryDate || undefined,
-          discount: attr.discount || undefined,
-          discountType: attr.discountType ? attr.discountType.toUpperCase() : undefined,
-        };
-      });
 
       // Prepare product data
       if (!price) {
         throw new Error('Price is required for the product.');
       }
+
       const productData = {
-        name: nameEn || undefined,
-        description: descriptionEn || undefined,
-        categoryId: categoryId || undefined,
-        brandId: brandId || undefined,
-        pharmacyId: pharmacyId || undefined,
-        productTypeId: productTypeId || undefined, // Add product type to the request
-        cost: cost === null ? undefined : parseFloat(cost),
+        name: nameEn,
+        description: descriptionEn,
+        howToUse: howToUseEn,
+        treatment: treatmentEn,
+        ingredient: ingredientsEn,
+        categoryId: categoryId,
+        brandId: brandId,
+        pharmacyId: pharmacyId,
+        productTypeId: productTypeId,
+        sku: sku,
+        cost: cost ? parseFloat(cost) : undefined,
         price: parseFloat(price),
-        quantity: quantity === null ? undefined : parseInt(quantity),
-        offerType:
-          offerType === null
-            ? undefined
-            : offerType.toUpperCase().replace(' ', '_'),
-        offerPercentage:
-          offerPercentage != null ? parseFloat(offerPercentage) : null,
+        quantity: quantity ? parseInt(quantity) : undefined,
+        discount: discount != null ? parseFloat(discount) : undefined,
+        discountType: discountType,
+        lotNumber: lotNumber,
+        expiryDate: expiryDate,
+        offerType: offerType,
+        offerPercentage: offerPercentage != null ? parseFloat(offerPercentage) : undefined,
         hasVariants,
         isActive,
         isPublished,
-        translations: translations.filter((t) => t.name || t.description || t.guideLine || t.howToUse || t.treatment || t.ingredients).map(t => ({
-          ...t,
-          // guideLine: t.languageId === 'en' ? guideLineEn : guideLineAr,
-          howToUse: t.languageId === 'en' ? howToUseEn : howToUseAr,
-          treatment: t.languageId === 'en' ? treatmentEn : treatmentAr,
-          ingredients: t.languageId === 'en' ? ingredientsEn : ingredientsAr,
-        })),
-        images: uploadedImages,
-        variants: hasVariants ? variantsData : undefined,
-        ...( !hasVariants && { sku: sku || undefined }),
-        ...( !hasVariants && { lotNumber: lotNumber || undefined }),
-        ...( !hasVariants && { expiryDate: expiryDate || undefined }),
-        ...( !hasVariants && { discount: discount != null ? parseFloat(discount) : undefined }),
-        ...( !hasVariants && { discountType: discountType ? discountType.toUpperCase() : undefined }),
+        translations: translations,
+        images: uploadedImages
       };
 
-      // Remove any keys that are null
+      // Remove any keys that are null or undefined
       Object.keys(productData).forEach((key) => {
         if (productData[key] == null || productData[key] === undefined) {
           delete productData[key];
