@@ -114,6 +114,7 @@ import EditUser from 'views/admin/users/EditUser';
 import HomeBanners from 'views/admin/homeBanner/HomeBanners';
 import EditHomeBanner from 'views/admin/homeBanner/EditHomeBanner';
 import AddHomeBanner from 'views/admin/homeBanner/AddHomeBanner';
+import EditFile from 'views/admin/pharmacy/EditFile';
 
 const routes = [
   {
@@ -252,8 +253,15 @@ const routes = [
   {
     name: 'Pharmacy add file',
     layout: '/admin',
-    path: '/pharmacy/fileManager/add-file',
+    path: '/pharmacy/:pharmacyId/add-file',
     component: <AddFile />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Pharmacy edit file',
+    layout: '/admin',
+    path: '/pharmacy/:pharmacyId/edit-file/:id',
+    component: <EditFile />,
     showInSidebar: false,
   },
 
