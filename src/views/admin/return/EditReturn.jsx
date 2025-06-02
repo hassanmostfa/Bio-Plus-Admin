@@ -10,6 +10,9 @@ import {
   Icon,
   useToast,
   IconButton,
+  Switch,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -29,6 +32,7 @@ const EditReturn = () => {
   const [image, setImage] = useState(null);
   const [existingImage, setExistingImage] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isActive, setIsActive] = useState(true);
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
@@ -53,7 +57,7 @@ useEffect(() => {
         imageKey: returnData.data.image || '',
       });
       setExistingImage(returnData.data.image || "");
-     
+      setIsActive(returnData.data.isActive ?? true);
     }
   }, [returnData]);
 
@@ -122,8 +126,13 @@ useEffect(() => {
       const payload = {
         contentEn: formData.contentEn,
         contentAr: formData.contentAr,
-        image: imageUrl // Send just the image filename as string
+        image: imageUrl, // Send just the image filename as string
       };
+  
+      // Conditionally add isActive to payload if it exists in fetched data
+      if (returnData?.data?.isActive !== undefined) {
+        payload.isActive = isActive;
+      }
   
       // Update the policy with raw JSON data
       const response = await updateReturnPolicy({
@@ -218,6 +227,22 @@ useEffect(() => {
               placeholder="أدخل المحتوى بالعربية (يدعم Markdown)"
               dir="rtl"
             />
+          </Box>
+
+          {/* Active Status Toggle */}
+          <Box mt="20px" mb="20px">
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="isActive" mb="0">
+                Active Status
+              </FormLabel>
+              <Switch
+                id="isActive"
+                isChecked={isActive}
+                onChange={() => setIsActive(!isActive)}
+                colorScheme="teal"
+                size="md"
+              />
+            </FormControl>
           </Box>
 
           {/* Image Upload */}

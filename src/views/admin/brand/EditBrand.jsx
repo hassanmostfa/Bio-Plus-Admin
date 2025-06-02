@@ -14,6 +14,7 @@ import {
   FormControl,
   FormLabel,
   Spinner,
+  Switch
 } from "@chakra-ui/react";
 import { FaUpload, FaTrash } from "react-icons/fa6";
 import { IoMdArrowBack } from "react-icons/io";
@@ -39,6 +40,7 @@ const EditBrand = () => {
   const [imagePreview, setImagePreview] = useState("");
   const [existingImage, setExistingImage] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [isActive, setIsActive] = useState(brandResponse?.data?.isActive ?? true);
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
 
@@ -48,6 +50,7 @@ const EditBrand = () => {
       setEnName(brandResponse.data.name);
       setArName(brandResponse.data.translations?.find(t => t.languageId === "ar")?.name || "");
       setExistingImage(brandResponse.data.imageKey || "");
+      setIsActive(brandResponse.data.isActive);
     }
   }, [brandResponse]);
 
@@ -170,7 +173,7 @@ const EditBrand = () => {
       const payload = {
         name: enName,
         imageKey: imageUrl,
-        isActive: true,
+        isActive: isActive,
         translations: [
           { languageId: "ar", name: arName },
         ],
@@ -329,6 +332,22 @@ const EditBrand = () => {
                 )}
               </Box>
             )}
+          </Box>
+
+          {/* Active Status Toggle */}
+          <Box mb={4}>
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="isActive" mb="0">
+                Active Status
+              </FormLabel>
+              <Switch
+                id="isActive"
+                isChecked={isActive}
+                onChange={() => setIsActive(!isActive)}
+                colorScheme="teal"
+                size="md"
+              />
+            </FormControl>
           </Box>
 
           {/* Action Buttons */}

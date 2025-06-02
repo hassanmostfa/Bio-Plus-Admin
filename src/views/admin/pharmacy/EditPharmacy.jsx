@@ -15,7 +15,8 @@ import {
   Stack,
   SimpleGrid,
   useToast,
-  Image
+  Image,
+  Switch
 } from '@chakra-ui/react';
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -78,6 +79,7 @@ const EditPharmacy = () => {
   const [image, setImage] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState(null);
+  const [isActive, setIsActive] = useState(formData.isActive);
 
   useEffect(() => {
     refetch();
@@ -126,8 +128,17 @@ const EditPharmacy = () => {
         })),
       });
       setNumberOfBranches(pharmacy.numOfBranches);
+      setIsActive(pharmacy.isActive);
+    } else if (fetchError) {
+      toast({
+        title: 'Error',
+        description: fetchError.data?.message || 'Failed to load pharmacy data',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
     }
-  }, [pharmacy]);
+  }, [pharmacy, fetchError, toast]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -252,6 +263,7 @@ const EditPharmacy = () => {
       const payload = {
         ...formData,
         imageKey,
+        isActive: isActive,
         branches: filteredBranches,
         feesStartDate: formData.feesStartDate
           ? formData.feesStartDate + 'T00:00:00Z'
@@ -781,6 +793,20 @@ const EditPharmacy = () => {
               </Box>
             </Box>
           ))}
+
+          {/* Active Status Toggle */}
+          <Box mb="20px">
+            <Text color={textColor} fontSize="sm" fontWeight="700">
+              Active Status
+            </Text>
+            <Switch
+              isChecked={isActive}
+              onChange={() => setIsActive(!isActive)}
+              colorScheme="teal"
+              size="md"
+              mt="8px"
+            />
+          </Box>
 
           <Flex justify="center" mt={6}>
             <Button

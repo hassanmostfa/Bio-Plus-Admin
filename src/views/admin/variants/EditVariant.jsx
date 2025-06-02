@@ -11,6 +11,9 @@ import {
   Radio,
   Stack,
   Spinner,
+  Switch,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
@@ -27,6 +30,7 @@ const EditVariant = () => {
   const [attributesCount, setAttributesCount] = useState(0);
   const [attributes, setAttributes] = useState([]);
   const [inputType, setInputType] = useState("dropdown"); // State for radio input selection
+  const [isActive, setIsActive] = useState(response?.data?.isActive ?? true);
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const navigate = useNavigate();
@@ -46,6 +50,7 @@ const EditVariant = () => {
           arName: attr.translations.find((t) => t.languageId === "ar")?.value || "",
         }))
       );
+      setIsActive(variantData.isActive);
     }
   }, [response]);
 
@@ -103,7 +108,7 @@ const EditVariant = () => {
       name: variantEn, // Use the English name as the main name
       optionType: inputType.toUpperCase(), // Convert to uppercase (e.g., "RADIO" or "DROPDOWN")
       numberOfAttributes: attributes.length,
-      isActive: true, // Assuming the variant is active by default
+      isActive: isActive,
       attributes: attributes.map((attr) => ({
         id: attr.id, // Include the attribute ID for updates
         value: attr.enName, // Use the English name as the value
@@ -212,6 +217,22 @@ const EditVariant = () => {
                 <Radio value="text">Text</Radio>
               </Stack>
             </RadioGroup>
+          </Box>
+
+          {/* Active Status Toggle */}
+          <Box mt={4}>
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="isActive" mb="0">
+                Active Status
+              </FormLabel>
+              <Switch
+                id="isActive"
+                isChecked={isActive}
+                onChange={() => setIsActive(!isActive)}
+                colorScheme="teal"
+                size="md"
+              />
+            </FormControl>
           </Box>
 
           {/* Attributes Count */}

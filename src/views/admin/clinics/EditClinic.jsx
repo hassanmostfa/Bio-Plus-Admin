@@ -8,6 +8,7 @@ import {
   Text,
   useColorModeValue,
   Icon,
+  Switch
 } from '@chakra-ui/react';
 import { FaTrash } from 'react-icons/fa6';
 import { IoMdArrowBack } from 'react-icons/io';
@@ -28,6 +29,7 @@ const EditClinic = () => {
   const [toTime, setToTime] = useState('');
   const [arabicName, setArabicName] = useState('');
   const [locations, setLocations] = useState([]);
+  const [isActive, setIsActive] = useState(clinicData?.isActive ?? true);
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const navigate = useNavigate();
@@ -53,6 +55,7 @@ const EditClinic = () => {
           isActive: location.isActive
         })));
       }
+      setIsActive(clinicData?.isActive ?? true);
     }
   }, [clinicData]);
 
@@ -96,6 +99,7 @@ const EditClinic = () => {
       toTime: formatTimeForAPI(toTime),
       // Only include password if it's being changed
       ...(password && { password }),
+      isActive: isActive,
       translations: [
         {
           languageId: 'ar',
@@ -298,6 +302,20 @@ const EditClinic = () => {
                 value={toTime}
                 onChange={(e) => setToTime(e.target.value)}
                 required
+                mt={'8px'}
+              />
+            </Box>
+
+            {/* Active Status Toggle */}
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700">
+                Active
+              </Text>
+              <Switch
+                isChecked={isActive}
+                onChange={() => setIsActive(!isActive)}
+                colorScheme="teal"
+                size="md"
                 mt={'8px'}
               />
             </Box>

@@ -8,6 +8,9 @@ import {
   Text,
   useColorModeValue,
   Spinner,
+  Switch,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
@@ -31,6 +34,7 @@ const EditSpecialization = () => {
     name: "",
     arabicName: ""
   });
+  const [isActive, setIsActive] = useState(specialResponse?.data?.isActive ?? true);
 
   // Find and initialize the tag data
   useEffect(() => {
@@ -42,9 +46,10 @@ const EditSpecialization = () => {
           name: specialResponse?.data.name,
           arabicName: arabicTranslation?.name || ""
         });
+        setIsActive(specialResponse?.data?.isActive ?? true);
       } else {
         Swal.fire('Error!', 'Tag not found.', 'error');
-        navigate('/admin/doctors-specializations');
+        navigate('/admin/specializations');
       }
     }
   }, [specialResponse, id, navigate]);
@@ -54,6 +59,7 @@ const EditSpecialization = () => {
     
     const tagData = {
       name: formData.name,
+      isActive: isActive,
       translations: [
         {
           languageId: "ar",
@@ -65,7 +71,7 @@ const EditSpecialization = () => {
     try {
       await updateTag({ id, data: tagData }).unwrap();
       Swal.fire('Success!', 'Tag updated successfully.', 'success');
-      navigate('/admin/doctors-specializations');
+      navigate('/admin/specializations');
     } catch (error) {
       console.error('Failed to update tag:', error);
       Swal.fire(
@@ -103,7 +109,7 @@ const EditSpecialization = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Edit Tag
+            Edit Specialization
           </Text>
           <Button
             type="button"
@@ -151,6 +157,23 @@ const EditSpecialization = () => {
                 dir="rtl"
               />
             </Box>
+
+            {/* Active Status Toggle */}
+            <Box>
+              <FormControl display="flex" alignItems="center">
+                <FormLabel htmlFor="isActive" mb="0">
+                  Active
+                </FormLabel>
+                <Switch
+                  id="isActive"
+                  isChecked={isActive}
+                  onChange={() => setIsActive(!isActive)}
+                  colorScheme="teal"
+                  size="md"
+                  mt={'8px'}
+                />
+              </FormControl>
+            </Box>
           </Grid>
 
           {/* Action Buttons */}
@@ -158,7 +181,7 @@ const EditSpecialization = () => {
             <Button
               variant="outline"
               colorScheme="red"
-              onClick={() => navigate('/admin/tags')}
+              onClick={() => navigate('/admin/specializations')}
               width="120px"
             >
               Cancel

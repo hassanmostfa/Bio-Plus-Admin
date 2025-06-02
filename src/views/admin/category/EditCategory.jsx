@@ -11,7 +11,10 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  Image
+  Image,
+  Switch,
+  FormControl,
+  FormLabel
 } from '@chakra-ui/react';
 import { FaUpload } from 'react-icons/fa6';
 import { IoMdArrowBack, IoIosArrowDown } from 'react-icons/io';
@@ -34,6 +37,9 @@ const EditCategory = () => {
   const [arName, setArName] = useState('');
   const [image, setImage] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isActive, setIsActive] = useState(categoriesResponse?.data?.data.find(
+    (category) => category.id === id
+  )?.isActive ?? true);
 
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
@@ -57,6 +63,7 @@ const EditCategory = () => {
         categoryToEdit.translations.find((t) => t.languageId === 'ar')?.name ||
           '',
       );
+      setIsActive(categoryToEdit.isActive);
       // Set the image if it exists (you may need to fetch the image URL from the API)
     }
 
@@ -117,31 +124,6 @@ const EditCategory = () => {
   };
 
   // Handle form submission
-  // const handleSend = async () => {
-  //   if (!enName || !arName) {
-  //     Swal.fire("Error!", "Please fill all required fields.", "error");
-  //     return;
-  //   }
-
-  //   const payload = {
-
-  //     image: image ? await convertImageToBase64(image) : categoryToEdit.image, // Use existing image if no new image is uploaded
-  //     translations: [
-  //       { languageId: "en", name: enName },
-  //       { languageId: "ar", name: arName },
-  //     ],
-  //     // categoryType: selectedCategoryType,
-  //   };
-
-  //   try {
-  //     const response = await updateCategory({ id, category: payload }).unwrap(); // Send data to the API
-  //     Swal.fire("Success!", "Category updated successfully.", "success");
-  //     navigate("/admin/categories"); // Redirect to the categories page
-  //   } catch (error) {
-  //     console.error("Failed to update category:", error);
-  //     Swal.fire("Error!", "Failed to update category.", "error");
-  //   }
-  // };
   const handleSend = async () => {
     if (!enName || !arName) {
       Swal.fire('Error!', 'Please fill all required fields.', 'error');
@@ -169,6 +151,7 @@ const EditCategory = () => {
       // Prepare the payload
       const payload = {
         image: imageKey,
+        isActive: isActive,
         translations: [
           { languageId: 'en', name: enName },
           { languageId: 'ar', name: arName },
@@ -263,7 +246,7 @@ const EditCategory = () => {
           {/* Category Type Dropdown */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Category Type
+              Category Image
               <span className="text-danger mx-1">*</span>
             </Text>
           </div>
@@ -337,6 +320,22 @@ const EditCategory = () => {
                 </Button>
               </>
             )}
+          </Box>
+
+          {/* Active Status Toggle */}
+          <Box mt="20px" mb="20px">
+            <FormControl display="flex" alignItems="center">
+              <FormLabel htmlFor="isActive" mb="0">
+                Active Status
+              </FormLabel>
+              <Switch
+                id="isActive"
+                isChecked={isActive}
+                onChange={() => setIsActive(!isActive)}
+                colorScheme="teal"
+                size="md"
+              />
+            </FormControl>
           </Box>
 
           {/* Action Buttons */}
