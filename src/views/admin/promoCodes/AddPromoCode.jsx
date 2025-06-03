@@ -68,6 +68,7 @@ const AddPromoCode = () => {
         amount: Number(formData.amount),
         maxUsage: Number(formData.maxUsage),
         endDate: formattedEndDate,
+        
       }).unwrap();
 
       Swal.fire('Success!', 'Promo code created successfully.', 'success');

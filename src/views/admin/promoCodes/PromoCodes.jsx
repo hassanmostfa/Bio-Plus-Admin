@@ -170,7 +170,7 @@ const PromoCodes = () => {
             cursor="pointer" 
             onClick={() => navigate(`/admin/edit-promo-code/${info.getValue()}`)} 
           />
-          <Icon 
+          {/* <Icon 
             w="18px" 
             h="18px" 
             me="10px" 
@@ -178,7 +178,7 @@ const PromoCodes = () => {
             as={FaEye} 
             cursor="pointer" 
             onClick={() => navigate(`/admin/promo-code-details/${info.getValue()}`)} 
-          />
+          /> */}
         </Flex>
       ),
     }),
