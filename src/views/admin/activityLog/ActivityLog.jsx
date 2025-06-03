@@ -9,41 +9,50 @@ import {
   Thead,
   Tr,
   useColorModeValue,
+  Spinner,
+  Center,
 } from '@chakra-ui/react';
 import * as React from 'react';
 import Card from 'components/card/Card';
+import { useGetActivityLogsQuery } from '../../../api/userSlice';
 
-const ActvityLog = () => {
+const ActivityLog = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const { data, isLoading, error } = useGetActivityLogsQuery();
 
-  // Default data
-  const logData = [
-    {
-      name: 'John Doe',
-      action: 'Created a new admin',
-      date: '2025-05-12',
-      time: '10:30 AM',
-    },
-    {
-      name: 'Jane Smith',
-      action: 'Deleted a user',
-      date: '2025-05-11',
-      time: '2:15 PM',
-    },
-    {
-      name: 'Ahmed Ali',
-      action: 'Updated admin role',
-      date: '2025-05-10',
-      time: '4:45 PM',
-    },
-    {
-      name: 'Sara Hassan',
-      action: 'Viewed admin details',
-      date: '2025-05-09',
-      time: '11:20 AM',
-    },
-  ];
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return {
+      date: date.toLocaleDateString(),
+      time: date.toLocaleTimeString(),
+    };
+  };
+
+  const formatAction = (action) => {
+    return action
+      .split('.')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  if (isLoading) {
+    return (
+      <Center h="100vh">
+        <Spinner size="xl" />
+      </Center>
+    );
+  }
+
+  if (error) {
+    return (
+      <Center h="100vh">
+        <Text color="red.500">Error loading activity logs</Text>
+      </Center>
+    );
+  }
+
+  const logs = data?.data?.data || [];
 
   return (
     <div className="container">
@@ -68,28 +77,45 @@ const ActvityLog = () => {
             <Thead>
               <Tr>
                 <Th borderColor={borderColor}>
-                  <Text color="gray.400" fontSize="12px">Admin Name</Text>
-                </Th>
-                <Th borderColor={borderColor}>
                   <Text color="gray.400" fontSize="12px">Action</Text>
                 </Th>
                 <Th borderColor={borderColor}>
-                  <Text color="gray.400" fontSize="12px">Action Date</Text>
+                  <Text color="gray.400" fontSize="12px">IP Address</Text>
                 </Th>
                 <Th borderColor={borderColor}>
-                  <Text color="gray.400" fontSize="12px">Action Time</Text>
+                  <Text color="gray.400" fontSize="12px">User Agent</Text>
+                </Th>
+                <Th borderColor={borderColor}>
+                  <Text color="gray.400" fontSize="12px">Date</Text>
+                </Th>
+                <Th borderColor={borderColor}>
+                  <Text color="gray.400" fontSize="12px">Time</Text>
                 </Th>
               </Tr>
             </Thead>
             <Tbody>
-              {logData.map((log, index) => (
-                <Tr key={index}>
-                  <Td borderColor="transparent" fontSize="14px">{log.name}</Td>
-                  <Td borderColor="transparent" fontSize="14px">{log.action}</Td>
-                  <Td borderColor="transparent" fontSize="14px">{log.date}</Td>
-                  <Td borderColor="transparent" fontSize="14px">{log.time}</Td>
-                </Tr>
-              ))}
+              {logs.map((log) => {
+                const { date, time } = formatDate(log.createdAt);
+                return (
+                  <Tr key={log.id}>
+                    <Td borderColor="transparent" fontSize="14px">
+                      {formatAction(log.action)}
+                    </Td>
+                    <Td borderColor="transparent" fontSize="14px">
+                      {log.ipAddress}
+                    </Td>
+                    <Td borderColor="transparent" fontSize="14px">
+                      {log.userAgent}
+                    </Td>
+                    <Td borderColor="transparent" fontSize="14px">
+                      {date}
+                    </Td>
+                    <Td borderColor="transparent" fontSize="14px">
+                      {time}
+                    </Td>
+                  </Tr>
+                );
+              })}
             </Tbody>
           </Table>
         </Box>
@@ -98,4 +124,4 @@ const ActvityLog = () => {
   );
 };
 
-export default ActvityLog;
+export default ActivityLog;
