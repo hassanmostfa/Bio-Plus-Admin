@@ -32,6 +32,7 @@ import { pharmacyFiles } from "api/pharmacyFiles";
 import { homeBannerSlice } from "api/homeBannerSlice";
 import { deliveryFeesSlice } from "api/deliveryFeesSlice";
 import { reportsApi } from "api/reportsSlice";
+import { backupApi } from "api/backupSlice";
 
 // import { userApi, authReducer } from './userSlice';
 
@@ -68,8 +69,7 @@ export const store = configureStore({
     [homeBannerSlice.reducerPath]:homeBannerSlice.reducer,
     [deliveryFeesSlice.reducerPath]:deliveryFeesSlice.reducer,
     [reportsApi.reducerPath]:reportsApi.reducer,
-
-
+    [backupApi.reducerPath]:backupApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -104,6 +104,7 @@ export const store = configureStore({
       homeBannerSlice.middleware,
       deliveryFeesSlice.middleware,
       reportsApi.middleware,
+      backupApi.middleware,
     ),
 });
 
