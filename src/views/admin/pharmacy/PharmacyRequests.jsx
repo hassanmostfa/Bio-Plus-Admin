@@ -23,6 +23,7 @@ import {
   Textarea,
   FormControl,
   FormLabel,
+  Select,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -42,7 +43,9 @@ const columnHelper = createColumnHelper();
 
 const PharmacyRequests = () => {
   const toast = useToast();
-  const { data: response, isLoading, refetch } = useGetPharmaciesRequestsQuery({ page: 1, limit: 1000 });
+  const [page, setPage] = React.useState(1);
+  const [limit, setLimit] = React.useState(10);
+  const { data: response, isLoading, refetch } = useGetPharmaciesRequestsQuery({ page, limit });
   const [processRequest] = useProcessRequestMutation();
   
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -344,6 +347,16 @@ const PharmacyRequests = () => {
     }
   };
 
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
+  const handleLimitChange = (e) => {
+    const newLimit = Number(e.target.value);
+    setLimit(newLimit);
+    setPage(1); // Reset to first page when changing limit
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -432,47 +445,85 @@ const PharmacyRequests = () => {
             </Tbody>
           </Table>
         </Box>
-              {/* Confirmation Modal */}
-              <Modal isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
-          <ModalContent>
-            <ModalHeader>
-              {actionType === 'approve' ? 'Approve Request' : 'Reject Request'}
-            </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              {actionType === 'approve' ? (
-                <Text>Are you sure you want to approve this request?</Text>
-              ) : (
-                <>
-                  <Text mb={4}>Are you sure you want to reject this request?</Text>
-                  <FormControl>
-                    <FormLabel>Reason for rejection</FormLabel>
-                    <Textarea
-                      value={rejectionReason}
-                      onChange={(e) => setRejectionReason(e.target.value)}
-                      placeholder="Enter the reason for rejection..."
-                    />
-                  </FormControl>
-                </>
-              )}
-            </ModalBody>
-
-            <ModalFooter>
-              <Button variant="ghost" mr={3} onClick={onClose}>
-                Cancel
-              </Button>
-              <Button 
-                colorScheme={actionType === 'approve' ? 'green' : 'red'} 
-                onClick={handleConfirmAction}
-                isDisabled={actionType === 'reject' && !rejectionReason}
-              >
-                {actionType === 'approve' ? 'Approve' : 'Reject'}
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+        {/* Pagination Controls */}
+        <Flex justify="space-between" align="center" px="25px" py="15px">
+          <Flex align="center">
+            <Text mr={2}>Rows per page:</Text>
+            <Select
+              value={limit}
+              onChange={handleLimitChange}
+              w="70px"
+              size="sm"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </Select>
+          </Flex>
+          <Flex align="center">
+            <Text mr={4}>
+              Page {page} of {response?.pagination?.totalPages || 1}
+            </Text>
+            <Button
+              size="sm"
+              onClick={() => handlePageChange(page - 1)}
+              isDisabled={page === 1}
+              mr={2}
+            >
+              Previous
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => handlePageChange(page + 1)}
+              isDisabled={page === (response?.pagination?.totalPages || 1)}
+            >
+              Next
+            </Button>
+          </Flex>
+        </Flex>
       </Card>
+
+      {/* Confirmation Modal */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            {actionType === 'approve' ? 'Approve Request' : 'Reject Request'}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {actionType === 'approve' ? (
+              <Text>Are you sure you want to approve this request?</Text>
+            ) : (
+              <>
+                <Text mb={4}>Are you sure you want to reject this request?</Text>
+                <FormControl>
+                  <FormLabel>Reason for rejection</FormLabel>
+                  <Textarea
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    placeholder="Enter the reason for rejection..."
+                  />
+                </FormControl>
+              </>
+            )}
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onClose}>
+              Cancel
+            </Button>
+            <Button 
+              colorScheme={actionType === 'approve' ? 'green' : 'red'} 
+              onClick={handleConfirmAction}
+              isDisabled={actionType === 'reject' && !rejectionReason}
+            >
+              {actionType === 'approve' ? 'Approve' : 'Reject'}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

@@ -23,6 +23,7 @@ import {
   Spinner,
   useToast,
   Badge,
+  Select,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -44,7 +45,9 @@ import { useGetClinicsQuery } from 'api/clinicSlice';
 const columnHelper = createColumnHelper();
 
 const Doctors = () => {
-  const { data: doctorsData, isLoading, isError, refetch } = useGetDoctorsQuery();
+  const [page, setPage] = React.useState(1);
+  const [limit, setLimit] = React.useState(10);
+  const { data: doctorsData, isLoading, isError, refetch } = useGetDoctorsQuery({ page, limit });
   const [deleteDoctor] = useDeleteDoctorMutation();
   const [assignDoctor] = useAssignDoctorMutation();
   const { data: clinicsResponse } = useGetClinicsQuery({});
@@ -52,6 +55,7 @@ const Doctors = () => {
   const toast = useToast();
   
   const doctors = doctorsData?.data || [];
+  const pagination = doctorsData?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
   
   const [selectedDoctorId, setSelectedDoctorId] = React.useState(null);
   const [selectedClinics, setSelectedClinics] = React.useState([]);
@@ -142,6 +146,16 @@ const Doctors = () => {
         });
       }
     }
+  };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
+  const handleLimitChange = (e) => {
+    const newLimit = Number(e.target.value);
+    setLimit(newLimit);
+    setPage(1); // Reset to first page when changing limit
   };
 
   const columns = [
@@ -418,6 +432,43 @@ const Doctors = () => {
             </Tbody>
           </Table>
         </Box>
+        {/* Pagination Controls */}
+        <Flex justify="space-between" align="center" px="25px" py="15px">
+          <Flex align="center">
+            <Text mr={2}>Rows per page:</Text>
+            <Select
+              value={limit}
+              onChange={handleLimitChange}
+              w="70px"
+              size="sm"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </Select>
+          </Flex>
+          <Flex align="center">
+            <Text mr={4}>
+              Page {page} of {pagination.totalPages}
+            </Text>
+            <Button
+              size="sm"
+              onClick={() => handlePageChange(page - 1)}
+              isDisabled={page === 1}
+              mr={2}
+            >
+              Previous
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => handlePageChange(page + 1)}
+              isDisabled={page === pagination.totalPages}
+            >
+              Next
+            </Button>
+          </Flex>
+        </Flex>
       </Card>
 
       {/* Modal for Assigning Clinics */}

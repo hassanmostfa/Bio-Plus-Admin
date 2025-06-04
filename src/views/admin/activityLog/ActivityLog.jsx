@@ -11,6 +11,8 @@ import {
   useColorModeValue,
   Spinner,
   Center,
+  Button,
+  Select,
 } from '@chakra-ui/react';
 import * as React from 'react';
 import Card from 'components/card/Card';
@@ -19,7 +21,9 @@ import { useGetActivityLogsQuery } from '../../../api/userSlice';
 const ActivityLog = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-  const { data, isLoading, error } = useGetActivityLogsQuery();
+  const [page, setPage] = React.useState(1);
+  const [limit, setLimit] = React.useState(10);
+  const { data, isLoading, error } = useGetActivityLogsQuery({ page, limit });
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -34,6 +38,16 @@ const ActivityLog = () => {
       .split('.')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+  };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
+  const handleLimitChange = (e) => {
+    const newLimit = Number(e.target.value);
+    setLimit(newLimit);
+    setPage(1); // Reset to first page when changing limit
   };
 
   if (isLoading) {
@@ -53,6 +67,7 @@ const ActivityLog = () => {
   }
 
   const logs = data?.data?.data || [];
+  const pagination = data?.data?.meta || { page: 1, limit: 10, total: 0, totalPages: 1 };
 
   return (
     <div className="container">
@@ -119,6 +134,43 @@ const ActivityLog = () => {
             </Tbody>
           </Table>
         </Box>
+        {/* Pagination Controls */}
+        <Flex justify="space-between" align="center" px="25px" py="15px">
+          <Flex align="center">
+            <Text mr={2}>Rows per page:</Text>
+            <Select
+              value={limit}
+              onChange={handleLimitChange}
+              w="70px"
+              size="sm"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </Select>
+          </Flex>
+          <Flex align="center">
+            <Text mr={4}>
+              Page {page} of {pagination.totalPages}
+            </Text>
+            <Button
+              size="sm"
+              onClick={() => handlePageChange(page - 1)}
+              isDisabled={page === 1}
+              mr={2}
+            >
+              Previous
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => handlePageChange(page + 1)}
+              isDisabled={page === pagination.totalPages}
+            >
+              Next
+            </Button>
+          </Flex>
+        </Flex>
       </Card>
     </div>
   );

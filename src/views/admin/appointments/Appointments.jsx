@@ -39,7 +39,7 @@ const columnHelper = createColumnHelper();
 const Appointments = () => {
   const toast = useToast();
 
-  // State for filters
+  // State for filters and pagination
   const [filters, setFilters] = useState({
     doctorId: '',
     clinicId: '',
@@ -48,13 +48,16 @@ const Appointments = () => {
     endDate: '',
     status: '',
   });
+  
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
   // API calls
   const { data: clinicsResponse } = useGetClinicsQuery({ page: 1, limit: 100 });
   const { data: doctorsData } = useGetDoctorsQuery({ page: 1, limit: 100 });
   const { data: appointmentsData, refetch } = useGetAppointmentsQuery({
-    page: 1,
-    limit: 10,
+    page,
+    limit,
     ...filters,
   });
 
@@ -62,6 +65,7 @@ const Appointments = () => {
   const clinics = clinicsResponse?.data || [];
   const doctors = doctorsData?.data || [];
   const appointments = appointmentsData?.data || [];
+  const pagination = appointmentsData?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
 
   // Format time from minutes since midnight to HH:MM
   const formatTime = (minutes) => {
@@ -216,6 +220,16 @@ const Appointments = () => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+  };
+
+  const handleLimitChange = (e) => {
+    const newLimit = Number(e.target.value);
+    setLimit(newLimit);
+    setPage(1); // Reset to first page when changing limit
+  };
 
   return (
     <div className="container">
@@ -451,6 +465,43 @@ const Appointments = () => {
             </Tbody>
           </Table>
         </Box>
+        {/* Pagination Controls */}
+        <Flex justify="space-between" align="center" px="25px" py="15px">
+          <Flex align="center">
+            <Text mr={2}>Rows per page:</Text>
+            <Select
+              value={limit}
+              onChange={handleLimitChange}
+              w="70px"
+              size="sm"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </Select>
+          </Flex>
+          <Flex align="center">
+            <Text mr={4}>
+              Page {page} of {pagination.totalPages}
+            </Text>
+            <Button
+              size="sm"
+              onClick={() => handlePageChange(page - 1)}
+              isDisabled={page === 1}
+              mr={2}
+            >
+              Previous
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => handlePageChange(page + 1)}
+              isDisabled={page === pagination.totalPages}
+            >
+              Next
+            </Button>
+          </Flex>
+        </Flex>
       </Card>
     </div>
   );
