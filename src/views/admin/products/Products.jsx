@@ -41,6 +41,8 @@ import { useGetProductsQuery, useDeleteProductMutation, useUpdateProductMutation
 import Swal from "sweetalert2";
 import Pagination from "theme/components/Pagination";
 import * as XLSX from 'xlsx';
+import { useDownloadTemplateQuery } from "api/productSlice";
+import { useUploadProductsMutation } from "api/productSlice";
 
 const columnHelper = createColumnHelper();
 
@@ -51,6 +53,8 @@ const Products = () => {
   const { data: productsResponse, isLoading, isFetching, refetch } = useGetProductsQuery({ page, limit });
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProduct] = useUpdateProductMutation();
+  const { data: templateData, isLoading: isTemplateLoading } = useDownloadTemplateQuery();
+  const [uploadProducts] = useUploadProductsMutation();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -204,29 +208,35 @@ const Products = () => {
   };
 
   // Import from Excel function
-  const handleFileImport = (e) => {
+  const handleFileImport = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
-      
-      // Here you would typically send the data to your API
-      console.log("Imported data:", jsonData);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const result = await uploadProducts(formData).unwrap();
       
       toast({
         title: "Import Successful",
-        description: `${jsonData.length} products imported from file`,
+        description: "Products have been imported successfully",
         status: "success",
         duration: 3000,
         isClosable: true,
       });
-    };
-    reader.readAsArrayBuffer(file);
+
+      // Refresh the products list
+      refetch();
+    } catch (err) {
+      toast({
+        title: "Import Failed",
+        description: err.data?.message || "Failed to import products",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const columns = [
@@ -382,6 +392,37 @@ const Products = () => {
                   onChange={handleFileImport}
                   style={{ display: 'none' }}
                 />
+              </Button>
+            </Box>
+            <Box ml={3}>
+              <Button
+                leftIcon={<FaDownload />}
+                variant="outline"
+                colorScheme="blue"
+                onClick={() => {
+                  if (templateData) {
+                    const url = window.URL.createObjectURL(templateData);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'product_template.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    toast({
+                      title: "Download Started",
+                      description: "Product template is being downloaded",
+                      status: "success",
+                      duration: 3000,
+                      isClosable: true,
+                    });
+                  }
+                }}
+                isLoading={isTemplateLoading}
+                disabled={isTemplateLoading}
+              >
+                Download Template
               </Button>
             </Box>
           </Flex>

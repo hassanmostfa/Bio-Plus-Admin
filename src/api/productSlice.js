@@ -52,6 +52,20 @@ export const ProductApi = createApi({
         method: "DELETE",
       }),
     }),
+    downloadTemplate: builder.query({
+      query: () => ({
+        url: "/admin/product-bulk-upload/template",
+        method: "GET",
+        responseHandler: async (response) => response.blob()
+      }),
+    }),
+    uploadProducts: builder.mutation({
+      query: (data) => ({
+        url: "/admin/product-bulk-upload",
+        method: "POST",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -61,6 +75,8 @@ export const {
   useGetProductQuery,
   useUpdateProductMutation,
   useAddProductMutation,
-  useDeleteProductMutation
+  useDeleteProductMutation,
+  useDownloadTemplateQuery,
+  useUploadProductsMutation,
 } = ProductApi;
 
