@@ -116,7 +116,7 @@ const Roles = () => {
             color="green.500"
             as={EditIcon}
             cursor="pointer"
-            onClick={() => navigate(`/admin/edit/rule/${info.getValue()}`)}
+            onClick={() => navigate(`/admin/edit/role/${info.getValue()}`)}
           />
           <Icon
             w="18px"
@@ -201,7 +201,7 @@ const Roles = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            Rules
+            Roles
           </Text>
           <div className='d-flex align-items-center gap-2'>
             <InputGroup w={{ base: "100%", md: "400px" }}>
@@ -248,10 +248,10 @@ const Roles = () => {
             borderRadius="70px"
             px="24px"
             py="5px"
-            onClick={() => navigate('/admin/add-New-Rule')}
+            onClick={() => navigate('/admin/add-New-Role')}
             width={'200px'}
           >
-            Create New Rule
+            Create New Role
           </Button>
         </Flex>
 

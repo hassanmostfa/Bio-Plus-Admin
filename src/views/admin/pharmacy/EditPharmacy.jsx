@@ -16,7 +16,8 @@ import {
   SimpleGrid,
   useToast,
   Image,
-  Switch
+  Switch,
+  Checkbox
 } from '@chakra-ui/react';
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -795,7 +796,7 @@ const EditPharmacy = () => {
           ))}
 
           {/* Active Status Toggle */}
-          <Box mb="20px">
+          <Box mb="20px" mt={6}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
               Active Status
             </Text>
@@ -806,6 +807,26 @@ const EditPharmacy = () => {
               size="md"
               mt="8px"
             />
+          </Box>
+           {/* Additional Checkboxes Section */}
+           <Box mt={6} p={4} borderRadius="lg" boxShadow="sm" border="1px solid #ccc" bg={cardBg}>
+            <Text color={textColor} fontSize="md" fontWeight="bold" mb={4}>
+              Additional Settings
+            </Text>
+            <Stack spacing={3}>
+              <Checkbox>
+                Delivery across your zone
+              </Checkbox>
+              <Checkbox>
+                Usually dispatches orders on the same day
+              </Checkbox>
+              <Checkbox>
+                Delivery fee will apply
+              </Checkbox>
+              <Checkbox>
+                All orders will be delivered by healthy pharmacy
+              </Checkbox>
+            </Stack>
           </Box>
 
           <Flex justify="center" mt={6}>

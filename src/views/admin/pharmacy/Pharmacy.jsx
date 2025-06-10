@@ -186,7 +186,7 @@ const Pharmacy = () => {
             color="blue.500"
             as={FaEye}
             cursor="pointer"
-            onClick={() => navigate(`/admin/pharmacy-branches/${info.row.original.id}`)}
+            onClick={() => navigate(`/admin/show-pharmacy/${info.row.original.id}`)}
           />
           <Icon
             w="18px"

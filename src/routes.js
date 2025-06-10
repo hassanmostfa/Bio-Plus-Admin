@@ -115,6 +115,7 @@ import HomeBanners from 'views/admin/homeBanner/HomeBanners';
 import EditHomeBanner from 'views/admin/homeBanner/EditHomeBanner';
 import AddHomeBanner from 'views/admin/homeBanner/AddHomeBanner';
 import EditFile from 'views/admin/pharmacy/EditFile';
+import ShowPharmacy from 'views/admin/pharmacy/ShowPharmacy';
 
 const routes = [
   {
@@ -148,8 +149,8 @@ const routes = [
         showInSidebar: true,
       },
       {
-        name: 'Rules',
-        path: '/rules',
+        name: 'Roles',
+        path: '/roles',
         icon: <Icon as={TiMinus} width="20px" height="20px" color="inherit" />,
         component: <Roles />,
         showInSidebar: true,
@@ -166,7 +167,7 @@ const routes = [
   {
     name: 'Admin Management',
     layout: '/admin',
-    path: '/add-New-Rule',
+    path: '/add-New-Role',
     icon: (
       <Icon as={FaRegCalendarDays} width="20px" height="20px" color="inherit" />
     ),
@@ -176,7 +177,7 @@ const routes = [
   {
     name: 'Admin Management',
     layout: '/admin',
-    path: '/edit/rule/:id',
+    path: '/edit/role/:id',
     icon: (
       <Icon as={FaRegCalendarDays} width="20px" height="20px" color="inherit" />
     ),
@@ -227,6 +228,13 @@ const routes = [
     layout: '/admin',
     path: '/edit-pharmacy/:id',
     component: <EditPharmacy />,
+    showInSidebar: false,
+  },
+  {
+    name: 'Pharmacy Management',
+    layout: '/admin',
+    path: '/show-pharmacy/:id',
+    component: <ShowPharmacy />,
     showInSidebar: false,
   },
   {

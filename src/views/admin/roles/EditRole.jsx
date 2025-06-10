@@ -36,8 +36,10 @@ const EditRole = () => {
 
   // State for categories and subcategories
   const [categories, setCategories] = React.useState([]);
+  // State for parent checkboxes
+  const [parentCheckboxes, setParentCheckboxes] = React.useState({});
   // State for active status
-  const [isActive, setIsActive] = React.useState(rolePermissions?.data?.isActive ?? true); // Initialize with data from API if available, default to true
+  const [isActive, setIsActive] = React.useState(rolePermissions?.data?.isActive ?? true);
   
   // Transform API data into the required structure
   React.useEffect(() => {
@@ -60,33 +62,93 @@ const EditRole = () => {
         }),
       }));
       setCategories(transformedData);
+
+      // Initialize parent checkbox states based on child permissions
+      const initialParentState = {};
+      transformedData.forEach(category => {
+        initialParentState[category.id] = {
+          canView: category.subcategories.every(sub => sub.permissions.canView),
+          canAdd: category.subcategories.every(sub => sub.permissions.canAdd),
+          canEdit: category.subcategories.every(sub => sub.permissions.canEdit),
+          canDelete: category.subcategories.every(sub => sub.permissions.canDelete)
+        };
+      });
+      setParentCheckboxes(initialParentState);
     }
   }, [apiData, rolePermissions]);
 
-  // Handle permission change
-  const handlePermissionChange = (categoryId, subcategoryId, permission) => {
-    const updatedCategories = categories.map((category) => {
+  // Handle parent checkbox change
+  const handleParentCheckboxChange = (categoryId, permission) => {
+    const newValue = !parentCheckboxes[categoryId][permission];
+    
+    // Update parent checkbox state
+    setParentCheckboxes(prev => ({
+      ...prev,
+      [categoryId]: {
+        ...prev[categoryId],
+        [permission]: newValue
+      }
+    }));
+
+    // Update all child checkboxes in this category
+    setCategories(prev => prev.map(category => {
       if (category.id === categoryId) {
         return {
           ...category,
-          subcategories: category.subcategories.map((subcategory) => {
-            if (subcategory.id === subcategoryId) {
-              return {
-                ...subcategory,
-                permissions: {
-                  ...subcategory.permissions,
-                  [permission]: !subcategory.permissions[permission],
-                },
-              };
+          subcategories: category.subcategories.map(subcategory => ({
+            ...subcategory,
+            permissions: {
+              ...subcategory.permissions,
+              [permission]: newValue
             }
-            return subcategory;
-          }),
+          }))
+        };
+      }
+      return category;
+    }));
+  };
+
+  // Handle permission change for child checkboxes
+  const handlePermissionChange = (categoryId, subcategoryId, permission) => {
+    const updatedCategories = categories.map((category) => {
+      if (category.id === categoryId) {
+        const updatedSubcategories = category.subcategories.map((subcategory) => {
+          if (subcategory.id === subcategoryId) {
+            return {
+              ...subcategory,
+              permissions: {
+                ...subcategory.permissions,
+                [permission]: !subcategory.permissions[permission],
+              },
+            };
+          }
+          return subcategory;
+        });
+
+        // Check if all subcategories have this permission checked
+        const allChecked = updatedSubcategories.every(
+          sub => sub.permissions[permission]
+        );
+
+        // Update parent checkbox state
+        setParentCheckboxes(prev => ({
+          ...prev,
+          [categoryId]: {
+            ...prev[categoryId],
+            [permission]: allChecked
+          }
+        }));
+
+        return {
+          ...category,
+          subcategories: updatedSubcategories,
         };
       }
       return category;
     });
     setCategories(updatedCategories);
   };
+
   React.useEffect(() => {
     refetchPermissions();
   },[]);
@@ -121,18 +183,13 @@ const EditRole = () => {
         title: 'Success',
         text: 'Role updated successfully',
         confirmButtonText: 'OK',
-        customClass: {
-          popup: 'custom-swal-popup', // Add a custom class for the popup
-          title: 'custom-swal-title', // Add a custom class for the title
-          content: 'custom-swal-content', // Add a custom class for the content
-          confirmButton: 'custom-swal-confirm-button', // Add a custom class for the confirm button
-        },onClose: () => {
-          navigate('/admin/undefined/rules'); // Redirect to the roles page after successful submission
+        onClose: () => {
+          navigate('/admin/undefined/roles'); // Redirect to the roles page after successful submission
         }
       }).then((result) => {
         if (result.isConfirmed) {
           refetchPermissions();
-          navigate('/admin/undefined/rules'); // Redirect to the roles page after successful submission
+          navigate('/admin/undefined/roles'); // Redirect to the roles page after successful submission
         }
       });
     } catch (error) {
@@ -231,10 +288,30 @@ const EditRole = () => {
                   >
                     {category.name}
                   </Text>
-                  <Checkbox>Add</Checkbox>
-                  <Checkbox>Edit</Checkbox>
-                  <Checkbox>View</Checkbox>
-                  <Checkbox>Delete</Checkbox>
+                  <Checkbox
+                    isChecked={parentCheckboxes[category.id]?.canView}
+                    onChange={() => handleParentCheckboxChange(category.id, 'canView')}
+                  >
+                    View
+                  </Checkbox>
+                  <Checkbox
+                    isChecked={parentCheckboxes[category.id]?.canAdd}
+                    onChange={() => handleParentCheckboxChange(category.id, 'canAdd')}
+                  >
+                    Add
+                  </Checkbox>
+                  <Checkbox
+                    isChecked={parentCheckboxes[category.id]?.canEdit}
+                    onChange={() => handleParentCheckboxChange(category.id, 'canEdit')}
+                  >
+                    Edit
+                  </Checkbox>
+                  <Checkbox
+                    isChecked={parentCheckboxes[category.id]?.canDelete}
+                    onChange={() => handleParentCheckboxChange(category.id, 'canDelete')}
+                  >
+                    Delete
+                  </Checkbox>
                 </Box>
                 <hr />
                 {category.subcategories.map((subcategory) => (

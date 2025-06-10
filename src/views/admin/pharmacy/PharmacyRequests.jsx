@@ -67,7 +67,7 @@ const PharmacyRequests = () => {
       id: request.id,
       pharmacyName: request.pharmacyName || 'N/A',
       productName: request.productName || 'N/A',
-      productPrice: request.price ? `$${request.price}` : 'N/A',
+      productPrice: request.price ? `${request.price} kwd` : 'N/A',
       brandName: request.brandName || 'N/A',
       offerPercentage: `${request.offerPercentage}%`,
       offerType: request.offerType,
