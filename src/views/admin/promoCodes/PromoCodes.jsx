@@ -109,7 +109,7 @@ const PromoCodes = () => {
       header: () => <Text color="gray.400">Amount</Text>,
       cell: (info) => (
         <Text color={textColor}>
-          {info.row.original.type === "FIXED" ? `$${info.getValue()}` : `${info.getValue()}%`}
+          {info.row.original.type === "FIXED" ? `kwd ${info.getValue()}` : `${info.getValue()}%`}
         </Text>
       ),
     }),

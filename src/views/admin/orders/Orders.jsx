@@ -355,12 +355,12 @@ const Orders = () => {
                            ` : '<p>N/A</p>'}\n                       </div>\n
                        <div style="margin-bottom: 15px;">\n                           <h3 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Items</h3>\n                           ${order.items?.map(item => `
                                <div style="display: flex; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0;">\n                                   ${item.imageUrl ? `<img src="${item.imageUrl}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px;"/>` : '<div style="width: 40px; height: 40px; margin-right: 10px; background-color: #e2e8f0;"></div>'}\n                                   <div style="flex: 1;">\n                                       <p style="font-weight: bold;">${item.name}</p>\n                                       <p style="font-size: 0.9em; color: gray;">Qty: ${item.quantity}</p>
-                                   </div>\n                                   <div style="text-align: right;">\n                                       <p>$${item.price}</p>
+                                   </div>\n                                   <div style="text-align: right;">\n                                       <p>kwd ${item.price}</p>
                                    </div>\n                               </div>
                            `).join('') || '<p>No items found</p>'}\n                       </div>\n
-                       <div style="display: flex; justify-content: flex-end;">\n                           <div style="text-align: right;">\n                               <p>Subtotal: $${order.subtotal}</p>
-                               <p>Delivery Fee: $${order.deliveryFee}</p>
-                               <p style="font-weight: bold; font-size: 1.1em;">Total: $${order.total}</p>
+                       <div style="display: flex; justify-content: flex-end;">\n                           <div style="text-align: right;">\n                               <p>Subtotal: kwd ${order.subtotal}</p>
+                               <p>Delivery Fee: kwd ${order.deliveryFee}</p>
+                               <p style="font-weight: bold; font-size: 1.1em;">Total: kwd ${order.total}</p>
                            </div>
                        </div>
                    </div>
@@ -949,8 +949,8 @@ const Orders = () => {
                         <Text>Qty: {item.quantity}</Text>
                       </Box>
                       <Box textAlign="right">
-                        <Text>${item.price}</Text>
-                        <Text>Subtotal: ${item.subtotal}</Text>
+                        <Text>kwd ${item.price}</Text>
+                        <Text>Subtotal: kwd ${item.subtotal}</Text>
                       </Box>
                     </Flex>
                   ))}
@@ -958,9 +958,9 @@ const Orders = () => {
 
                 <Flex justifyContent="flex-end">
                   <Box textAlign="right">
-                    <Text>Subtotal: ${selectedOrder.subtotal}</Text>
-                    <Text>Delivery Fee: ${selectedOrder.deliveryFee}</Text>
-                    <Text fontWeight="bold" fontSize="lg">Total: ${selectedOrder.total}</Text>
+                    <Text>Subtotal: kwd {selectedOrder.subtotal}</Text>
+                    <Text>Delivery Fee: kwd {selectedOrder.deliveryFee}</Text>
+                    <Text fontWeight="bold" fontSize="lg">Total: kwd {selectedOrder.total}</Text>
                   </Box>
                 </Flex>
               </Box>

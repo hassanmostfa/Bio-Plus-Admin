@@ -31,7 +31,6 @@ const AddPharmacy = () => {
     whatsappNumber: '',
     numOfBranches: 0,
     email: '',
-    
     password: '',
     workingHours: '',
     revenueShare: 0, // Percentage
@@ -39,6 +38,11 @@ const AddPharmacy = () => {
     feesStartDate: '',
     feesEndDate: '',
     isActive: true,
+ 
+    hasZoneDelivery: false,
+    hasSameDayDispatch: false,
+    hasDeliveryFee: false,
+    isHealthyPharmacyDelivery: false,
     translations: [
       {
         languageId: 'ar',
@@ -92,16 +96,6 @@ const AddPharmacy = () => {
     }));
   };
 
-  // const handleImageUpload = (files) => {
-  //   if (files && files.length > 0) {
-  //     setImage(files[0]);
-      
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       imageKey: files[0].name, // Update with the actual image key logic
-  //     }));
-  //   }
-  // };
   const handleImageUpload = (files) => {
     if (files && files.length > 0) {
       const selectedFile = files[0];
@@ -202,46 +196,6 @@ const AddPharmacy = () => {
     }));
   };
 
-  // const handleSend = async () => {
-  //   try {
-  //     // Format the data based on revenueShareType
-  //     const payload = {
-  //       ...formData,
-  //       feesStartDate: formData.feesStartDate ? formData.feesStartDate + 'T00:00:00Z' : '2024-05-01T00:00:00Z',
-  //       feesEndDate: formData.feesEndDate ? formData.feesEndDate + 'T00:00:00Z' : '2025-05-01T00:00:00Z',
-  //       name: formData.translations.find((t) => t.languageId === 'en').name,
-  //       description: formData.translations.find((t) => t.languageId === 'en').description,
-  //       revenueShare: formData.revenueShareType === 'percentage' ? parseInt(formData.revenueShare) : 0,
-  //       fixedFees: formData.revenueShareType === 'fixed' ? parseInt(formData.fixedFees) : 0, // Convert to integer if fixedformData.fixedFees : 0,
-  //     };
-  //     delete payload.revenueShareType;
-
-  //     // Send the data to the API
-  //     const response = await createPharmacy(payload).unwrap();
-
-  //     // Show success message
-  //     toast({
-  //       title: 'Success',
-  //       description: 'Pharmacy created successfully',
-  //       status: 'success',
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-
-  //     // Navigate back or to another page
-  //     navigate('/admin/pharmacy');
-  //   } catch (error) {
-  //     setError(error.data);
-  //     // Show error message
-  //     toast({
-  //       title: 'Error',
-  //       description: error.data?.message || 'Failed to create pharmacy',
-  //       status: 'error',
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-  //   }
-  // };
   const handleSend = async () => {
     try {
       // First upload the image if it exists
@@ -267,6 +221,7 @@ const AddPharmacy = () => {
         description: formData.translations.find((t) => t.languageId === 'en').description,
         revenueShare: formData.revenueShareType === 'percentage' ? parseInt(formData.revenueShare) : 0,
         fixedFees: formData.revenueShareType === 'fixed' ? parseInt(formData.fixedFees) : 0,
+
       };
       delete payload.revenueShareType;
   
@@ -707,16 +662,28 @@ const AddPharmacy = () => {
               Additional Settings
             </Text>
             <Stack spacing={3}>
-              <Checkbox>
+              <Checkbox
+                isChecked={formData.hasZoneDelivery}
+                onChange={(e) => setFormData(prev => ({ ...prev, hasZoneDelivery: e.target.checked }))}
+              >
                 Delivery across your zone
               </Checkbox>
-              <Checkbox>
+              <Checkbox
+                isChecked={formData.hasSameDayDispatch}
+                onChange={(e) => setFormData(prev => ({ ...prev, hasSameDayDispatch: e.target.checked }))}
+              >
                 Usually dispatches orders on the same day
               </Checkbox>
-              <Checkbox>
+              <Checkbox
+                isChecked={formData.hasDeliveryFee}
+                onChange={(e) => setFormData(prev => ({ ...prev, hasDeliveryFee: e.target.checked }))}
+              >
                 Delivery fee will apply
               </Checkbox>
-              <Checkbox>
+              <Checkbox
+                isChecked={formData.isHealthyPharmacyDelivery}
+                onChange={(e) => setFormData(prev => ({ ...prev, isHealthyPharmacyDelivery: e.target.checked }))}
+              >
                 All orders will be delivered by healthy pharmacy
               </Checkbox>
             </Stack>

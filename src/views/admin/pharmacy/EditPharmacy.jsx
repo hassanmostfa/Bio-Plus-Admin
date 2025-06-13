@@ -277,6 +277,7 @@ const EditPharmacy = () => {
           .description,
         revenueShare: parseInt(formData.revenueShare),
         fixedFees: formData.fixedFees ? parseInt(formData.fixedFees) : 0,
+        // deliveryFee: 5,
       };
 
       delete payload.revenueShareType;

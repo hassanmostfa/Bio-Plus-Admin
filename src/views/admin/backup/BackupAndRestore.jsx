@@ -28,64 +28,60 @@ import { FaCloudUploadAlt as UploadIcon } from "react-icons/fa";
 import * as React from 'react';
 import Card from 'components/card/Card';
 import Swal from 'sweetalert2';
-import { useGetModulesQuery } from 'api/roleSlice';
 import { useGetBackupsQuery } from 'api/backupSlice';
 import { useDownloadBackupMutation } from 'api/backupSlice';
 import { useCreateBackupMutation } from 'api/backupSlice';
 import { useRestoreBackupMutation } from 'api/backupSlice';
+import { useCreateCustomBackupMutation } from 'api/backupSlice';
+
+const STATIC_MODULES = [
+  "USER_MANAGEMENT",
+  "PHARMACY",
+  "PRODUCT",
+  "ORDER",
+  "DOCTOR", 
+  "APPOINTMENT",
+  "MEDICINE",
+  "CMS",
+  "ADMINISTRATION"
+];
 
 const BackupAndRestore = () => {
   const [activeTab, setActiveTab] = React.useState(0);
   const [selectedModules, setSelectedModules] = React.useState([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
   const toast = useToast();
-  const { data: modulesData, isLoading: isModulesLoading, isError: isModulesError } = useGetModulesQuery();
   
   const { data, isLoading, error } = useGetBackupsQuery();
   const [downloadBackup, { isLoading: isDownloading }] = useDownloadBackupMutation();
   const [createBackup, { isLoading: isCreating }] = useCreateBackupMutation();
+  const [createCustomBackup, { isLoading: isCreatingCustom }] = useCreateCustomBackupMutation();
   const [restoreBackup, { isLoading: isRestoring }] = useRestoreBackupMutation();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
-  // Get modules data with proper error handling
-  const modules = React.useMemo(() => {
-    if (isModulesError) {
-      toast({
-        title: 'Error loading modules',
-        description: 'Failed to load modules. Please try again later.',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-      return [];
-    }
-    return modulesData?.data || [];
-  }, [modulesData, isModulesError, toast]);
-
   // Filter modules based on search input
   const filteredModules = React.useMemo(() => {
-    if (!globalFilter) return modules;
-    return modules.filter(module => 
-      module.name.toLowerCase().includes(globalFilter.toLowerCase()) ||
-      module.description.toLowerCase().includes(globalFilter.toLowerCase())
+    if (!globalFilter) return STATIC_MODULES;
+    return STATIC_MODULES.filter(module => 
+      module.toLowerCase().includes(globalFilter.toLowerCase())
     );
-  }, [modules, globalFilter]);
+  }, [globalFilter]);
 
   // Handle module selection for customized backup
-  const toggleModuleSelection = (moduleId) => {
+  const toggleModuleSelection = (moduleName) => {
     setSelectedModules(prev => 
-      prev.includes(moduleId) 
-        ? prev.filter(id => id !== moduleId) 
-        : [...prev, moduleId]
+      prev.includes(moduleName) 
+        ? prev.filter(name => name !== moduleName) 
+        : [...prev, moduleName]
     );
   };
 
   // Handle backup action
   const handleBackup = async (isFullBackup = false) => {
     const modulesToBackup = isFullBackup 
-      ? modules.map(m => m.name) 
-      : modules.filter(m => selectedModules.includes(m.id)).map(m => m.name);
+      ? STATIC_MODULES 
+      : selectedModules;
     
     if (!isFullBackup && modulesToBackup.length === 0) {
       toast({
@@ -99,8 +95,15 @@ const BackupAndRestore = () => {
     }
 
     try {
-      // Step 1: Create backup
-      const backupResult = await createBackup().unwrap();
+      let backupResult;
+      
+      if (isFullBackup) {
+        // Full backup
+        backupResult = await createBackup().unwrap();
+      } else {
+        // Custom backup
+        backupResult = await createCustomBackup({ groups: modulesToBackup }).unwrap();
+      }
       
       if (!backupResult?.data?.id) {
         throw new Error('Backup creation failed - no ID returned');
@@ -114,7 +117,7 @@ const BackupAndRestore = () => {
         isClosable: true,
       });
 
-      // Step 2: Download backup using the ID
+      // Download backup using the ID
       const downloadResult = await downloadBackup(backupResult.data.id).unwrap();
       
       // Create a blob from the SQL text response
@@ -122,7 +125,7 @@ const BackupAndRestore = () => {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `backup-${new Date().toISOString()}.sql`;
+      a.download = backupResult.data.filename || `backup-${new Date().toISOString()}.sql`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -149,8 +152,8 @@ const BackupAndRestore = () => {
   // Handle restore action
   const handleRestore = async (isFullRestore = false) => {
     const modulesToRestore = isFullRestore 
-      ? modules.map(m => m.name) 
-      : modules.filter(m => selectedModules.includes(m.id)).map(m => m.name);
+      ? STATIC_MODULES 
+      : selectedModules;
     
     if (!isFullRestore && modulesToRestore.length === 0) {
       toast({
@@ -188,9 +191,6 @@ const BackupAndRestore = () => {
           // Create FormData and append the file
           const formData = new FormData();
           formData.append('backupFile', file);
-          // if (!isFullRestore) {
-          //   formData.append('modules', JSON.stringify(modulesToRestore));
-          // }
 
           toast({
             title: 'Restore initiated',
@@ -303,106 +303,66 @@ const BackupAndRestore = () => {
           <TabPanels>
             {/* Full Backup Tab */}
             <TabPanel>
-              {isModulesLoading ? (
-                <Flex justify="center" align="center" py="20px">
-                  <Text>Loading modules...</Text>
-                </Flex>
-              ) : modules.length === 0 ? (
-                <Flex justify="center" align="center" py="20px">
-                  <Text>No modules available</Text>
-                </Flex>
-              ) : (
-                <Table variant="simple" color="gray.500" mb="24px" mt="12px">
-                  <Thead>
-                    <Tr>
-                      <Th borderColor={borderColor}>
-                        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-                          Module Name
+              <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+                <Thead>
+                  <Tr>
+                    <Th borderColor={borderColor}>
+                      <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
+                        Module Name
+                      </Text>
+                    </Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {filteredModules.map((module) => (
+                    <Tr key={module}>
+                      <Td borderColor="transparent">
+                        <Text color={textColor} fontSize="sm" fontWeight="bold">
+                          {module}
                         </Text>
-                      </Th>
-                      {/* <Th borderColor={borderColor}>
-                        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-                          Description
-                        </Text>
-                      </Th> */}
+                      </Td>
                     </Tr>
-                  </Thead>
-                  <Tbody>
-                    {filteredModules.map((module) => (
-                      <Tr key={module.id}>
-                        <Td borderColor="transparent">
-                          <Text color={textColor} fontSize="sm" fontWeight="bold">
-                            {module.name}
-                          </Text>
-                        </Td>
-                        {/* <Td borderColor="transparent">
-                          <Text color={textColor} fontSize="sm">
-                            {module.description}
-                          </Text>
-                        </Td> */}
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              )}
+                  ))}
+                </Tbody>
+              </Table>
             </TabPanel>
 
             {/* Customized Backup Tab */}
             <TabPanel>
-              {isModulesLoading ? (
-                <Flex justify="center" align="center" py="20px">
-                  <Text>Loading modules...</Text>
-                </Flex>
-              ) : modules.length === 0 ? (
-                <Flex justify="center" align="center" py="20px">
-                  <Text>No modules available</Text>
-                </Flex>
-              ) : (
-                <Table variant="simple" color="gray.500" mb="24px" mt="12px">
-                  <Thead>
-                    <Tr>
-                      <Th borderColor={borderColor} width="50px">
-                        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-                          Select
+              <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+                <Thead>
+                  <Tr>
+                    <Th borderColor={borderColor} width="50px">
+                      <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
+                        Select
+                      </Text>
+                    </Th>
+                    <Th borderColor={borderColor}>
+                      <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
+                        Module Name
+                      </Text>
+                    </Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {filteredModules.map((module) => (
+                    <Tr key={module}>
+                      <Td borderColor="transparent">
+                        <Checkbox
+                          isChecked={selectedModules.includes(module)}
+                          onChange={() => toggleModuleSelection(module)}
+                          colorScheme="brand"
+                        />
+                      </Td>
+                      <Td borderColor="transparent">
+                        <Text color={textColor} fontSize="sm" fontWeight="bold">
+                          {module}
                         </Text>
-                      </Th>
-                      <Th borderColor={borderColor}>
-                        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-                          Module Name
-                        </Text>
-                      </Th>
-                      <Th borderColor={borderColor}>
-                        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-                          Description
-                        </Text>
-                      </Th>
+                      </Td>
                     </Tr>
-                  </Thead>
-                  <Tbody>
-                    {filteredModules.map((module) => (
-                      <Tr key={module.id}>
-                        <Td borderColor="transparent">
-                          <Checkbox
-                            isChecked={selectedModules.includes(module.id)}
-                            onChange={() => toggleModuleSelection(module.id)}
-                            colorScheme="brand"
-                          />
-                        </Td>
-                        <Td borderColor="transparent">
-                          <Text color={textColor} fontSize="sm" fontWeight="bold">
-                            {module.name}
-                          </Text>
-                        </Td>
-                        <Td borderColor="transparent">
-                          <Text color={textColor} fontSize="sm">
-                            {module.description}
-                          </Text>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              )}
+                  ))}
+                </Tbody>
+              </Table>
             </TabPanel>
           </TabPanels>
         </Tabs>

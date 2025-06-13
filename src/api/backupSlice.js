@@ -46,6 +46,13 @@ export const backupApi = createApi({
       }),
      
     }),
+    createCustomBackup: builder.mutation({
+      query: (data) => ({
+        url: `/admin/db/backup/restore/custom`,
+        method: 'POST',
+        body: data,
+      }),
+    }),
 
   }),
 });
@@ -55,4 +62,5 @@ export const {
   useCreateBackupMutation,
   useRestoreBackupMutation,
   useDownloadBackupMutation,
+  useCreateCustomBackupMutation,
 } = backupApi; 
