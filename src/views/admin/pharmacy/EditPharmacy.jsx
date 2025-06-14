@@ -53,6 +53,7 @@ const EditPharmacy = () => {
     description: '',
     whatsappNumber: '',
     numOfBranches: 0,
+    deliveryFee: 0,
     email: '',
     password: '',
     workingHours: '',
@@ -61,6 +62,10 @@ const EditPharmacy = () => {
     feesStartDate: '',
     feesEndDate: '',
     isActive: true,
+    hasZoneDelivery: false,
+    hasSameDayDispatch: false,
+    hasDeliveryFee: false,
+    isHealthyPharmacyDelivery: false,
     translations: [
       {
         languageId: 'ar',
@@ -100,6 +105,10 @@ const EditPharmacy = () => {
         ...pharmacy,
         feesStartDate,
         feesEndDate,
+        hasZoneDelivery: pharmacy.hasZoneDelivery || false,
+        hasSameDayDispatch: pharmacy.hasSameDayDispatch || false,
+        hasDeliveryFee: pharmacy.hasDeliveryFee || false,
+        isHealthyPharmacyDelivery: pharmacy.isHealthyPharmacyDelivery || false,
         translations: [
           {
             languageId: 'ar',
@@ -277,7 +286,7 @@ const EditPharmacy = () => {
           .description,
         revenueShare: parseInt(formData.revenueShare),
         fixedFees: formData.fixedFees ? parseInt(formData.fixedFees) : 0,
-        // deliveryFee: 5,
+        deliveryFee: formData.deliveryFee ? parseInt(formData.deliveryFee) : 0,
       };
 
       delete payload.revenueShareType;
@@ -815,16 +824,28 @@ const EditPharmacy = () => {
               Additional Settings
             </Text>
             <Stack spacing={3}>
-              <Checkbox>
+              <Checkbox
+                isChecked={formData.hasZoneDelivery}
+                onChange={(e) => setFormData(prev => ({ ...prev, hasZoneDelivery: e.target.checked }))}
+              >
                 Delivery across your zone
               </Checkbox>
-              <Checkbox>
+              <Checkbox
+                isChecked={formData.hasSameDayDispatch}
+                onChange={(e) => setFormData(prev => ({ ...prev, hasSameDayDispatch: e.target.checked }))}
+              >
                 Usually dispatches orders on the same day
               </Checkbox>
-              <Checkbox>
+              <Checkbox
+                isChecked={formData.hasDeliveryFee}
+                onChange={(e) => setFormData(prev => ({ ...prev, hasDeliveryFee: e.target.checked }))}
+              >
                 Delivery fee will apply
               </Checkbox>
-              <Checkbox>
+              <Checkbox
+                isChecked={formData.isHealthyPharmacyDelivery}
+                onChange={(e) => setFormData(prev => ({ ...prev, isHealthyPharmacyDelivery: e.target.checked }))}
+              >
                 All orders will be delivered by healthy pharmacy
               </Checkbox>
             </Stack>
