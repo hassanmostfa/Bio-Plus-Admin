@@ -949,8 +949,8 @@ const Orders = () => {
                         <Text>Qty: {item.quantity}</Text>
                       </Box>
                       <Box textAlign="right">
-                        <Text>kwd ${item.price}</Text>
-                        <Text>Subtotal: kwd ${item.subtotal}</Text>
+                        <Text>kwd {item.price}</Text>
+                        <Text>Subtotal: kwd {item.subtotal}</Text>
                       </Box>
                     </Flex>
                   ))}
