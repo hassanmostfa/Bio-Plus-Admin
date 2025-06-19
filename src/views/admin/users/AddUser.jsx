@@ -80,8 +80,8 @@ const AddUser = () => {
   };
 
   return (
-    <div className="container add-admin-container w-100">
-      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100">
+    <Box className="container add-admin-container w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -116,6 +116,7 @@ const AddUser = () => {
               required
               mt={'8px'}
               bg={inputBg}
+              color={textColor}
             />
           </div>
 
@@ -132,6 +133,7 @@ const AddUser = () => {
               required
               mt={'8px'}
               bg={inputBg}
+              color={textColor}
             />
           </div>
 
@@ -184,6 +186,7 @@ const AddUser = () => {
               required
               mt={'8px'}
               bg={inputBg}
+              color={textColor}
             />
           </div>
 
@@ -200,6 +203,7 @@ const AddUser = () => {
               required
               mt={'8px'}
               bg={inputBg}
+              color={textColor}
             />
           </div>
 
@@ -228,7 +232,7 @@ const AddUser = () => {
           </Flex>
         </form>
       </Box>
-    </div>
+    </Box>
   );
 };
 

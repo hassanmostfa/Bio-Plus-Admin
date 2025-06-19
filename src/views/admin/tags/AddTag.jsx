@@ -21,6 +21,8 @@ const AddTag = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const [addTag, { isLoading }] = useAddTagMutation();
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,8 +58,8 @@ const AddTag = () => {
   };
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box className="add-admin-card shadow p-4 w-100" bg={cardBg} borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -93,6 +95,8 @@ const AddTag = () => {
                 onChange={(e) => setName(e.target.value)}
                 required
                 mt={"8px"}
+                bg={inputBg}
+                color={textColor}
               />
             </Box>
 
@@ -110,6 +114,8 @@ const AddTag = () => {
                 required
                 mt={"8px"}
                 dir="rtl"
+                bg={inputBg}
+                color={textColor}
               />
             </Box>
           </Grid>
@@ -141,8 +147,8 @@ const AddTag = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

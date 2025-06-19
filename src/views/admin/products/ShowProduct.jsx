@@ -140,7 +140,7 @@ const ShowProduct = () => {
               
               <Flex justify="space-between">
                 <Text fontWeight="bold">Price:</Text>
-                <Text>${product.price}</Text>
+                <Text>{product.price}</Text>
               </Flex>
               
               {product.offerPercentage && (
@@ -154,7 +154,7 @@ const ShowProduct = () => {
               
               <Flex justify="space-between">
                 <Text fontWeight="bold">Cost:</Text>
-                <Text>${product.cost}</Text>
+                <Text>{product.cost}</Text>
               </Flex>
               
               <Flex justify="space-between">
@@ -219,8 +219,8 @@ const ShowProduct = () => {
                               <Text>{variant.attributeValue}</Text>
                             </Flex>
                           </Td>
-                          <Td isNumeric>${variant.price}</Td>
-                          <Td isNumeric>${variant.cost}</Td>
+                          <Td isNumeric>{variant.price}</Td>
+                          <Td isNumeric>{variant.cost}</Td>
                           <Td isNumeric>{variant.quantity}</Td>
                           <Td>
                             <Tag 

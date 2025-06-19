@@ -78,53 +78,53 @@ const Products = () => {
   }, [refetch, isLoading]);
 
   const toggleStatus = async (productId, currentStatus) => {
-    // try {
-    //   await updateProduct({
-    //     id: productId,
-    //     isActive: !currentStatus
-    //   }).unwrap();
-      
-    //   toast({
-    //     title: "Success",
-    //     description: "Product status updated successfully",
-    //     status: "success",
-    //     duration: 3000,
-    //     isClosable: true,
-    //   });
-    // } catch (err) {
-    //   toast({
-    //     title: "Error",
-    //     description: err.data?.message || "Failed to update product status",
-    //     status: "error",
-    //     duration: 5000,
-    //     isClosable: true,
-    //   });
-    // }
+    try {
+      await updateProduct({
+        id: productId,
+        data: { isActive: !currentStatus }
+      }).unwrap();
+      toast({
+        title: "Success",
+        description: "Product status updated successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      refetch();
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err.data?.message || "Failed to update product status",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const togglePublish = async (productId, currentPublished) => {
-    // try {
-    //   await updateProduct({
-    //     id: productId,
-    //     isPublished: !currentPublished
-    //   }).unwrap();
-      
-    //   toast({
-    //     title: "Success",
-    //     description: "Product publish status updated successfully",
-    //     status: "success",
-    //     duration: 3000,
-    //     isClosable: true,
-    //   });
-    // } catch (err) {
-    //   toast({
-    //     title: "Error",
-    //     description: err.data?.message || "Failed to update product publish status",
-    //     status: "error",
-    //     duration: 5000,
-    //     isClosable: true,
-    //   });
-    // }
+    try {
+      await updateProduct({
+        id: productId,
+        data: { isPublished: !currentPublished }
+      }).unwrap();
+      toast({
+        title: "Success",
+        description: "Product publish status updated successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      refetch();
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err.data?.message || "Failed to update product publish status",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const handleDelete = async (productId) => {

@@ -16,6 +16,8 @@ import {
   Image,
   Badge,
   useToast,
+  FormControl,
+  FormLabel,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -107,6 +109,8 @@ const Appointments = () => {
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
 
   const columns = [
     columnHelper.accessor('appointmentNumber', {
@@ -251,151 +255,102 @@ const Appointments = () => {
         </Flex>
 
       {/* Filters */}
-<div className="card shadow-sm mb-4">
-  <div className="card-body">
-    <h5 className="card-title mb-3">
-      <i className="bi bi-funnel me-2"></i>
-      Filter Consultations
-    </h5>
-    
-    <div className="row g-3">
-      {/* Doctor Filter */}
-      <div className="col-md-6 col-lg-4">
-        <div className="form-group">
-          <label htmlFor="doctorFilter" className="form-label">Doctor</label>
-          <div className="input-group">
-            <span className="input-group-text">
-              <BsFillPersonBadgeFill className="bi me-2" />
-            </span>
-            <select
-              id="doctorFilter"
-              className="form-select"
-              value={filters.doctorId}
-              onChange={(e) => handleFilterChange('doctorId', e.target.value)}
-            >
-              <option value="">All Doctors</option>
-              {doctors.map((doctor) => (
-                <option key={doctor.id} value={doctor.id}>
-                  {doctor.fullName}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Clinic Filter */}
-      <div className="col-md-6 col-lg-4">
-        <div className="form-group">
-          <label htmlFor="clinicFilter" className="form-label">Clinic</label>
-          <div className="input-group">
-            <span className="input-group-text">
-              <BiBuilding className="bi me-2" />
-            </span>
-            <select
-              id="clinicFilter"
-              className="form-select"
-              value={filters.clinicId}
-              onChange={(e) => handleFilterChange('clinicId', e.target.value)}
-            >
-              <option value="">All Clinics</option>
-              {clinics.map((clinic) => (
-                <option key={clinic.id} value={clinic.id}>
-                  {clinic.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Consultation Type Filter */}
-      <div className="col-md-6 col-lg-4">
-        <div className="form-group">
-          <label htmlFor="consultTypeFilter" className="form-label">Consultation Type</label>
-          <div className="input-group">
-            <span className="input-group-text">
-
-                <BiVideo className="bi me-2" />
-
-            </span>
-            <select
-              id="consultTypeFilter"
-              className="form-select"
-              value={filters.consultType}
-              onChange={(e) => handleFilterChange('consultType', e.target.value)}
-            >
-              <option value="">All Types</option>
-              <option value="AT_CLINIC">At Clinic</option>
-              <option value="ONLINE">Online</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Date Range Filter - Start Date */}
-      <div className="col-md-6 col-lg-4">
-        <div className="form-group">
-          <label htmlFor="startDateFilter" className="form-label">From Date</label>
-          <div className="input-group">
-           
-            <input
-              id="startDateFilter"
-              type="date"
-              className="form-control"
-              value={filters.startDate}
-              onChange={(e) => handleFilterChange('startDate', e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Date Range Filter - End Date */}
-      <div className="col-md-6 col-lg-4">
-        <div className="form-group">
-          <label htmlFor="endDateFilter" className="form-label">To Date</label>
-          <div className="input-group">
-           
-            <input
-              id="endDateFilter" 
-              type="date"
-              className="form-control"
-              value={filters.endDate}
-              onChange={(e) => handleFilterChange('endDate', e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Buttons */}
-      <div className="col-md-6 col-lg-4 d-flex align-items-end">
-        <div className="d-grid gap-2 d-md-flex justify-content-md-end w-100 mt-2">
-          <button
-            onClick={applyFilters}
-            className="btn btn-primary"
-            type="button"
-          >
-            <i className="bi bi-search me-1"></i> Apply Filters
-          </button>
-          <button
-            onClick={resetFilters}
-            className="btn btn-outline-secondary"
-            type="button"
-          >
-            <i className="bi bi-x-circle me-1"></i> Reset
-          </button>
-        </div>
-      </div>
-    </div>
-
-    {/* Active Filters Display (Optional) */}
-    <div className="mt-3">
-      <div className="d-flex flex-wrap gap-2" id="activeFilters">
-        {/* This area can be used to show active filter tags */}
-      </div>
-    </div>
-  </div>
-</div>
+      <Box bg={cardBg} boxShadow="sm" mb={4} borderRadius="lg" p={6}>
+        <Text fontSize="lg" fontWeight="bold" mb={4} color={textColor}>
+          Filter Consultations
+        </Text>
+        <Flex wrap="wrap" gap={4}>
+          {/* Doctor Filter */}
+          <Box flex="1 1 250px" minW="220px">
+            <FormControl>
+              <FormLabel color={textColor}>Doctor</FormLabel>
+              <Select
+                value={filters.doctorId}
+                onChange={(e) => handleFilterChange('doctorId', e.target.value)}
+                bg={inputBg}
+                color={textColor}
+              >
+                <option value="">All Doctors</option>
+                {doctors.map((doctor) => (
+                  <option key={doctor.id} value={doctor.id}>
+                    {doctor.fullName}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+          {/* Clinic Filter */}
+          <Box flex="1 1 250px" minW="220px">
+            <FormControl>
+              <FormLabel color={textColor}>Clinic</FormLabel>
+              <Select
+                value={filters.clinicId}
+                onChange={(e) => handleFilterChange('clinicId', e.target.value)}
+                bg={inputBg}
+                color={textColor}
+              >
+                <option value="">All Clinics</option>
+                {clinics.map((clinic) => (
+                  <option key={clinic.id} value={clinic.id}>
+                    {clinic.name}
+                  </option>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+          {/* Consultation Type Filter */}
+          <Box flex="1 1 250px" minW="220px">
+            <FormControl>
+              <FormLabel color={textColor}>Consultation Type</FormLabel>
+              <Select
+                value={filters.consultType}
+                onChange={(e) => handleFilterChange('consultType', e.target.value)}
+                bg={inputBg}
+                color={textColor}
+              >
+                <option value="">All Types</option>
+                <option value="AT_CLINIC">At Clinic</option>
+                <option value="ONLINE">Online</option>
+              </Select>
+            </FormControl>
+          </Box>
+          {/* Date Range Filter - Start Date */}
+          <Box flex="1 1 200px" minW="180px">
+            <FormControl>
+              <FormLabel color={textColor}>From Date</FormLabel>
+              <Input
+                type="date"
+                value={filters.startDate}
+                onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                bg={inputBg}
+                color={textColor}
+              />
+            </FormControl>
+          </Box>
+          {/* Date Range Filter - End Date */}
+          <Box flex="1 1 200px" minW="180px">
+            <FormControl>
+              <FormLabel color={textColor}>To Date</FormLabel>
+              <Input
+                type="date"
+                value={filters.endDate}
+                onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                bg={inputBg}
+                color={textColor}
+              />
+            </FormControl>
+          </Box>
+          {/* Buttons */}
+          <Flex align="flex-end" gap={2} minW="200px">
+            <Button colorScheme="blue" onClick={applyFilters}>
+              Apply Filters
+            </Button>
+            <Button variant="outline" colorScheme="gray" onClick={resetFilters}>
+              Reset
+            </Button>
+          </Flex>
+        </Flex>
+      </Box>
 
         {/* Table */}
         <Box overflowX="auto">

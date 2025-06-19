@@ -23,6 +23,8 @@ import { IoMdArrowBack } from 'react-icons/io';
 
 const AddPromoCode = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
   const navigate = useNavigate();
   const [addPromocode, { isLoading }] = useAddPromocodeMutation();
 
@@ -84,11 +86,8 @@ const AddPromoCode = () => {
   };
 
   return (
-    <div className="container add-promo-container w-100 ">
-      <div
-        className="add-promo-card shadow p-4 bg-white w-100"
-        style={{ borderRadius: '15px' }}
-      >
+    <Box className="container add-promo-container w-100">
+      <Box bg={cardBg} className="add-promo-card shadow p-4 w-100" borderRadius="15px">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
             Add New PromoCode
@@ -120,6 +119,8 @@ const AddPromoCode = () => {
                 placeholder="Enter promo code"
                 required
                 mt={'8px'}
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
 
@@ -137,6 +138,8 @@ const AddPromoCode = () => {
                 placeholder="Enter amount"
                 required
                 mt={'8px'}
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
 
@@ -194,6 +197,8 @@ const AddPromoCode = () => {
                 required
                 mt={'8px'}
                 min={new Date().toISOString().split('T')[0]}
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
 
@@ -212,6 +217,8 @@ const AddPromoCode = () => {
                 required
                 mt={'8px'}
                 min="1"
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
             {/* <FormControl display="flex" alignItems="center">
@@ -259,8 +266,8 @@ const AddPromoCode = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

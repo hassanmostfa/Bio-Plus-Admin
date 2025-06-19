@@ -103,7 +103,7 @@ const EditUser = () => {
 
   return (
     <Box w="100%" className="container add-admin-container w-100">
-      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <Flex justifyContent="space-between" align="center" w="100%" mb="20px">
           <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
             Edit User

@@ -42,7 +42,11 @@ const EditBrand = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isActive, setIsActive] = useState(brandResponse?.data?.isActive ?? true);
 
-  const textColor = useColorModeValue("secondaryGray.900", "white");
+  const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
+  const borderColorDefault = useColorModeValue('gray.200', 'gray.600');
+  const bgDrag = useColorModeValue('brand.50', 'navy.800');
 
   // Initialize form with existing data
   useEffect(() => {
@@ -226,8 +230,8 @@ const EditBrand = () => {
   }
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -257,6 +261,8 @@ const EditBrand = () => {
                 placeholder="Enter Brand Name in English"
                 value={enName}
                 onChange={(e) => setEnName(e.target.value)}
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
           </Box>
@@ -270,6 +276,8 @@ const EditBrand = () => {
                 value={arName}
                 onChange={(e) => setArName(e.target.value)}
                 dir="rtl"
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
           </Box>
@@ -280,7 +288,7 @@ const EditBrand = () => {
               <FormLabel>Brand Logo</FormLabel>
               <Box
                 border="1px dashed"
-                borderColor={isDragging ? "blue.500" : "gray.200"}
+                borderColor={isDragging ? 'brand.500' : borderColorDefault}
                 borderRadius="md"
                 p={4}
                 textAlign="center"
@@ -288,10 +296,10 @@ const EditBrand = () => {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 cursor="pointer"
-                bg={isDragging ? "blue.50" : "gray.50"}
+                bg={isDragging ? bgDrag : inputBg}
               >
                 <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
-                <Text>Drag & drop logo here or</Text>
+                <Text color={textColor}>Drag & drop logo here or</Text>
                 <Button
                   variant="link"
                   color="blue.500"
@@ -370,8 +378,8 @@ const EditBrand = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

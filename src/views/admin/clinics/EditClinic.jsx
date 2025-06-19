@@ -18,7 +18,7 @@ import Swal from 'sweetalert2';
 
 const EditClinic = () => {
   const { id } = useParams();
-  const { data, isLoading,refetch } = useGetClinicQuery(id);
+  const { data, isLoading, refetch } = useGetClinicQuery(id);
   const clinicData = data?.data ?? {};
   const [updateClinic, { isLoading: isUpdating }] = useUpdateClinicMutation();
   
@@ -32,6 +32,10 @@ const EditClinic = () => {
   const [isActive, setIsActive] = useState(clinicData?.isActive ?? true);
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
+  const inputBorder = useColorModeValue('gray.300', 'gray.600');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
   const navigate = useNavigate();
 
   // Initialize form with clinic data
@@ -59,9 +63,10 @@ const EditClinic = () => {
     }
   }, [clinicData]);
 
-  useEffect(()=>{
+  useEffect(() => {
     refetch();
-  },[]);
+  }, []);
+
   // Convert AM/PM time to 24-hour format for input
   const formatTimeForInput = (timeString) => {
     if (!timeString) return '';
@@ -97,9 +102,8 @@ const EditClinic = () => {
       email,
       fromTime: formatTimeForAPI(fromTime),
       toTime: formatTimeForAPI(toTime),
-      // Only include password if it's being changed
       ...(password && { password }),
-      isActive: isActive,
+      isActive,
       translations: [
         {
           languageId: 'ar',
@@ -107,7 +111,7 @@ const EditClinic = () => {
         },
       ],
       locations: locations.map((location) => ({
-        ...(location.id && { id: location.id }), // Only include ID for existing locations
+        ...(location.id && { id: location.id }),
         name: location.name,
         isActive: true,
         translations: [
@@ -189,20 +193,13 @@ const EditClinic = () => {
   }
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
-        <div className="mb-3 d-flex justify-content-between align-items-center">
-          <Text
-            color={textColor}
-            fontSize="22px"
-            fontWeight="700"
-            mb="20px !important"
-            lineHeight="100%"
-          >
+    <Flex justify="center" p="20px" mt="80px">
+      <Box w="100%" p="6" boxShadow="md" borderRadius="lg" bg={cardBg}>
+        <Flex justify="space-between" align="center" mb="20px">
+          <Text color={textColor} fontSize="22px" fontWeight="700">
             Edit Clinic
           </Text>
           <Button
-            type="button"
             onClick={() => navigate(-1)}
             colorScheme="teal"
             size="sm"
@@ -210,61 +207,71 @@ const EditClinic = () => {
           >
             Back
           </Button>
-        </div>
+        </Flex>
+
         <form>
           <Grid templateColumns="repeat(2, 1fr)" gap={6}>
             {/* Name Field */}
             <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 English Name
-                <span className="text-danger mx-1">*</span>
+                <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="text"
                 placeholder="Enter Clinic Name (English)"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
             {/* Arabic Name Field */}
             <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Arabic Name
-                <span className="text-danger mx-1">*</span>
+                <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="text"
                 placeholder="أدخل اسم العيادة"
                 value={arabicName}
                 onChange={(e) => setArabicName(e.target.value)}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
                 dir="rtl"
               />
             </Box>
 
             {/* Email Field */}
             <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Email
-                <span className="text-danger mx-1">*</span>
+                <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="email"
                 placeholder="Enter Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
             {/* Password Field */}
             <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Password (leave blank to keep current)
               </Text>
               <Input
@@ -272,43 +279,52 @@ const EditClinic = () => {
                 placeholder="Enter new password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                mt={'8px'}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
+                mt="8px"
               />
             </Box>
 
             {/* From Time Field */}
             <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Opening Time
-                <span className="text-danger mx-1">*</span>
+                <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="time"
                 value={fromTime}
                 onChange={(e) => setFromTime(e.target.value)}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
             {/* To Time Field */}
             <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Closing Time
-                <span className="text-danger mx-1">*</span>
+                <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="time"
                 value={toTime}
                 onChange={(e) => setToTime(e.target.value)}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
             {/* Active Status Toggle */}
             <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Active
               </Text>
               <Switch
@@ -316,15 +332,15 @@ const EditClinic = () => {
                 onChange={() => setIsActive(!isActive)}
                 colorScheme="teal"
                 size="md"
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
             {/* Locations Field */}
             <Box gridColumn="1 / -1">
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Locations
-                <span className="text-danger mx-1">*</span>
+                <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
 
               {locations.map((location, index) => (
@@ -332,13 +348,15 @@ const EditClinic = () => {
                   key={index}
                   mb={4}
                   p={4}
-                  border="1px solid #eee"
+                  border="1px solid"
+                  borderColor={borderColor}
                   borderRadius="md"
+                  bg={inputBg}
                 >
                   <Grid templateColumns="repeat(2, 1fr)" gap={4}>
                     {/* Location Name */}
                     <Box>
-                      <Text fontSize="sm" fontWeight="600" mb={1}>
+                      <Text fontSize="sm" fontWeight="600" mb={1} color={textColor}>
                         Location Name (English)
                       </Text>
                       <Input
@@ -348,13 +366,16 @@ const EditClinic = () => {
                         onChange={(e) =>
                           handleLocationChange(index, 'name', e.target.value)
                         }
+                        bg={cardBg}
+                        color={textColor}
+                        borderColor={inputBorder}
                         required
                       />
                     </Box>
 
                     {/* Arabic Location Name */}
                     <Box>
-                      <Text fontSize="sm" fontWeight="600" mb={1}>
+                      <Text fontSize="sm" fontWeight="600" mb={1} color={textColor}>
                         Location Name (Arabic)
                       </Text>
                       <Input
@@ -362,12 +383,11 @@ const EditClinic = () => {
                         placeholder="أدخل اسم الموقع"
                         value={location.arabicName}
                         onChange={(e) =>
-                          handleLocationChange(
-                            index,
-                            'arabicName',
-                            e.target.value,
-                          )
+                          handleLocationChange(index, 'arabicName', e.target.value)
                         }
+                        bg={cardBg}
+                        color={textColor}
+                        borderColor={inputBorder}
                         required
                         dir="rtl"
                       />
@@ -417,7 +437,7 @@ const EditClinic = () => {
               Cancel
             </Button>
             <Button
-              variant="darkBrand"
+              colorScheme="brandScheme"
               color="white"
               fontSize="sm"
               fontWeight="500"
@@ -433,8 +453,8 @@ const EditClinic = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Flex>
   );
 };
 

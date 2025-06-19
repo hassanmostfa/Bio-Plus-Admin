@@ -53,6 +53,8 @@ const EditBlog = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const textColor = useColorModeValue("secondaryGray.900", "white");
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
 
   // API hooks
   const { data: blogResponse, isLoading: isBlogLoading } = useGetBlogQuery(id);
@@ -307,7 +309,7 @@ const EditBlog = () => {
 
   return (
     <Box w="100%" className="container add-admin-container">
-      <Box bg="white" className="add-admin-card shadow p-4 w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <Flex justify="space-between" align="center" mb={6}>
           <Text color={textColor} fontSize="22px" fontWeight="700">
             Edit Blog
@@ -332,6 +334,8 @@ const EditBlog = () => {
                 placeholder="Enter English Title"
                 value={formData.title}
                 onChange={handleChange}
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
 
@@ -344,6 +348,8 @@ const EditBlog = () => {
                   handleTranslationChange("ar", "title", e.target.value)
                 }
                 dir="rtl"
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
           </Grid>
@@ -358,6 +364,8 @@ const EditBlog = () => {
                 value={formData.description}
                 onChange={handleChange}
                 minH="150px"
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
 
@@ -371,6 +379,8 @@ const EditBlog = () => {
                 }
                 dir="rtl"
                 minH="150px"
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
           </Grid>

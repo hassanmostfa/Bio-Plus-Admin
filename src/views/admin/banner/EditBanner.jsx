@@ -49,6 +49,8 @@ const EditBanner = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
 
   // API hooks
   const {
@@ -337,7 +339,7 @@ const EditBanner = () => {
 
   return (
     <Box className="container add-admin-container w-100">
-      <Box className="add-admin-card shadow p-4 bg-white w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <Flex mb={3} justify="space-between" align="center">
           <Text
             color={textColor}
@@ -367,6 +369,7 @@ const EditBanner = () => {
               placeholder="Enter Banner Title (English)"
               value={formData.title}
               onChange={handleChange}
+              bg={inputBg}
             />
           </FormControl>
 
@@ -379,6 +382,7 @@ const EditBanner = () => {
               value={formData.arTitle}
               onChange={handleChange}
               dir="rtl"
+              bg={inputBg}
             />
           </FormControl>
 
@@ -391,6 +395,7 @@ const EditBanner = () => {
                 name="linkType"
                 value={formData.linkType}
                 onChange={handleChange}
+                bg={inputBg}
               >
                 <option value="PHARMACY">Pharmacy</option>
                 <option value="PRODUCT">Product</option>
@@ -408,6 +413,7 @@ const EditBanner = () => {
                   placeholder="Enter External Link URL"
                   value={formData.link}
                   onChange={handleChange}
+                  bg={inputBg}
                 />
               </FormControl>
             ) : (
@@ -425,6 +431,7 @@ const EditBanner = () => {
                   placeholder={`Select ${formData.linkType}`}
                   value={formData.linkId}
                   onChange={handleChange}
+                  bg={inputBg}
                 >
                   {formData.linkType === "PHARMACY" && pharmacies.map(item => (
                     <option key={item.id} value={item.id}>{item.name}</option>
@@ -451,6 +458,7 @@ const EditBanner = () => {
               value={formData.order}
               onChange={handleChange}
               min="1"
+              bg={inputBg}
             />
           </FormControl>
 
@@ -527,6 +535,7 @@ const EditBanner = () => {
               colorScheme="red"
               onClick={handleCancel}
               isDisabled={isLoading}
+              bg={inputBg}
             >
               Cancel
             </Button>
@@ -535,6 +544,7 @@ const EditBanner = () => {
               variant="darkBrand"
               isLoading={isLoading}
               loadingText="Updating..."
+              bg={inputBg}
             >
               Update Banner
             </Button>

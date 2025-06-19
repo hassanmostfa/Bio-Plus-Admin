@@ -23,7 +23,9 @@ const AddNotification = () => {
   const [arabicDescription, setArabicDescription] = useState("");
   const [image, setImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const textColor = useColorModeValue("secondaryGray.900", "white");
+  const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
   const navigate = useNavigate();
   const toast = useToast();
   
@@ -103,8 +105,8 @@ const AddNotification = () => {
   };
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
             <Text
             color={textColor}
@@ -141,6 +143,8 @@ const AddNotification = () => {
                 onChange={(e) => setEnglishTitle(e.target.value)}
                 required
                 mt={"8px"}
+                color={textColor}
+                bg={inputBg}
               />
             </div>
             <div className="mb-3 col-md-6 pr-0" style={{ paddingRight: "0 !important" }}>
@@ -157,6 +161,8 @@ const AddNotification = () => {
                 dir="rtl"
                 required
                 mt={"8px"}
+                color={textColor}
+                bg={inputBg}
               />
             </div>
           </div>
@@ -176,6 +182,8 @@ const AddNotification = () => {
                 required
                 rows={4}
                 mt={"8px"}
+                color={textColor}
+                bg={inputBg}
               />
             </div>
             <div className="mb-3 col-md-12 pr-0">
@@ -192,6 +200,8 @@ const AddNotification = () => {
                 required
                 rows={4}
                 mt={"8px"}
+                color={textColor}
+                bg={inputBg}
               />
             </div>
           </div>
@@ -236,8 +246,8 @@ const AddNotification = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

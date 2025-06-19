@@ -120,6 +120,8 @@ const EditProduct = () => {
   const brands = brandsResponse?.data || [];
   const pharmacies = pharmaciesResponse?.data?.items || [];
   const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
   const [addFile] = useAddFileMutation();
   // Initialize form with product data
   useEffect(() => {
@@ -481,8 +483,8 @@ const EditProduct = () => {
   }
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -513,6 +515,7 @@ const EditProduct = () => {
                   placeholder="Enter Product Name"
                   value={nameEn}
                   onChange={(e) => setNameEn(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -524,6 +527,7 @@ const EditProduct = () => {
                   value={nameAr}
                   onChange={(e) => setNameAr(e.target.value)}
                   dir="rtl"
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -537,6 +541,7 @@ const EditProduct = () => {
                   placeholder="Enter Product Description"
                   value={descriptionEn}
                   onChange={(e) => setDescriptionEn(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -548,6 +553,7 @@ const EditProduct = () => {
                   value={descriptionAr}
                   onChange={(e) => setDescriptionAr(e.target.value)}
                   dir="rtl"
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -587,6 +593,7 @@ const EditProduct = () => {
                   placeholder="Enter How To Use"
                   value={howToUseEn}
                   onChange={(e) => setHowToUseEn(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -598,6 +605,7 @@ const EditProduct = () => {
                   value={howToUseAr}
                   onChange={(e) => setHowToUseAr(e.target.value)}
                   dir="rtl"
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -612,6 +620,7 @@ const EditProduct = () => {
                   placeholder="Enter Treatment Information"
                   value={treatmentEn}
                   onChange={(e) => setTreatmentEn(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -623,6 +632,7 @@ const EditProduct = () => {
                   value={treatmentAr}
                   onChange={(e) => setTreatmentAr(e.target.value)}
                   dir="rtl"
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -637,6 +647,7 @@ const EditProduct = () => {
                   placeholder="Enter Ingredients"
                   value={ingredientsEn}
                   onChange={(e) => setIngredientsEn(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -648,6 +659,7 @@ const EditProduct = () => {
                   value={ingredientsAr}
                   onChange={(e) => setIngredientsAr(e.target.value)}
                   dir="rtl"
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -662,6 +674,7 @@ const EditProduct = () => {
                   placeholder="Select Category"
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
+                  color={textColor}
                 >
                   {categories?.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -679,6 +692,7 @@ const EditProduct = () => {
                   placeholder="Select Brand"
                   value={brandId}
                   onChange={(e) => setBrandId(e.target.value)}
+                  color={textColor}
                 >
                   {brands.map((brand) => (
                     <option key={brand.id} value={brand.id}>
@@ -695,6 +709,7 @@ const EditProduct = () => {
                   placeholder="Select Pharmacy"
                   value={pharmacyId}
                   onChange={(e) => setPharmacyId(e.target.value)}
+                  color={textColor}
                 >
                   {pharmacies.map((pharmacy) => (
                     <option key={pharmacy.id} value={pharmacy.id}>
@@ -712,6 +727,7 @@ const EditProduct = () => {
                     placeholder="Select Product Type"
                     value={productTypeId}
                     onChange={(e) => setProductTypeId(e.target.value)}
+                    color={textColor}
                   >
                     {productTypes.map((type) => (
                       <option key={type.id} value={type.id}>
@@ -733,6 +749,7 @@ const EditProduct = () => {
                   placeholder="0.00"
                   value={cost}
                   onChange={(e) => setCost(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -744,6 +761,7 @@ const EditProduct = () => {
                   placeholder="0.00"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -755,6 +773,7 @@ const EditProduct = () => {
                   placeholder="0"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -787,6 +806,7 @@ const EditProduct = () => {
                     placeholder="0.0"
                     value={offerPercentage}
                     onChange={(e) => setOfferPercentage(e.target.value)}
+                    color={textColor}
                   />
                 </FormControl>
               </Box>
@@ -826,6 +846,7 @@ const EditProduct = () => {
                 <Select
                   placeholder="Select Variant"
                   onChange={handleVariantSelect}
+                  color={textColor}
                 >
                   {variants.map((variant) => (
                     <option key={variant.id} value={variant.id}>
@@ -867,6 +888,7 @@ const EditProduct = () => {
                                   e.target.value,
                                 )
                               }
+                              color={textColor}
                             />
                           </FormControl>
                           <FormControl isRequired>
@@ -881,6 +903,7 @@ const EditProduct = () => {
                                   e.target.value,
                                 )
                               }
+                              color={textColor}
                             />
                           </FormControl>
                           <FormControl>
@@ -895,6 +918,7 @@ const EditProduct = () => {
                                   e.target.value,
                                 )
                               }
+                              color={textColor}
                             />
                           </FormControl>
                           <FormControl>
@@ -909,6 +933,7 @@ const EditProduct = () => {
                                   e.target.files[0],
                                 )
                               }
+                              color={textColor}
                             />
                             {attr.image && (
                               <Box mt={2}>
@@ -933,6 +958,7 @@ const EditProduct = () => {
                               onChange={(e) =>
                                 handleAttributeChange(index, 'lotNumber', e.target.value)
                               }
+                              color={textColor}
                             />
                           </FormControl>
                           <FormControl>
@@ -943,6 +969,7 @@ const EditProduct = () => {
                               onChange={(e) =>
                                 handleAttributeChange(index, 'expiryDate', e.target.value)
                               }
+                              color={textColor}
                             />
                           </FormControl>
                           <FormControl>
@@ -954,6 +981,7 @@ const EditProduct = () => {
                               onChange={(e) =>
                                 handleAttributeChange(index, 'discount', e.target.value)
                               }
+                              color={textColor}
                             />
                           </FormControl>
 
@@ -972,120 +1000,110 @@ const EditProduct = () => {
               <FormLabel>Product Images</FormLabel>
               <Box
                 border="1px dashed"
-                borderColor={isDragging ? 'blue.500' : 'gray.200'}
+                borderColor={isDragging ? 'brand.500' : 'gray.300'}
                 borderRadius="md"
                 p={4}
                 textAlign="center"
+                backgroundColor={isDragging ? 'brand.50' : inputBg}
+                cursor="pointer"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                cursor="pointer"
-                bg={isDragging ? 'blue.50' : 'gray.50'}
+                mb={4}
               >
-                <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
-                <Text>Drag & drop images here or</Text>
-                <Button
-                  variant="link"
-                  color="blue.500"
-                  onClick={() => document.getElementById('file-upload').click()}
-                >
-                  Browse Files
-                </Button>
-                <Input
-                  id="file-upload"
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e.target.files)}
-                  display="none"
-                />
-              </Box>
-            </FormControl>
-            {(existingImages.length > 0 || images.length > 0) && (
-              <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} mt={4}>
-                {existingImages.map((img, index) => (
-                  <Box key={`existing-${index}`} position="relative">
-                    <Image
-                      src={img.imageKey}
-                      alt={`Product image ${index + 1}`}
-                      borderRadius="md"
-                      border={
-                        index === mainImageIndex ? '2px solid' : '1px solid'
-                      }
-                      borderColor={
-                        index === mainImageIndex ? 'blue.500' : 'gray.200'
-                      }
-                      cursor="pointer"
-                      onClick={() => handleSetMainImage(index, true)}
-                    />
-                    {index === mainImageIndex && (
-                      <Badge
-                        position="absolute"
-                        top={2}
-                        left={2}
-                        colorScheme="blue"
-                      >
-                        Main
-                      </Badge>
-                    )}
-                    <IconButton
-                      icon={<FaTrash />}
-                      aria-label="Remove image"
-                      size="sm"
-                      colorScheme="red"
-                      position="absolute"
-                      top={2}
-                      right={2}
-                      onClick={() => handleRemoveImage(index, true)}
-                    />
-                  </Box>
-                ))}
-                {images.map((img, index) => {
-                  const globalIndex = existingImages.length + index;
-                  return (
-                    <Box key={`new-${index}`} position="relative">
-                      <Image
-                        src={img.preview}
-                        alt={`New image ${index + 1}`}
-                        borderRadius="md"
-                        border={
-                          globalIndex === mainImageIndex
-                            ? '2px solid'
-                            : '1px solid'
-                        }
-                        borderColor={
-                          globalIndex === mainImageIndex
-                            ? 'blue.500'
-                            : 'gray.200'
-                        }
-                        cursor="pointer"
-                        onClick={() => handleSetMainImage(globalIndex, false)}
-                      />
-                      {globalIndex === mainImageIndex && (
-                        <Badge
+                {(existingImages.length > 0 || images.length > 0) ? (
+                  <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+                    {existingImages.map((img, index) => (
+                      <Box key={`existing-${index}`} position="relative" display="flex" flexDirection="column" alignItems="center">
+                        <Image
+                          src={img.imageKey}
+                          alt={`Product image ${index + 1}`}
+                          borderRadius="md"
+                          maxH="150px"
+                          border={index === mainImageIndex ? '2px solid' : '1px solid'}
+                          borderColor={index === mainImageIndex ? 'brand.500' : 'gray.300'}
+                          cursor="pointer"
+                          onClick={() => handleSetMainImage(index, true)}
+                        />
+                        {index === mainImageIndex && (
+                          <Badge position="absolute" top={2} left={2} colorScheme="brand">
+                            Main
+                          </Badge>
+                        )}
+                        <IconButton
+                          icon={<FaTrash />}
+                          aria-label="Remove image"
+                          size="sm"
+                          colorScheme="red"
                           position="absolute"
                           top={2}
-                          left={2}
-                          colorScheme="blue"
-                        >
-                          Main
-                        </Badge>
-                      )}
-                      <IconButton
-                        icon={<FaTrash />}
-                        aria-label="Remove image"
-                        size="sm"
-                        colorScheme="red"
-                        position="absolute"
-                        top={2}
-                        right={2}
-                        onClick={() => handleRemoveImage(globalIndex, false)}
+                          right={2}
+                          onClick={() => handleRemoveImage(index, true)}
+                        />
+                      </Box>
+                    ))}
+                    {images.map((img, index) => {
+                      const globalIndex = existingImages.length + index;
+                      return (
+                        <Box key={`new-${index}`} position="relative" display="flex" flexDirection="column" alignItems="center">
+                          <Image
+                            src={img.preview}
+                            alt={`New image ${index + 1}`}
+                            borderRadius="md"
+                            maxH="150px"
+                            border={globalIndex === mainImageIndex ? '2px solid' : '1px solid'}
+                            borderColor={globalIndex === mainImageIndex ? 'brand.500' : 'gray.300'}
+                            cursor="pointer"
+                            onClick={() => handleSetMainImage(globalIndex, false)}
+                          />
+                          {globalIndex === mainImageIndex && (
+                            <Badge position="absolute" top={2} left={2} colorScheme="brand">
+                              Main
+                            </Badge>
+                          )}
+                          <IconButton
+                            icon={<FaTrash />}
+                            aria-label="Remove image"
+                            size="sm"
+                            colorScheme="red"
+                            position="absolute"
+                            top={2}
+                            right={2}
+                            onClick={() => handleRemoveImage(globalIndex, false)}
+                          />
+                        </Box>
+                      );
+                    })}
+                  </SimpleGrid>
+                ) : (
+                  <>
+                    <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
+                    <Text color="gray.500" mb={2}>
+                      Drag & Drop Image Here
+                    </Text>
+                    <Text color="gray.500" mb={2}>
+                      or
+                    </Text>
+                    <Button
+                      variant="outline"
+                      color="#422afb"
+                      border="none"
+                      onClick={() => document.getElementById('file-upload').click()}
+                    >
+                      Upload Image
+                      <input
+                        type="file"
+                        id="file-upload"
+                        hidden
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleImageUpload(e.target.files)}
                       />
-                    </Box>
-                  );
-                })}
-              </SimpleGrid>
-            )}
+                    </Button>
+                  </>
+                )}
+              </Box>
+            </FormControl>
           </Box>
 
           {/* SKU, Lot Number, Expiry Date, Discount (only if no variants) */}
@@ -1099,6 +1117,7 @@ const EditProduct = () => {
                     placeholder="Enter SKU"
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
+                    color={textColor}
                   />
                 </FormControl>
               </Box>
@@ -1110,6 +1129,7 @@ const EditProduct = () => {
                     placeholder="Enter Lot Number"
                     value={lotNumber}
                     onChange={(e) => setLotNumber(e.target.value)}
+                    color={textColor}
                   />
                 </FormControl>
               </Box>
@@ -1120,6 +1140,7 @@ const EditProduct = () => {
                     type="date"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
+                    color={textColor}
                   />
                 </FormControl>
               </Box>
@@ -1131,6 +1152,7 @@ const EditProduct = () => {
                     placeholder="Enter discount value"
                     value={discount != null ? discount : ''}
                     onChange={(e) => setDiscount(e.target.value)}
+                    color={textColor}
                   />
                 </FormControl>
               </Box>
@@ -1147,8 +1169,8 @@ const EditProduct = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

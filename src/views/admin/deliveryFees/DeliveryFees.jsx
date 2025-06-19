@@ -9,12 +9,15 @@ import {
   RadioGroup,
   Stack,
   Spinner,
+  Box,
 } from "@chakra-ui/react";
 import Swal from "sweetalert2";
 import { useGetDeliveryFeesQuery, useUpdateDeliveryFeesMutation } from "../../../api/deliveryFeesSlice"; // Adjust import path if needed
 
 const DeliveryFees = () => {
   const textColor = useColorModeValue("secondaryGray.900", "white");
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
 
   // Fetch delivery fees from API
   const { data, isLoading, error } = useGetDeliveryFeesQuery();
@@ -81,8 +84,8 @@ const DeliveryFees = () => {
   if (error) return <Text color="red.500">Failed to load delivery fees. Please try again.</Text>;
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -97,7 +100,7 @@ const DeliveryFees = () => {
 
         <form onSubmit={handleSubmit}>
           {/* Delivery Fee Type Selection */}
-          <div className="mb-4">
+          <Box mb={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700" mb="8px">
               Delivery Fee Type
             </Text>
@@ -107,15 +110,15 @@ const DeliveryFees = () => {
               name="deliveryFeeType"
             >
               <Stack direction="column">
-                <Radio value="uniform">Uniform fee for all pharmacies</Radio>
-                <Radio value="perPharmacy">Different fee per pharmacy</Radio>
+                <Radio value="uniform" color={textColor} bg={inputBg}>Uniform fee for all pharmacies</Radio>
+                <Radio value="perPharmacy" color={textColor} bg={inputBg}>Different fee per pharmacy</Radio>
               </Stack>
             </RadioGroup>
-          </div>
+          </Box>
 
           {/* Uniform Delivery Fee Input */}
           {formData.deliveryFeeType === "uniform" && (
-            <div className="mb-3">
+            <Box mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
                 Delivery Fee for All Pharmacies
                 <span className="text-danger mx-1">*</span>
@@ -128,14 +131,16 @@ const DeliveryFees = () => {
                 onChange={handleInputChange}
                 required
                 mt="8px"
-                min="0" // Minimum constraint to avoid negative numbers
+                min="0"
+                color={textColor}
+                bg={inputBg}
               />
-            </div>
+            </Box>
           )}
 
           {/* Note for per-pharmacy option */}
           {formData.deliveryFeeType === "perPharmacy" && (
-            <div className="mb-3">
+            <Box mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
                 Note:
               </Text>
@@ -143,7 +148,7 @@ const DeliveryFees = () => {
                 When "Different fee per pharmacy" is selected, you can set individual delivery fees
                 for each pharmacy in the pharmacy management section.
               </Text>
-            </div>
+            </Box>
           )}
 
           {/* Action Buttons */}
@@ -164,8 +169,8 @@ const DeliveryFees = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

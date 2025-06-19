@@ -47,6 +47,8 @@ const AddBlog = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const textColor = useColorModeValue("secondaryGray.900", "white");
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -259,7 +261,7 @@ const AddBlog = () => {
 
   return (
     <Box w="100%" className="container add-admin-container">
-      <Box bg="white" className="add-admin-card shadow p-4 w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <Flex justify="space-between" align="center" mb={6}>
           <Text color={textColor} fontSize="22px" fontWeight="700">
             Add New Blog
@@ -284,6 +286,8 @@ const AddBlog = () => {
                 placeholder="Enter English Title"
                 value={formData.title}
                 onChange={handleChange}
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
 
@@ -296,6 +300,8 @@ const AddBlog = () => {
                   handleTranslationChange("ar", "title", e.target.value)
                 }
                 dir="rtl"
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
           </Grid>
@@ -310,6 +316,8 @@ const AddBlog = () => {
                 value={formData.description}
                 onChange={handleChange}
                 minH="150px"
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
 
@@ -323,6 +331,8 @@ const AddBlog = () => {
                 }
                 dir="rtl"
                 minH="150px"
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
           </Grid>

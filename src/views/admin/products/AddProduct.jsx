@@ -102,6 +102,8 @@ const AddProduct = () => {
   const productTypes = productTypesResponse?.data?.items || []; // Get product types from response
   
   const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
   const [addFile] = useAddFileMutation();
 
   // Image handling
@@ -321,8 +323,8 @@ const AddProduct = () => {
   };
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -335,7 +337,7 @@ const AddProduct = () => {
           </Text>
           <Button
             type="button"
-            onClick={handleCancel}
+            onClick={() => navigate(-1)}
             colorScheme="teal"
             size="sm"
             leftIcon={<IoMdArrowBack />}
@@ -353,6 +355,7 @@ const AddProduct = () => {
                   placeholder="Enter Product Name"
                   value={nameEn}
                   onChange={(e) => setNameEn(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -364,6 +367,7 @@ const AddProduct = () => {
                   value={nameAr}
                   onChange={(e) => setNameAr(e.target.value)}
                   dir="rtl"
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -378,6 +382,7 @@ const AddProduct = () => {
                   placeholder="Enter Product Description"
                   value={descriptionEn}
                   onChange={(e) => setDescriptionEn(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -389,6 +394,7 @@ const AddProduct = () => {
                   value={descriptionAr}
                   onChange={(e) => setDescriptionAr(e.target.value)}
                   dir="rtl"
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -424,6 +430,7 @@ const AddProduct = () => {
                   placeholder="Enter How To Use"
                   value={howToUseEn}
                   onChange={(e) => setHowToUseEn(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -435,6 +442,7 @@ const AddProduct = () => {
                   value={howToUseAr}
                   onChange={(e) => setHowToUseAr(e.target.value)}
                   dir="rtl"
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -447,6 +455,7 @@ const AddProduct = () => {
                   placeholder="Enter Treatment Information"
                   value={treatmentEn}
                   onChange={(e) => setTreatmentEn(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -458,6 +467,7 @@ const AddProduct = () => {
                   value={treatmentAr}
                   onChange={(e) => setTreatmentAr(e.target.value)}
                   dir="rtl"
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -470,6 +480,7 @@ const AddProduct = () => {
                   placeholder="Enter Ingredients"
                   value={ingredientsEn}
                   onChange={(e) => setIngredientsEn(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -481,6 +492,7 @@ const AddProduct = () => {
                   value={ingredientsAr}
                   onChange={(e) => setIngredientsAr(e.target.value)}
                   dir="rtl"
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -497,6 +509,7 @@ const AddProduct = () => {
                     placeholder="Enter SKU"
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
+                    color={textColor}
                   />
                 </FormControl>
               </Box>
@@ -508,6 +521,7 @@ const AddProduct = () => {
                     placeholder="Enter Lot Number"
                     value={lotNumber}
                     onChange={(e) => setLotNumber(e.target.value)}
+                    color={textColor}
                   />
                 </FormControl>
               </Box>
@@ -518,6 +532,7 @@ const AddProduct = () => {
                     type="date"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
+                    color={textColor}
                   />
                 </FormControl>
               </Box>
@@ -533,6 +548,7 @@ const AddProduct = () => {
                   placeholder="Select Category"
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
+                  color={textColor}
                 >
                   {categories?.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -550,6 +566,7 @@ const AddProduct = () => {
                   placeholder="Select Brand"
                   value={brandId}
                   onChange={(e) => setBrandId(e.target.value)}
+                  color={textColor}
                 >
                   {brands.map((brand) => (
                     <option key={brand.id} value={brand.id}>
@@ -566,6 +583,7 @@ const AddProduct = () => {
                   placeholder="Select Pharmacy"
                   value={pharmacyId}
                   onChange={(e) => setPharmacyId(e.target.value)}
+                  color={textColor}
                 >
                   {pharmacies?.map((pharmacy) => (
                     <option key={pharmacy.id} value={pharmacy.id}>
@@ -582,6 +600,7 @@ const AddProduct = () => {
                   placeholder="Select Product Type"
                   value={productTypeId}
                   onChange={(e) => setProductTypeId(e.target.value)}
+                  color={textColor}
                 >
                   {productTypes.map((type) => (
                     <option key={type.id} value={type.id}>
@@ -602,6 +621,7 @@ const AddProduct = () => {
                   placeholder="0.00"
                   value={cost}
                   onChange={(e) => setCost(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -613,6 +633,7 @@ const AddProduct = () => {
                   placeholder="0.00"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -624,6 +645,7 @@ const AddProduct = () => {
                   placeholder="0"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
+                  color={textColor}
                 />
               </FormControl>
             </Box>
@@ -649,6 +671,7 @@ const AddProduct = () => {
                     placeholder="0.0"
                     value={offerPercentage}
                     onChange={(e) => setOfferPercentage(e.target.value)}
+                    color={textColor}
                   />
                 </FormControl>
               </Box>
@@ -666,6 +689,7 @@ const AddProduct = () => {
                     placeholder="Enter discount value"
                     value={discount != null ? discount : ''}
                     onChange={(e) => setDiscount(e.target.value)}
+                    color={textColor}
                   />
                 </FormControl>
               </Box>
@@ -676,6 +700,7 @@ const AddProduct = () => {
                     placeholder="Select discount type"
                     value={discountType || ''}
                     onChange={(e) => setDiscountType(e.target.value)}
+                    color={textColor}
                   >
                     <option value="PERCENTAGE">Percentage</option>
                     <option value="FIXED">Fixed</option>
@@ -720,6 +745,7 @@ const AddProduct = () => {
                 <Select
                   placeholder="Select Variant"
                   onChange={handleVariantSelect}
+                  color={textColor}
                 >
                   {variants.map((variant) => (
                     <option key={variant.id} value={variant.id}>
@@ -761,6 +787,7 @@ const AddProduct = () => {
                                   e.target.value,
                                 )
                               }
+                              color={textColor}
                             />
                           </FormControl>
                           <FormControl isRequired>
@@ -775,6 +802,7 @@ const AddProduct = () => {
                                   e.target.value,
                                 )
                               }
+                              color={textColor}
                             />
                           </FormControl>
                           <FormControl isRequired>
@@ -789,6 +817,7 @@ const AddProduct = () => {
                                   e.target.value,
                                 )
                               }
+                              color={textColor}
                             />
                           </FormControl>
                           <FormControl>
@@ -818,6 +847,7 @@ const AddProduct = () => {
                                   );
                                 }
                               }}
+                              color={textColor}
                             />
                             {attr.image && (
                               <Image
@@ -843,6 +873,7 @@ const AddProduct = () => {
                                   e.target.value,
                                 )
                               }
+                              color={textColor}
                             />
                           </FormControl>
                           <FormControl>
@@ -857,6 +888,7 @@ const AddProduct = () => {
                                   e.target.value,
                                 )
                               }
+                              color={textColor}
                             />
                           </FormControl>
 
@@ -870,6 +902,7 @@ const AddProduct = () => {
                               onChange={(e) =>
                                 handleAttributeChange(index, 'discount', e.target.value)
                               }
+                              color={textColor}
                             />
                           </FormControl>
                           <FormControl>
@@ -880,6 +913,7 @@ const AddProduct = () => {
                               onChange={(e) =>
                                 handleAttributeChange(index, 'discountType', e.target.value)
                               }
+                              color={textColor}
                             >
                               <option value="PERCENTAGE">Percentage</option>
                               <option value="FIXED">Fixed</option>
@@ -903,77 +937,78 @@ const AddProduct = () => {
               </FormLabel>
               <Box
                 border="1px dashed"
-                borderColor={isDragging ? 'blue.500' : 'gray.200'}
+                borderColor={isDragging ? 'brand.500' : 'gray.300'}
                 borderRadius="md"
                 p={4}
                 textAlign="center"
+                backgroundColor={isDragging ? 'brand.50' : inputBg}
+                cursor="pointer"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                cursor="pointer"
-                bg={isDragging ? 'blue.50' : 'gray.50'}
+                mb={4}
               >
-                <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
-                <Text>Drag & drop images here or</Text>
-                <Button
-                  variant="link"
-                  color="blue.500"
-                  onClick={() => document.getElementById('file-upload').click()}
-                >
-                  Browse Files
-                </Button>
-                <Input
-                  id="file-upload"
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e.target.files)}
-                  display="none"
-                />
+                {images.length > 0 ? (
+                  <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+                    {images.map((img, index) => (
+                      <Box key={index} position="relative" display="flex" flexDirection="column" alignItems="center">
+                        <Image
+                          src={img.preview}
+                          alt={`Product image ${index + 1}`}
+                          borderRadius="md"
+                          maxH="150px"
+                          border={mainImageIndex === index ? '2px solid' : '1px solid'}
+                          borderColor={mainImageIndex === index ? 'brand.500' : 'gray.300'}
+                          cursor="pointer"
+                          onClick={() => handleSetMainImage(index)}
+                        />
+                        {mainImageIndex === index && (
+                          <Badge position="absolute" top={2} left={2} colorScheme="brand">
+                            Main
+                          </Badge>
+                        )}
+                        <IconButton
+                          icon={<FaTrash />}
+                          aria-label="Remove image"
+                          size="sm"
+                          colorScheme="red"
+                          position="absolute"
+                          top={2}
+                          right={2}
+                          onClick={() => handleRemoveImage(index)}
+                        />
+                      </Box>
+                    ))}
+                  </SimpleGrid>
+                ) : (
+                  <>
+                    <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
+                    <Text color="gray.500" mb={2}>
+                      Drag & Drop Image Here
+                    </Text>
+                    <Text color="gray.500" mb={2}>
+                      or
+                    </Text>
+                    <Button
+                      variant="outline"
+                      color="#422afb"
+                      border="none"
+                      onClick={() => document.getElementById('file-upload').click()}
+                    >
+                      Upload Image
+                      <input
+                        type="file"
+                        id="file-upload"
+                        hidden
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleImageUpload(e.target.files)}
+                      />
+                    </Button>
+                  </>
+                )}
               </Box>
             </FormControl>
-
-            {images.length > 0 && (
-              <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} mt={4}>
-                {images.map((img, index) => (
-                  <Box key={index} position="relative">
-                    <Image
-                      src={img.preview}
-                      alt={`Product image ${index + 1}`}
-                      borderRadius="md"
-                      border={
-                        mainImageIndex === index ? '2px solid' : '1px solid'
-                      }
-                      borderColor={
-                        mainImageIndex === index ? 'blue.500' : 'gray.200'
-                      }
-                      cursor="pointer"
-                      onClick={() => handleSetMainImage(index)}
-                    />
-                    {mainImageIndex === index && (
-                      <Badge
-                        position="absolute"
-                        top={2}
-                        left={2}
-                        colorScheme="blue"
-                      >
-                        Main
-                      </Badge>
-                    )}
-                    <IconButton
-                      icon={<FaTrash />}
-                      aria-label="Remove image"
-                      size="sm"
-                      colorScheme="red"
-                      position="absolute"
-                      top={2}
-                      right={2}
-                      onClick={() => handleRemoveImage(index)}
-                    />
-                  </Box>
-                ))}
-              </SimpleGrid>
-            )}
           </Box>
           {/* Submit Buttons */}
           <Flex justify="flex-end" gap={4}>
@@ -985,8 +1020,8 @@ const AddProduct = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

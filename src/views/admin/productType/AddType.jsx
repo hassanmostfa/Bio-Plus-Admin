@@ -18,6 +18,8 @@ const AddType = () => {
   const [addType, { isLoading }] = useAddTypeMutation(); // Mutation hook for adding a product type
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const navigate = useNavigate();
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
 
   // Handle form submission
   const handleSend = async () => {
@@ -45,8 +47,8 @@ const AddType = () => {
   };
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -82,6 +84,8 @@ const AddType = () => {
               onChange={(e) => setEnName(e.target.value)}
               required
               mt={"8px"}
+              color={textColor}
+              bg={inputBg}
             />
           </div>
 
@@ -99,6 +103,8 @@ const AddType = () => {
               onChange={(e) => setArName(e.target.value)}
               required
               mt={"8px"}
+              color={textColor}
+              bg={inputBg}
             />
           </div>
 
@@ -119,8 +125,8 @@ const AddType = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

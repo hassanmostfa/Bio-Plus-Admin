@@ -27,6 +27,8 @@ const EditType = () => {
   const [isActive, setIsActive] = useState(typeResponse?.data?.isActive ?? true);
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
 
   // Populate the form with the existing data when the component mounts
   useEffect(() => {
@@ -76,8 +78,8 @@ const EditType = () => {
   if (fetchError) return <Text>Error loading product type data.</Text>;
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -113,6 +115,8 @@ const EditType = () => {
               onChange={(e) => setEnName(e.target.value)}
               required
               mt={"8px"}
+              color={textColor}
+              bg={inputBg}
             />
           </div>
 
@@ -130,6 +134,8 @@ const EditType = () => {
               onChange={(e) => setArName(e.target.value)}
               required
               mt={"8px"}
+              color={textColor}
+              bg={inputBg}
             />
           </div>
 
@@ -166,8 +172,8 @@ const EditType = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

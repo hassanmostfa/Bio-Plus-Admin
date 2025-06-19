@@ -25,6 +25,8 @@ const AddVariant = () => {
   const [createVariant, { isLoading }] = useAddVarientMutation();
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const navigate = useNavigate();
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
 
   const handleAttributeChange = (index, field, value) => {
     const updatedAttributes = [...attributes];
@@ -75,8 +77,8 @@ const AddVariant = () => {
   };
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box className="add-admin-card shadow p-4 w-100" bg={cardBg} borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -112,6 +114,8 @@ const AddVariant = () => {
                 onChange={(e) => setVariantEn(e.target.value)}
                 required
                 mt={2}
+                bg={inputBg}
+                color={textColor}
               />
             </Box>
             <Box>
@@ -125,6 +129,8 @@ const AddVariant = () => {
                 onChange={(e) => setVariantAr(e.target.value)}
                 required
                 mt={2}
+                bg={inputBg}
+                color={textColor}
               />
             </Box>
           </SimpleGrid>
@@ -169,7 +175,7 @@ const AddVariant = () => {
               borderRadius="lg"
               boxShadow="sm"
               border="1px solid #ccc"
-              bg="white"
+              bg={inputBg}
             >
               <Text color={textColor} fontSize="md" fontWeight="bold">
                 Attribute {index + 1}
@@ -189,6 +195,8 @@ const AddVariant = () => {
                     }
                     required
                     mt={2}
+                    color={textColor}
+                    bg={inputBg}
                   />
                 </Box>
 
@@ -205,6 +213,8 @@ const AddVariant = () => {
                     }
                     required
                     mt={2}
+                    color={textColor}
+                    bg={inputBg}
                   />
                 </Box>
               </SimpleGrid>
@@ -227,8 +237,8 @@ const AddVariant = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

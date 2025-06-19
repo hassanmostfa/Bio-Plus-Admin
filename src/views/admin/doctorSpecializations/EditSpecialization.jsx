@@ -13,46 +13,42 @@ import {
   FormLabel,
 } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { useUpdateTagMutation, useGetTagsQuery } from "api/tagSlice";
+import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import { useGetSpecializationQuery } from "api/doctorSpecializationSlice";
-import { useUpdateSpecializationMutation } from "api/doctorSpecializationSlice";
+import { useGetSpecializationQuery, useUpdateSpecializationMutation } from "api/doctorSpecializationSlice";
 
 const EditSpecialization = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
+  
+  // Color mode values
   const textColor = useColorModeValue("secondaryGray.900", "white");
+  const cardBg = useColorModeValue("white", "navy.700");
+  const inputBg = useColorModeValue("gray.100", "gray.700");
+  const inputBorder = useColorModeValue("gray.300", "gray.600");
 
-  // Get all tags to find the one we're editing
+  // API hooks
   const { data: specialResponse, isLoading: isFetching } = useGetSpecializationQuery(id);
   const [updateTag, { isLoading: isUpdating }] = useUpdateSpecializationMutation();
 
-  // State for the tag being edited
+  // State
   const [formData, setFormData] = useState({
     name: "",
     arabicName: ""
   });
-  const [isActive, setIsActive] = useState(specialResponse?.data?.isActive ?? true);
+  const [isActive, setIsActive] = useState(true);
 
-  // Find and initialize the tag data
+  // Initialize form data
   useEffect(() => {
     if (specialResponse?.data) {
-     
-      if (specialResponse?.data) {
-        const arabicTranslation = specialResponse?.data.translations?.find(t => t.languageId === 'ar');
-        setFormData({
-          name: specialResponse?.data.name,
-          arabicName: arabicTranslation?.name || ""
-        });
-        setIsActive(specialResponse?.data?.isActive ?? true);
-      } else {
-        Swal.fire('Error!', 'Tag not found.', 'error');
-        navigate('/admin/specializations');
-      }
+      const arabicTranslation = specialResponse?.data.translations?.find(t => t.languageId === 'ar');
+      setFormData({
+        name: specialResponse?.data.name,
+        arabicName: arabicTranslation?.name || ""
+      });
+      setIsActive(specialResponse?.data?.isActive ?? true);
     }
-  }, [specialResponse, id, navigate]);
+  }, [specialResponse]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,13 +66,13 @@ const EditSpecialization = () => {
 
     try {
       await updateTag({ id, data: tagData }).unwrap();
-      Swal.fire('Success!', 'Tag updated successfully.', 'success');
+      Swal.fire('Success!', 'Specialization updated successfully.', 'success');
       navigate('/admin/specializations');
     } catch (error) {
-      console.error('Failed to update tag:', error);
+      console.error('Failed to update specialization:', error);
       Swal.fire(
         'Error!',
-        error.data?.message || 'Failed to update tag.',
+        error.data?.message || 'Failed to update specialization.',
         'error'
       );
     }
@@ -99,16 +95,10 @@ const EditSpecialization = () => {
   }
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
-        <div className="mb-3 d-flex justify-content-between align-items-center">
-          <Text
-            color={textColor}
-            fontSize="22px"
-            fontWeight="700"
-            mb="20px !important"
-            lineHeight="100%"
-          >
+    <Flex justify="center" p="20px" mt={'80px'}>
+      <Box w="100%" p="6" boxShadow="md" borderRadius="lg" bg={cardBg}>
+        <Flex justify="space-between" align="center" mb="20px">
+          <Text color={textColor} fontSize="22px" fontWeight="700">
             Edit Specialization
           </Text>
           <Button
@@ -120,14 +110,15 @@ const EditSpecialization = () => {
           >
             Back
           </Button>
-        </div>
+        </Flex>
+
         <form onSubmit={handleSubmit}>
           <Grid templateColumns="repeat(2, 1fr)" gap={6}>
             {/* English Name Field */}
             <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 English Name
-                <span className="text-danger mx-1">*</span>
+                <span style={{ color: 'red' }}> *</span>
               </Text>
               <Input
                 type="text"
@@ -135,16 +126,18 @@ const EditSpecialization = () => {
                 placeholder="Enter English Name"
                 value={formData.name}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={"8px"}
               />
             </Box>
 
             {/* Arabic Name Field */}
             <Box>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Arabic Name
-                <span className="text-danger mx-1">*</span>
+                <span style={{ color: 'red' }}> *</span>
               </Text>
               <Input
                 type="text"
@@ -152,8 +145,10 @@ const EditSpecialization = () => {
                 placeholder="ادخل الاسم بالعربية"
                 value={formData.arabicName}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={"8px"}
                 dir="rtl"
               />
             </Box>
@@ -161,8 +156,8 @@ const EditSpecialization = () => {
             {/* Active Status Toggle */}
             <Box>
               <FormControl display="flex" alignItems="center">
-                <FormLabel htmlFor="isActive" mb="0">
-                  Active
+                <FormLabel htmlFor="isActive" mb="0" color={textColor}>
+                  Active Status
                 </FormLabel>
                 <Switch
                   id="isActive"
@@ -170,7 +165,6 @@ const EditSpecialization = () => {
                   onChange={() => setIsActive(!isActive)}
                   colorScheme="teal"
                   size="md"
-                  mt={'8px'}
                 />
               </FormControl>
             </Box>
@@ -187,7 +181,8 @@ const EditSpecialization = () => {
               Cancel
             </Button>
             <Button
-              variant='darkBrand'
+              variant='solid'
+              colorScheme='brandScheme'
               color='white'
               fontSize='sm'
               fontWeight='500'
@@ -203,8 +198,8 @@ const EditSpecialization = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Flex>
   );
 };
 

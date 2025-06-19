@@ -20,6 +20,8 @@ const AddAttribute = () => {
 
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
 
   const navigate = useNavigate();
 
@@ -33,8 +35,8 @@ const AddAttribute = () => {
   };
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box className="add-admin-card shadow p-4 w-100" bg={cardBg} borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
             <Text
             color={textColor}
@@ -50,7 +52,6 @@ const AddAttribute = () => {
             onClick={() => navigate(-1)}
             colorScheme="teal"
             size="sm"
-            // mt="20px"
             leftIcon={<IoMdArrowBack />}
             >
             Back
@@ -72,6 +73,8 @@ const AddAttribute = () => {
                 onChange={(e) => setType(e.target.value)}
                 required
                 mt={"8px"}
+                bg={inputBg}
+                color={textColor}
               />
             </div>
           </div>
@@ -83,8 +86,8 @@ const AddAttribute = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

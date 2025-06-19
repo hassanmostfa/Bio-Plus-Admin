@@ -35,6 +35,9 @@ const EditVariant = () => {
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const navigate = useNavigate();
 
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
+
   // Populate form fields with existing data when variantData is fetched
   useEffect(() => {
     if (response?.data) {
@@ -147,8 +150,8 @@ const EditVariant = () => {
   }
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box className="add-admin-card shadow p-4 w-100" bg={cardBg} borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -184,6 +187,8 @@ const EditVariant = () => {
                 onChange={(e) => setVariantEn(e.target.value)}
                 required
                 mt={2}
+                bg={inputBg}
+                color={textColor}
               />
             </Box>
             <Box>
@@ -197,6 +202,8 @@ const EditVariant = () => {
                 onChange={(e) => setVariantAr(e.target.value)}
                 required
                 mt={2}
+                bg={inputBg}
+                color={textColor}
               />
             </Box>
           </SimpleGrid>
@@ -259,7 +266,7 @@ const EditVariant = () => {
               borderRadius="lg"
               boxShadow="sm"
               border="1px solid #ccc"
-              bg="white"
+              bg={inputBg}
             >
               <Text color={textColor} fontSize="md" fontWeight="bold">
                 Attribute {index + 1}
@@ -279,6 +286,8 @@ const EditVariant = () => {
                     }
                     required
                     mt={2}
+                    color={textColor}
+                    bg={inputBg}
                   />
                 </Box>
 
@@ -295,6 +304,8 @@ const EditVariant = () => {
                     }
                     required
                     mt={2}
+                    color={textColor}
+                    bg={inputBg}
                   />
                 </Box>
               </SimpleGrid>
@@ -319,8 +330,8 @@ const EditVariant = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

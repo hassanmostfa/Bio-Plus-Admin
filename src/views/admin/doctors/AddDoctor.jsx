@@ -36,6 +36,7 @@ const AddDoctor = () => {
   const clinics = clinicsResponse?.data || [];
   const specializations = specializationsResponse?.data || [];
   const [addFile] = useAddFileMutation();
+  
   // Form state
   const [formData, setFormData] = useState({
     imageKey: '',
@@ -55,17 +56,23 @@ const AddDoctor = () => {
     specializationId: '',
   });
 
-  const [languages, setLanguages] = useState([
-    { language: '', isActive: true },
-  ]);
+  const [languages, setLanguages] = useState([{ language: '', isActive: true }]);
   const [phones, setPhones] = useState([{ phoneNumber: '' }]);
   const [selectedClinics, setSelectedClinics] = useState([]);
   const [image, setImage] = useState(null);
   const [certificates, setCertificates] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
 
+  // Color mode values
   const textColor = useColorModeValue('secondaryGray.900', 'white');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
+  const inputBorder = useColorModeValue('gray.300', 'gray.600');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const dropZoneBg = useColorModeValue('gray.50', 'gray.800');
+  const dropZoneBorder = useColorModeValue('gray.300', 'gray.600');
+  const dropZoneActiveBorder = useColorModeValue('brand.500', 'brand.200');
+  const dropZoneActiveBg = useColorModeValue('brand.50', 'brand.900');
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -89,8 +96,6 @@ const AddDoctor = () => {
     if (files && files.length > 0) {
       const selectedFile = files[0];
       setImage(selectedFile);
-
-      // Update the form data with the file name (temporary until we get the actual key from API)
       setFormData((prev) => ({
         ...prev,
         imageKey: selectedFile.name,
@@ -122,7 +127,7 @@ const AddDoctor = () => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
       const newCertificates = files.map((file) => ({
-        imageKey: file.name, // Temporary until we get the actual key from API
+        imageKey: file.name,
         file,
       }));
       setCertificates([...certificates, ...newCertificates]);
@@ -152,11 +157,7 @@ const AddDoctor = () => {
 
   const handleLanguageChange = (index, field, value) => {
     const newLanguages = [...languages];
-    if (field === 'isActive') {
-      newLanguages[index][field] = value;
-    } else {
-      newLanguages[index][field] = value;
-    }
+    newLanguages[index][field] = value;
     setLanguages(newLanguages);
   };
 
@@ -170,7 +171,7 @@ const AddDoctor = () => {
     setSelectedClinics((prev) =>
       prev.includes(clinicId)
         ? prev.filter((id) => id !== clinicId)
-        : [...prev, clinicId],
+        : [...prev, clinicId]
     );
   };
 
@@ -181,47 +182,6 @@ const AddDoctor = () => {
   };
 
   // Form submission
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   try {
-  //     // Prepare the data for API
-  //     const doctorData = {
-  //       ...formData,
-  //       clinicFees: parseFloat(formData.clinicFees),
-  //       onlineFees: parseFloat(formData.onlineFees),
-  //       languages: languages.map(lang => lang.language).filter(lang => lang),
-  //       phones: phones.filter(phone => phone.phoneNumber),
-  //       clinics: selectedClinics,
-  //       certificates: certificates.map(cert => ({ imageKey: cert.imageKey })),
-  //       imageKey: image ? `doctor_images/${image.name}` : null,
-  //     };
-
-  //     // Call the API
-  //     await addDoctor(doctorData).unwrap();
-
-  //     // Show success message
-  //     toast({
-  //       title: "Success",
-  //       description: "Doctor added successfully",
-  //       status: "success",
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-
-  //     // Navigate back or reset form
-  //     navigate("/admin/doctors");
-  //   } catch (err) {
-  //     toast({
-  //       title: "Error",
-  //       description: err.data?.message || "Failed to add doctor",
-  //       status: "error",
-  //       duration: 5000,
-  //       isClosable: true,
-  //     });
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -236,10 +196,7 @@ const AddDoctor = () => {
 
         const uploadResponse = await addFile(formDataFile).unwrap();
 
-        if (
-          uploadResponse.success &&
-          uploadResponse.data.uploadedFiles.length > 0
-        ) {
+        if (uploadResponse.success && uploadResponse.data.uploadedFiles.length > 0) {
           imageKey = uploadResponse.data.uploadedFiles[0].url;
         }
       }
@@ -251,19 +208,14 @@ const AddDoctor = () => {
           certFormData.append('file', cert.file);
 
           const certResponse = await addFile(certFormData).unwrap();
-          if (
-            certResponse.success &&
-            certResponse.data.uploadedFiles.length > 0
-          ) {
+          if (certResponse.success && certResponse.data.uploadedFiles.length > 0) {
             return { imageKey: certResponse.data.uploadedFiles[0].url };
           }
           return null;
         });
 
         uploadedCertificates = await Promise.all(certUploadPromises);
-        uploadedCertificates = uploadedCertificates.filter(
-          (cert) => cert !== null,
-        );
+        uploadedCertificates = uploadedCertificates.filter((cert) => cert !== null);
       }
 
       // Prepare the data for API
@@ -275,9 +227,9 @@ const AddDoctor = () => {
         languages: languages
           .map((lang) => lang.language)
           .filter((lang) => lang),
-          phones: phones
-          .filter(phone => phone.phoneNumber) // Remove empty phone numbers
-          .map(phone => ({ phoneNumber: phone.phoneNumber })), // Format as array of objects
+        phones: phones
+          .filter(phone => phone.phoneNumber)
+          .map(phone => ({ phoneNumber: phone.phoneNumber })),
         clinics: selectedClinics,
         certificates: uploadedCertificates,
       };
@@ -324,20 +276,13 @@ const AddDoctor = () => {
   };
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
-        <div className="mb-3 d-flex justify-content-between align-items-center">
-          <Text
-            color={textColor}
-            fontSize="22px"
-            fontWeight="700"
-            mb="20px !important"
-            lineHeight="100%"
-          >
+    <Flex justify="center" p="20px" mt="80px">
+      <Box w="100%" p="6" boxShadow="md" borderRadius="lg" bg={cardBg}>
+        <Flex justify="space-between" align="center" mb="20px">
+          <Text color={textColor} fontSize="22px" fontWeight="700">
             Add New Doctor
           </Text>
           <Button
-            type="button"
             onClick={handleCancel}
             colorScheme="teal"
             size="sm"
@@ -345,91 +290,110 @@ const AddDoctor = () => {
           >
             Back
           </Button>
-        </div>
+        </Flex>
+
         <form onSubmit={handleSubmit}>
-          <div className="row" gap={6}>
+          <Grid templateColumns="repeat(2, 1fr)" gap={6}>
             {/* Basic Information */}
-            <Box className="col-md-6 " mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                First Name<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                First Name<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Last Name<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Last Name<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Email<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Email<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Password<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Password<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
             {/* Professional Information */}
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Gender<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Gender<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Select
                 name="gender"
                 value={formData.gender}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               >
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
               </Select>
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Title<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Title<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Select
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               >
                 <option value="CONSULTANT">Consultant</option>
                 <option value="SPECIALIST">Specialist</option>
@@ -437,16 +401,19 @@ const AddDoctor = () => {
               </Select>
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Specialization<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Specialization<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Select
                 name="specializationId"
                 value={formData.specializationId}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               >
                 <option value="">Select Specialization</option>
                 {specializations.map((spec) => (
@@ -458,65 +425,77 @@ const AddDoctor = () => {
             </Box>
 
             {/* Fees */}
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Clinic Fees<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Clinic Fees<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="number"
                 name="clinicFees"
                 value={formData.clinicFees}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Online Fees<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Online Fees<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="number"
                 name="onlineFees"
                 value={formData.onlineFees}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            <Box> </Box>
             {/* About Sections */}
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                About (English)<span className="text-danger mx-1">*</span>
+            <Box gridColumn="1 / -1">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                About (English)<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Textarea
                 name="aboutEn"
                 value={formData.aboutEn}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                About (Arabic)<span className="text-danger mx-1">*</span>
+            <Box gridColumn="1 / -1">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                About (Arabic)<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Textarea
                 name="aboutAr"
                 value={formData.aboutAr}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
-            <Box> </Box>
-            <Box className="col-md-4">
+
+            {/* Toggles */}
+            <Box>
               <FormControl display="flex" alignItems="center" mt={4}>
-                <FormLabel htmlFor="isRecommended" mb="0">
+                <FormLabel htmlFor="isRecommended" mb="0" color={textColor}>
                   Recommended Doctor
                 </FormLabel>
                 <Switch
@@ -528,9 +507,9 @@ const AddDoctor = () => {
               </FormControl>
             </Box>
 
-            <Box className="col-md-4">
+            <Box>
               <FormControl display="flex" alignItems="center" mt={4}>
-                <FormLabel htmlFor="hasClinicConsult" mb="0">
+                <FormLabel htmlFor="hasClinicConsult" mb="0" color={textColor}>
                   Clinic Consultation
                 </FormLabel>
                 <Switch
@@ -542,9 +521,9 @@ const AddDoctor = () => {
               </FormControl>
             </Box>
 
-            <Box className="col-md-4">
+            <Box>
               <FormControl display="flex" alignItems="center" mt={4}>
-                <FormLabel htmlFor="hasOnlineConsult" mb="0">
+                <FormLabel htmlFor="hasOnlineConsult" mb="0" color={textColor}>
                   Online Consultation
                 </FormLabel>
                 <Switch
@@ -557,17 +536,20 @@ const AddDoctor = () => {
             </Box>
 
             {/* Phones */}
-            <Box className="col-md-12 mt-2" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Phone Numbers<span className="text-danger mx-1">*</span>
+            <Box gridColumn="1 / -1" mt={2} mb={3}>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Phone Numbers<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               {phones.map((phone, index) => (
-                <Flex key={index} align="center" mt={'8px'} mb={2}>
+                <Flex key={index} align="center" mt="8px" mb={2}>
                   <Input
                     type="text"
                     placeholder={`Phone ${index + 1}`}
                     value={phone.phoneNumber}
                     onChange={(e) => handlePhoneChange(index, e.target.value)}
+                    bg={inputBg}
+                    color={textColor}
+                    borderColor={inputBorder}
                     required={index === 0}
                     flex="1"
                     mr={2}
@@ -580,9 +562,9 @@ const AddDoctor = () => {
                       color="red.500"
                       cursor="pointer"
                       onClick={() => handleDeletePhone(index)}
-                      border={'1px solid #ddd'}
-                      padding={'5px'}
-                      borderRadius={'5px'}
+                      border={`1px solid ${borderColor}`}
+                      padding="5px"
+                      borderRadius="5px"
                     />
                   )}
                 </Flex>
@@ -600,12 +582,12 @@ const AddDoctor = () => {
             </Box>
 
             {/* Languages */}
-            <Box className="col-md-12" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Languages<span className="text-danger mx-1">*</span>
+            <Box gridColumn="1 / -1" mb={3}>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Languages<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               {languages.map((lang, index) => (
-                <Flex key={index} align="center" mt={'8px'} mb={2}>
+                <Flex key={index} align="center" mt="8px" mb={2}>
                   <Input
                     type="text"
                     placeholder={`Language ${index + 1}`}
@@ -613,23 +595,22 @@ const AddDoctor = () => {
                     onChange={(e) =>
                       handleLanguageChange(index, 'language', e.target.value)
                     }
+                    bg={inputBg}
+                    color={textColor}
+                    borderColor={inputBorder}
                     required={index === 0}
                     flex="1"
                     mr={2}
                   />
                   <FormControl display="flex" alignItems="center" width="auto">
-                    <FormLabel htmlFor={`active-${index}`} mb="0" mr={2}>
+                    <FormLabel htmlFor={`active-${index}`} mb="0" mr={2} color={textColor}>
                       Active
                     </FormLabel>
                     <Switch
                       id={`active-${index}`}
                       isChecked={lang.isActive}
                       onChange={(e) =>
-                        handleLanguageChange(
-                          index,
-                          'isActive',
-                          e.target.checked,
-                        )
+                        handleLanguageChange(index, 'isActive', e.target.checked)
                       }
                       colorScheme="brand"
                     />
@@ -642,9 +623,9 @@ const AddDoctor = () => {
                       color="red.500"
                       cursor="pointer"
                       onClick={() => handleDeleteLanguage(index)}
-                      border={'1px solid #ddd'}
-                      padding={'5px'}
-                      borderRadius={'5px'}
+                      border={`1px solid ${borderColor}`}
+                      padding="5px"
+                      borderRadius="5px"
                       ml={2}
                     />
                   )}
@@ -663,8 +644,8 @@ const AddDoctor = () => {
             </Box>
 
             {/* Clinics */}
-            <Box className="col-md-12" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+            <Box gridColumn="1 / -1" mb={3}>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Clinics
               </Text>
               <Flex wrap="wrap" gap={4} mt={2}>
@@ -674,6 +655,7 @@ const AddDoctor = () => {
                     isChecked={selectedClinics.includes(clinic.id)}
                     onChange={() => handleClinicSelection(clinic.id)}
                     colorScheme="brand"
+                    color={textColor}
                   >
                     {clinic.name}
                   </Checkbox>
@@ -682,22 +664,22 @@ const AddDoctor = () => {
             </Box>
 
             {/* Doctor Image */}
-            <Box className="col-md-12" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+            <Box gridColumn="1 / -1" mb={3}>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Doctor Image
               </Text>
               <Box
                 border="1px dashed"
-                borderColor={isDragging ? 'brand.500' : 'gray.300'}
+                borderColor={isDragging ? dropZoneActiveBorder : dropZoneBorder}
                 borderRadius="md"
                 p={4}
                 textAlign="center"
-                backgroundColor={isDragging ? 'brand.50' : 'gray.50'}
+                backgroundColor={isDragging ? dropZoneActiveBg : dropZoneBg}
                 cursor="pointer"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                mt={'8px'}
+                mt="8px"
               >
                 {image ? (
                   <Flex direction="column" align="center">
@@ -722,20 +704,17 @@ const AddDoctor = () => {
                   </Flex>
                 ) : (
                   <>
-                    <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
-                    <Text color="gray.500" mb={2}>
+                    <Icon as={FaUpload} w={8} h={8} color="brand.500" mb={2} />
+                    <Text color={textColor} mb={2}>
                       Drag & Drop Image Here
                     </Text>
-                    <Text color="gray.500" mb={2}>
+                    <Text color={textColor} mb={2}>
                       or
                     </Text>
                     <Button
                       variant="outline"
-                      color="#422afb"
-                      border="none"
-                      onClick={() =>
-                        document.getElementById('doctorImage').click()
-                      }
+                      colorScheme="brand"
+                      onClick={() => document.getElementById('doctorImage').click()}
                     >
                       Upload Image
                       <input
@@ -753,7 +732,7 @@ const AddDoctor = () => {
 
             {/* Certificates */}
             <Box gridColumn="1 / -1">
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Certificates
               </Text>
               <Box mt={2}>
@@ -791,12 +770,8 @@ const AddDoctor = () => {
                         right={2}
                         color="red.500"
                         cursor="pointer"
-                        onClick={() => {
-                          const newCertificates = [...certificates];
-                          newCertificates.splice(index, 1);
-                          setCertificates(newCertificates);
-                        }}
-                        bg="white"
+                        onClick={() => handleDeleteCertificate(index)}
+                        bg={cardBg}
                         p={1}
                         borderRadius="full"
                         boxShadow="md"
@@ -806,7 +781,7 @@ const AddDoctor = () => {
                 </Grid>
               )}
             </Box>
-          </div>
+          </Grid>
 
           {/* Action Buttons */}
           <Flex justify="center" mt={6} gap={4}>
@@ -820,7 +795,7 @@ const AddDoctor = () => {
             </Button>
             <Button
               type="submit"
-              variant="darkBrand"
+              colorScheme="brandScheme"
               color="white"
               fontSize="sm"
               fontWeight="500"
@@ -833,8 +808,8 @@ const AddDoctor = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Flex>
   );
 };
 

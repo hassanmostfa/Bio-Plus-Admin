@@ -27,6 +27,8 @@ const EditPromoCode = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
   
   // Fetch all promo codes
   const { data: promocodesResponse, isLoading: isFetching } = useGetPromocodesQuery({});
@@ -126,8 +128,8 @@ const EditPromoCode = () => {
   }
 
   return (
-    <div className="container add-promo-container w-100">
-      <div className="add-promo-card shadow p-4 bg-white w-100" style={{ borderRadius: '15px' }}>
+    <Box className="container add-promo-container w-100">
+      <Box bg={cardBg} className="add-promo-card shadow p-4 w-100" borderRadius="15px">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
             Edit Promo Code: {promoCode.code}
@@ -158,6 +160,8 @@ const EditPromoCode = () => {
                 onChange={handleInputChange}
                 required
                 mt={'8px'}
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
 
@@ -174,6 +178,8 @@ const EditPromoCode = () => {
                 onChange={handleInputChange}
                 required
                 mt={'8px'}
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
 
@@ -188,7 +194,7 @@ const EditPromoCode = () => {
                   as={Button}
                   rightIcon={<ChevronDownIcon />}
                   width="100%"
-                  bg="white"
+                  bg={inputBg}
                   border="1px solid #ddd"
                   borderRadius="md"
                   _hover={{ bg: 'gray.200' }}
@@ -200,13 +206,13 @@ const EditPromoCode = () => {
                 <MenuList width="100%">
                   <MenuItem
                     onClick={() => handleSelectType('FIXED')}
-                    bg={formData.type === 'FIXED' ? 'blue.100' : 'white'}
+                    bg={formData.type === 'FIXED' ? 'blue.100' : inputBg}
                   >
                     Fixed Amount
                   </MenuItem>
                   <MenuItem
                     onClick={() => handleSelectType('PERCENTAGE')}
-                    bg={formData.type === 'PERCENTAGE' ? 'blue.100' : 'white'}
+                    bg={formData.type === 'PERCENTAGE' ? 'blue.100' : inputBg}
                   >
                     Percentage
                   </MenuItem>
@@ -248,6 +254,8 @@ const EditPromoCode = () => {
                 required
                 mt={'8px'}
                 min={new Date().toISOString().split('T')[0]}
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
 
@@ -265,6 +273,8 @@ const EditPromoCode = () => {
                 required
                 mt={'8px'}
                 min="1"
+                color={textColor}
+                bg={inputBg}
               />
             </FormControl>
             <FormControl>
@@ -277,7 +287,7 @@ const EditPromoCode = () => {
                   as={Button}
                   rightIcon={<ChevronDownIcon />}
                   width="100%"
-                  bg="white"
+                  bg={inputBg}
                   border="1px solid #ddd"
                   borderRadius="md"
                   _hover={{ bg: 'gray.200' }}
@@ -289,13 +299,13 @@ const EditPromoCode = () => {
                 <MenuList width="100%">
                   <MenuItem
                     onClick={() => handleSelectStatus(true)}
-                    bg={formData.isActive == 'false' ? 'blue.100' : 'white'}
+                    bg={formData.isActive == 'false' ? 'blue.100' : inputBg}
                   >
                     Active
                   </MenuItem>
                   <MenuItem
                     onClick={() => handleSelectStatus(false)}
-                    bg={formData.isActive == 'true' ? 'blue.100' : 'white'}
+                    bg={formData.isActive == 'true' ? 'blue.100' : inputBg}
                   >
                     InActive
                   </MenuItem>
@@ -311,12 +321,13 @@ const EditPromoCode = () => {
               colorScheme="red"
               onClick={() => navigate(-1)}
               width="120px"
+              color={textColor}
+              bg={inputBg}
             >
               Cancel
             </Button>
             <Button
               variant="darkBrand"
-              color="white"
               fontSize="sm"
               fontWeight="500"
               borderRadius="70px"
@@ -326,13 +337,15 @@ const EditPromoCode = () => {
               isLoading={isUpdating}
               loadingText="Saving..."
               width="120px"
+              color={textColor}
+              bg={inputBg}
             >
               Save Changes
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

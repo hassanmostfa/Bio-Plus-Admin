@@ -35,6 +35,8 @@ const AddAd = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -151,8 +153,8 @@ const AddAd = () => {
   };
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+    <Box className="container add-admin-container w-100">
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -188,6 +190,8 @@ const AddAd = () => {
               onChange={(e) => setTitle(e.target.value)}
               required
               mt="8px"
+              color={textColor}
+              bg={inputBg}
             />
           </div>
 
@@ -205,6 +209,8 @@ const AddAd = () => {
               onChange={(e) => setLink(e.target.value)}
               required
               mt="8px"
+              color={textColor}
+              bg={inputBg}
             />
           </div>
 
@@ -218,6 +224,8 @@ const AddAd = () => {
               value={linkType}
               onChange={(e) => setLinkType(e.target.value)}
               mt="8px"
+              color={textColor}
+              bg={inputBg}
             >
               <option value="EXTERNAL">External</option>
               {/* <option value="PRODUCT">PRODUCT</option>
@@ -239,6 +247,8 @@ const AddAd = () => {
               onChange={(e) => setOrder(e.target.value)}
               min="1"
               mt="8px"
+              color={textColor}
+              bg={inputBg}
             />
           </div>
 
@@ -258,11 +268,11 @@ const AddAd = () => {
           {/* Image Upload Section */}
           <Box
             border="1px dashed"
-            borderColor={isDragging ? "blue.500" : "gray.300"}
+            borderColor={isDragging ? "brand.500" : borderColor}
             borderRadius="md"
             p={4}
             textAlign="center"
-            backgroundColor={isDragging ? "blue.50" : "gray.100"}
+            backgroundColor={isDragging ? "brand.50" : inputBg}
             cursor="pointer"
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -340,8 +350,8 @@ const AddAd = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

@@ -20,18 +20,15 @@ import {
 import { FaUpload, FaTrash, FaPlus } from 'react-icons/fa6';
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAddDoctorMutation } from 'api/doctorSlice';
+import { useGetDoctorQuery, useUpdateDoctorMutation } from 'api/doctorSlice';
 import { useGetSpecializationsQuery } from 'api/doctorSpecializationSlice';
 import { useGetClinicsQuery } from 'api/clinicSlice';
 import Swal from 'sweetalert2';
-import { useGetDoctorQuery } from 'api/doctorSlice';
-import { useUpdateDoctorMutation } from 'api/doctorSlice';
 import { useAddFileMutation } from 'api/filesSlice';
 
 const EditDoctor = () => {
   const { id } = useParams();
   const { data: doctorResponse, refetch } = useGetDoctorQuery(id);
-
   const [updateDoctor] = useUpdateDoctorMutation();
   const { data: clinicsResponse } = useGetClinicsQuery({});
   const { data: specializationsResponse } = useGetSpecializationsQuery({});
@@ -40,10 +37,19 @@ const EditDoctor = () => {
 
   const clinics = clinicsResponse?.data || [];
   const specializations = specializationsResponse?.data || [];
-  useEffect(() => {
-    refetch();
-  }, []);
   const [addFile] = useAddFileMutation();
+
+  // Color mode values
+  const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const inputBg = useColorModeValue('gray.100', 'gray.700');
+  const inputBorder = useColorModeValue('gray.300', 'gray.600');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const dropZoneBg = useColorModeValue('gray.50', 'gray.800');
+  const dropZoneBorder = useColorModeValue('gray.300', 'gray.600');
+  const dropZoneActiveBorder = useColorModeValue('brand.500', 'brand.200');
+  const dropZoneActiveBg = useColorModeValue('brand.50', 'brand.900');
+
   // Form state
   const [formData, setFormData] = useState({
     imageKey: '',
@@ -63,9 +69,7 @@ const EditDoctor = () => {
     specializationId: '',
   });
 
-  const [languages, setLanguages] = useState([
-    { language: '', isActive: true },
-  ]);
+  const [languages, setLanguages] = useState([{ language: '', isActive: true }]);
   const [phones, setPhones] = useState([{ phoneNumber: '' }]);
   const [selectedClinics, setSelectedClinics] = useState([]);
   const [image, setImage] = useState(null);
@@ -73,8 +77,9 @@ const EditDoctor = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isActive, setIsActive] = useState(doctorResponse?.data?.isActive ?? true);
 
-  const textColor = useColorModeValue('secondaryGray.900', 'white');
-  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  useEffect(() => {
+    refetch();
+  }, []);
 
   // Initialize form with existing data
   useEffect(() => {
@@ -84,9 +89,9 @@ const EditDoctor = () => {
         firstName: doctor.firstName,
         lastName: doctor.lastName,
         email: doctor.email,
-        password: null, // Typically don't pre-fill password for security
+        password: null,
         aboutEn: doctor.about,
-        aboutAr: '', // Add Arabic about if available in your API
+        aboutAr: '',
         clinicFees: doctor.clinicFees,
         onlineFees: doctor.onlineFees,
         isRecommended: doctor.isRecommended,
@@ -99,30 +104,18 @@ const EditDoctor = () => {
       });
 
       setIsActive(doctor.isActive);
-      // Set phones
-      setPhones(
-        doctor.phones.map((phone) => ({ phoneNumber: phone.phoneNumber })),
-      );
-
-      // Set languages
-      setLanguages(
-        doctor.languages.map((lang) => ({ language: lang, isActive: true })),
-      );
-
-      // Set selected clinics
+      setPhones(doctor.phones.map((phone) => ({ phoneNumber: phone.phoneNumber })));
+      setLanguages(doctor.languages.map((lang) => ({ language: lang, isActive: true })));
       setSelectedClinics(doctor.clinics.map((clinic) => clinic.clinicId));
-      // Set image if it exists
+      
       if (doctor.imageKey) {
         setImage(doctor.imageKey);
       }
-      // Set certificates (if you need to display existing ones)
-      // Note: You'll need to handle existing vs new certificates differently
-      setCertificates(
-        doctor.certificates.map((cert) => ({
-          imageKey: cert.imageKey,
-          id: cert.id, // Keep track of existing certificates
-        })),
-      );
+      
+      setCertificates(doctor.certificates.map((cert) => ({
+        imageKey: cert.imageKey,
+        id: cert.id,
+      })));
     }
   }, [doctorResponse]);
 
@@ -148,8 +141,6 @@ const EditDoctor = () => {
     if (files && files.length > 0) {
       const selectedFile = files[0];
       setImage(selectedFile);
-
-      // Update the form data with the file name (temporary until we get the actual key from API)
       setFormData((prev) => ({
         ...prev,
         imageKey: selectedFile.name,
@@ -180,11 +171,12 @@ const EditDoctor = () => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
       const newCertificates = files.map((file) => ({
-        imageKey: file, // Temporary until we get the actual key from API
+        imageKey: file,
       }));
       setCertificates([...certificates, ...newCertificates]);
     }
   };
+
   // Phone number handlers
   const handleAddPhone = () => {
     setPhones([...phones, { phoneNumber: '' }]);
@@ -208,11 +200,7 @@ const EditDoctor = () => {
 
   const handleLanguageChange = (index, field, value) => {
     const newLanguages = [...languages];
-    if (field === 'isActive') {
-      newLanguages[index][field] = value;
-    } else {
-      newLanguages[index][field] = value;
-    }
+    newLanguages[index][field] = value;
     setLanguages(newLanguages);
   };
 
@@ -226,7 +214,7 @@ const EditDoctor = () => {
     setSelectedClinics((prev) =>
       prev.includes(clinicId)
         ? prev.filter((id) => id !== clinicId)
-        : [...prev, clinicId],
+        : [...prev, clinicId]
     );
   };
 
@@ -246,23 +234,19 @@ const EditDoctor = () => {
 
       // Upload doctor image if a new one is selected
       if (image && typeof image !== 'string') {
-        // Check if image is a File object (new upload)
         const formDataFile = new FormData();
         formDataFile.append('file', image);
 
         const uploadResponse = await addFile(formDataFile).unwrap();
 
-        if (
-          uploadResponse.success &&
-          uploadResponse.data.uploadedFiles.length > 0
-        ) {
+        if (uploadResponse.success && uploadResponse.data.uploadedFiles.length > 0) {
           imageKey = uploadResponse.data.uploadedFiles[0].url;
         }
       }
 
       // Upload new certificates if they exist
       const newCertificates = certificates.filter(
-        (cert) => cert.imageKey && typeof cert.imageKey !== 'string',
+        (cert) => cert.imageKey && typeof cert.imageKey !== 'string'
       );
       if (newCertificates.length > 0) {
         const certUploadPromises = newCertificates.map(async (cert) => {
@@ -270,42 +254,37 @@ const EditDoctor = () => {
           certFormData.append('file', cert.imageKey);
 
           const certResponse = await addFile(certFormData).unwrap();
-          if (
-            certResponse.success &&
-            certResponse.data.uploadedFiles.length > 0
-          ) {
+          if (certResponse.success && certResponse.data.uploadedFiles.length > 0) {
             return {
               imageKey: certResponse.data.uploadedFiles[0].url,
-              id: cert.id, // Preserve existing ID if it exists
+              id: cert.id,
             };
           }
           return null;
         });
 
         uploadedCertificates = await Promise.all(certUploadPromises);
-        uploadedCertificates = uploadedCertificates.filter(
-          (cert) => cert !== null,
-        );
+        uploadedCertificates = uploadedCertificates.filter((cert) => cert !== null);
       }
 
-      // Combine existing certificates (with IDs) and newly uploaded ones
+      // Combine existing and new certificates
       const allCertificates = [
-        ...certificates.filter((cert) => cert.id && !cert.file), // Existing certificates
-        ...uploadedCertificates, // Newly uploaded certificates
+        ...certificates.filter((cert) => cert.id && !cert.file),
+        ...uploadedCertificates,
       ];
 
       // Prepare the data for API
       const doctorData = {
         ...formData,
-        imageKey: imageKey || formData.imageKey, // Use new key or existing one
+        imageKey: imageKey || formData.imageKey,
         clinicFees: parseFloat(formData.clinicFees),
         onlineFees: parseFloat(formData.onlineFees),
         languages: languages
           .map((lang) => lang.language)
           .filter((lang) => lang),
         phones: phones
-          .filter((phone) => phone.phoneNumber) // Remove empty phone numbers
-          .map((phone) => ({ phoneNumber: phone.phoneNumber })), // Format as array of objects
+          .filter((phone) => phone.phoneNumber)
+          .map((phone) => ({ phoneNumber: phone.phoneNumber })),
         clinics: selectedClinics,
         certificates: allCertificates,
         isActive: isActive,
@@ -327,7 +306,7 @@ const EditDoctor = () => {
         isClosable: true,
       });
 
-      // Navigate back or reset form
+      // Navigate back
       navigate('/admin/doctors');
     } catch (err) {
       toast({
@@ -357,20 +336,13 @@ const EditDoctor = () => {
   };
 
   return (
-    <div className="container add-admin-container w-100">
-      <div className="add-admin-card shadow p-4 bg-white w-100">
-        <div className="mb-3 d-flex justify-content-between align-items-center">
-          <Text
-            color={textColor}
-            fontSize="22px"
-            fontWeight="700"
-            mb="20px !important"
-            lineHeight="100%"
-          >
+    <Flex justify="center" p="20px" mt="80px">
+      <Box w="100%" p="6" boxShadow="md" borderRadius="lg" bg={cardBg}>
+        <Flex justify="space-between" align="center" mb="20px">
+          <Text color={textColor} fontSize="22px" fontWeight="700">
             Edit Doctor
           </Text>
           <Button
-            type="button"
             onClick={handleCancel}
             colorScheme="teal"
             size="sm"
@@ -378,91 +350,109 @@ const EditDoctor = () => {
           >
             Back
           </Button>
-        </div>
+        </Flex>
+
         <form onSubmit={handleSubmit}>
-          <div className="row" gap={6}>
+          <Grid templateColumns="repeat(2, 1fr)" gap={6}>
             {/* Basic Information */}
-            <Box className="col-md-6 " mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                First Name<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                First Name<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Last Name<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Last Name<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Email<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Email<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Password
               </Text>
               <Input
                 type="password"
                 name="password"
-                value={formData.password}
+                value={formData.password || ''}
                 onChange={handleInputChange}
-                // required
-                mt={'8px'}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
+                mt="8px"
               />
             </Box>
 
             {/* Professional Information */}
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Gender<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Gender<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Select
                 name="gender"
                 value={formData.gender}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               >
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
               </Select>
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Title<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Title<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Select
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               >
                 <option value="CONSULTANT">Consultant</option>
                 <option value="SPECIALIST">Specialist</option>
@@ -470,16 +460,19 @@ const EditDoctor = () => {
               </Select>
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Specialization<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Specialization<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Select
                 name="specializationId"
                 value={formData.specializationId}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               >
                 <option value="">Select Specialization</option>
                 {specializations.map((spec) => (
@@ -491,65 +484,61 @@ const EditDoctor = () => {
             </Box>
 
             {/* Fees */}
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Clinic Fees<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Clinic Fees<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="number"
                 name="clinicFees"
                 value={formData.clinicFees}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Online Fees<span className="text-danger mx-1">*</span>
+            <Box>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Online Fees<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="number"
                 name="onlineFees"
                 value={formData.onlineFees}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            <Box> </Box>
             {/* About Sections */}
-            <Box className="col-md-12" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                About (English)<span className="text-danger mx-1">*</span>
+            <Box gridColumn="1 / -1">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                About (English)<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Textarea
                 name="aboutEn"
                 value={formData.aboutEn}
                 onChange={handleInputChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={inputBorder}
                 required
-                mt={'8px'}
+                mt="8px"
               />
             </Box>
 
-            {/* <Box className="col-md-6" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                About (Arabic)<span className="text-danger mx-1">*</span>
-              </Text>
-              <Textarea
-                name="aboutAr"
-                value={formData.aboutAr}
-                onChange={handleInputChange}
-                required
-                mt={'8px'}
-              />
-            </Box> */}
-            <Box> </Box>
-            <Box className="col-md-4">
+            {/* Toggles */}
+            <Box>
               <FormControl display="flex" alignItems="center" mt={4}>
-                <FormLabel htmlFor="isRecommended" mb="0">
+                <FormLabel htmlFor="isRecommended" mb="0" color={textColor}>
                   Recommended Doctor
                 </FormLabel>
                 <Switch
@@ -561,9 +550,9 @@ const EditDoctor = () => {
               </FormControl>
             </Box>
 
-            <Box className="col-md-4">
+            <Box>
               <FormControl display="flex" alignItems="center" mt={4}>
-                <FormLabel htmlFor="hasClinicConsult" mb="0">
+                <FormLabel htmlFor="hasClinicConsult" mb="0" color={textColor}>
                   Clinic Consultation
                 </FormLabel>
                 <Switch
@@ -575,9 +564,9 @@ const EditDoctor = () => {
               </FormControl>
             </Box>
 
-            <Box className="col-md-4">
+            <Box>
               <FormControl display="flex" alignItems="center" mt={4}>
-                <FormLabel htmlFor="hasOnlineConsult" mb="0">
+                <FormLabel htmlFor="hasOnlineConsult" mb="0" color={textColor}>
                   Online Consultation
                 </FormLabel>
                 <Switch
@@ -589,10 +578,10 @@ const EditDoctor = () => {
               </FormControl>
             </Box>
 
-            {/* New Box for Active Status */}
-            <Box className="col-md-4">
+            {/* Active Status */}
+            <Box>
               <FormControl display="flex" alignItems="center" mt={4}>
-                <FormLabel htmlFor="isActive" mb="0">
+                <FormLabel htmlFor="isActive" mb="0" color={textColor}>
                   Active
                 </FormLabel>
                 <Switch
@@ -605,17 +594,20 @@ const EditDoctor = () => {
             </Box>
 
             {/* Phones */}
-            <Box className="col-md-12 mt-2" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Phone Numbers<span className="text-danger mx-1">*</span>
+            <Box gridColumn="1 / -1" mt={2} mb={3}>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Phone Numbers<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               {phones.map((phone, index) => (
-                <Flex key={index} align="center" mt={'8px'} mb={2}>
+                <Flex key={index} align="center" mt="8px" mb={2}>
                   <Input
                     type="text"
                     placeholder={`Phone ${index + 1}`}
                     value={phone.phoneNumber}
                     onChange={(e) => handlePhoneChange(index, e.target.value)}
+                    bg={inputBg}
+                    color={textColor}
+                    borderColor={inputBorder}
                     required={index === 0}
                     flex="1"
                     mr={2}
@@ -628,9 +620,9 @@ const EditDoctor = () => {
                       color="red.500"
                       cursor="pointer"
                       onClick={() => handleDeletePhone(index)}
-                      border={'1px solid #ddd'}
-                      padding={'5px'}
-                      borderRadius={'5px'}
+                      border={`1px solid ${borderColor}`}
+                      padding="5px"
+                      borderRadius="5px"
                     />
                   )}
                 </Flex>
@@ -648,12 +640,12 @@ const EditDoctor = () => {
             </Box>
 
             {/* Languages */}
-            <Box className="col-md-12" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
-                Languages<span className="text-danger mx-1">*</span>
+            <Box gridColumn="1 / -1" mb={3}>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
+                Languages<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               {languages.map((lang, index) => (
-                <Flex key={index} align="center" mt={'8px'} mb={2}>
+                <Flex key={index} align="center" mt="8px" mb={2}>
                   <Input
                     type="text"
                     placeholder={`Language ${index + 1}`}
@@ -661,23 +653,22 @@ const EditDoctor = () => {
                     onChange={(e) =>
                       handleLanguageChange(index, 'language', e.target.value)
                     }
+                    bg={inputBg}
+                    color={textColor}
+                    borderColor={inputBorder}
                     required={index === 0}
                     flex="1"
                     mr={2}
                   />
                   <FormControl display="flex" alignItems="center" width="auto">
-                    <FormLabel htmlFor={`active-${index}`} mb="0" mr={2}>
+                    <FormLabel htmlFor={`active-${index}`} mb="0" mr={2} color={textColor}>
                       Active
                     </FormLabel>
                     <Switch
                       id={`active-${index}`}
                       isChecked={lang.isActive}
                       onChange={(e) =>
-                        handleLanguageChange(
-                          index,
-                          'isActive',
-                          e.target.checked,
-                        )
+                        handleLanguageChange(index, 'isActive', e.target.checked)
                       }
                       colorScheme="brand"
                     />
@@ -690,9 +681,9 @@ const EditDoctor = () => {
                       color="red.500"
                       cursor="pointer"
                       onClick={() => handleDeleteLanguage(index)}
-                      border={'1px solid #ddd'}
-                      padding={'5px'}
-                      borderRadius={'5px'}
+                      border={`1px solid ${borderColor}`}
+                      padding="5px"
+                      borderRadius="5px"
                       ml={2}
                     />
                   )}
@@ -711,8 +702,8 @@ const EditDoctor = () => {
             </Box>
 
             {/* Clinics */}
-            <Box className="col-md-12" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+            <Box gridColumn="1 / -1" mb={3}>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Clinics
               </Text>
               <Flex wrap="wrap" gap={4} mt={2}>
@@ -722,6 +713,7 @@ const EditDoctor = () => {
                     isChecked={selectedClinics.includes(clinic.id)}
                     onChange={() => handleClinicSelection(clinic.id)}
                     colorScheme="brand"
+                    color={textColor}
                   >
                     {clinic.name}
                   </Checkbox>
@@ -730,31 +722,27 @@ const EditDoctor = () => {
             </Box>
 
             {/* Doctor Image */}
-            <Box className="col-md-12" mb={3}>
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+            <Box gridColumn="1 / -1" mb={3}>
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Doctor Image
               </Text>
               <Box
                 border="1px dashed"
-                borderColor={isDragging ? 'brand.500' : 'gray.300'}
+                borderColor={isDragging ? dropZoneActiveBorder : dropZoneBorder}
                 borderRadius="md"
                 p={4}
                 textAlign="center"
-                backgroundColor={isDragging ? 'brand.50' : 'gray.50'}
+                backgroundColor={isDragging ? dropZoneActiveBg : dropZoneBg}
                 cursor="pointer"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                mt={'8px'}
+                mt="8px"
               >
                 {image ? (
                   <Flex direction="column" align="center">
                     <Image
-                      src={
-                        typeof image === 'string'
-                          ? image
-                          : URL.createObjectURL(image)
-                      }
+                      src={typeof image === 'string' ? image : URL.createObjectURL(image)}
                       alt="Doctor"
                       maxH="200px"
                       mb={2}
@@ -774,20 +762,17 @@ const EditDoctor = () => {
                   </Flex>
                 ) : (
                   <>
-                    <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
-                    <Text color="gray.500" mb={2}>
+                    <Icon as={FaUpload} w={8} h={8} color="brand.500" mb={2} />
+                    <Text color={textColor} mb={2}>
                       Drag & Drop Image Here
                     </Text>
-                    <Text color="gray.500" mb={2}>
+                    <Text color={textColor} mb={2}>
                       or
                     </Text>
                     <Button
                       variant="outline"
-                      color="#422afb"
-                      border="none"
-                      onClick={() =>
-                        document.getElementById('doctorImage').click()
-                      }
+                      colorScheme="brand"
+                      onClick={() => document.getElementById('doctorImage').click()}
                     >
                       Upload Image
                       <input
@@ -805,7 +790,7 @@ const EditDoctor = () => {
 
             {/* Certificates */}
             <Box gridColumn="1 / -1">
-              <Text color={textColor} fontSize="sm" fontWeight="700">
+              <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
                 Certificates
               </Text>
               <Box mt={2}>
@@ -831,11 +816,7 @@ const EditDoctor = () => {
                   {certificates.map((cert, index) => (
                     <Box key={index} position="relative">
                       <Image
-                        src={
-                          typeof cert.imageKey === 'string'
-                            ? cert.imageKey
-                            : URL.createObjectURL(cert.imageKey)
-                        }
+                        src={typeof cert.imageKey === 'string' ? cert.imageKey : URL.createObjectURL(cert.imageKey)}
                         alt={`Certificate ${index + 1}`}
                         borderRadius="md"
                         boxShadow="md"
@@ -847,12 +828,8 @@ const EditDoctor = () => {
                         right={2}
                         color="red.500"
                         cursor="pointer"
-                        onClick={() => {
-                          const newCertificates = [...certificates];
-                          newCertificates.splice(index, 1);
-                          setCertificates(newCertificates);
-                        }}
-                        bg="white"
+                        onClick={() => handleDeleteCertificate(index)}
+                        bg={cardBg}
                         p={1}
                         borderRadius="full"
                         boxShadow="md"
@@ -862,7 +839,7 @@ const EditDoctor = () => {
                 </Grid>
               )}
             </Box>
-          </div>
+          </Grid>
 
           {/* Action Buttons */}
           <Flex justify="center" mt={6} gap={4}>
@@ -876,7 +853,7 @@ const EditDoctor = () => {
             </Button>
             <Button
               type="submit"
-              variant="darkBrand"
+              colorScheme="brandScheme"
               color="white"
               fontSize="sm"
               fontWeight="500"
@@ -889,8 +866,8 @@ const EditDoctor = () => {
             </Button>
           </Flex>
         </form>
-      </div>
-    </div>
+      </Box>
+    </Flex>
   );
 };
 
