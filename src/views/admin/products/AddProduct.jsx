@@ -202,7 +202,7 @@ const AddProduct = () => {
   // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
       // Upload product images first
       const uploadedImages = [];
@@ -210,9 +210,9 @@ const AddProduct = () => {
         const imageUploadPromises = images.map(async (img, index) => {
           const formData = new FormData();
           formData.append('file', img.file);
-
+  
           const uploadResponse = await addFile(formData).unwrap();
-
+  
           if (
             uploadResponse.success &&
             uploadResponse.data.uploadedFiles.length > 0
@@ -225,11 +225,11 @@ const AddProduct = () => {
           }
           return null;
         });
-
+  
         const results = await Promise.all(imageUploadPromises);
         uploadedImages.push(...results.filter((img) => img !== null));
       }
-
+  
       // Prepare translations
       const translations = [];
       if (nameAr || descriptionAr || howToUseAr || treatmentAr || ingredientsAr) {
@@ -242,12 +242,12 @@ const AddProduct = () => {
           ingredient: ingredientsAr
         });
       }
-
+  
       // Prepare product data
       if (!price) {
         throw new Error('Price is required for the product.');
       }
-
+  
       const productData = {
         name: nameEn,
         description: descriptionEn,
@@ -266,25 +266,29 @@ const AddProduct = () => {
         discountType: discountType,
         lotNumber: lotNumber,
         expiryDate: expiryDate,
-        offerType: offerType,
-        offerPercentage: offerPercentage != null ? parseFloat(offerPercentage) : undefined,
         hasVariants,
         isActive,
         isPublished,
         translations: translations,
         images: uploadedImages
       };
-
+  
+      // Only include offerType and offerPercentage if offerType is not "NONE"
+      if (offerType && offerType !== "NONE") {
+        productData.offerType = offerType;
+        productData.offerPercentage = offerPercentage != null ? parseFloat(offerPercentage) : undefined;
+      }
+  
       // Remove any keys that are null or undefined
       Object.keys(productData).forEach((key) => {
         if (productData[key] == null || productData[key] === undefined) {
           delete productData[key];
         }
       });
-
+  
       // Submit to API
       const response = await addProduct(productData).unwrap();
-
+  
       toast({
         title: 'Success',
         description: 'Product created successfully',
@@ -292,7 +296,7 @@ const AddProduct = () => {
         duration: 5000,
         isClosable: true,
       });
-
+  
       navigate('/admin/products');
     } catch (err) {
       toast({
@@ -659,7 +663,7 @@ const AddProduct = () => {
               <Stack direction="row">
                 <Radio value="MONTHLY_OFFER">Monthly Offer</Radio>
                 <Radio value="NEW_ARRIVAL">New Arrival</Radio>
-                <Radio value="">None</Radio>
+                <Radio value="NONE">None</Radio>
               </Stack>
             </RadioGroup>
             {offerType === 'MONTHLY_OFFER' && (
