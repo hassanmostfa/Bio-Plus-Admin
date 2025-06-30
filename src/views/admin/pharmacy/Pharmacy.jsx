@@ -35,9 +35,11 @@ import { useGetPharmaciesQuery } from 'api/pharmacySlice'; // Replace with your 
 import { useDeletePharmacyMutation } from 'api/pharmacySlice';
 import Swal from 'sweetalert2';
 import { FaRegFolderClosed } from "react-icons/fa6";
+import { useTranslation } from 'react-i18next';
 const columnHelper = createColumnHelper();
 
 const Pharmacy = () => {
+  const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1); // Current page
   const [limit, setLimit] = useState(10); // Items per page
   const [searchQuery, setSearchQuery] = useState(''); // Search query
@@ -60,22 +62,22 @@ const Pharmacy = () => {
   const deletePharmacyHandler = async (id) => {
     try {
       Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('pharmacy.confirmDelete'),
+        text: t('pharmacy.deleteWarning'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('pharmacy.delete'),
       }).then(async (result) => {
         if (result.isConfirmed) {
           await deletePharmacy(id);
           refetch();
-          Swal.fire('Deleted!', 'The pharmacy has been deleted.', 'success');
+          Swal.fire(t('pharmacy.deleteSuccess'), '', 'success');
         }
       });
     } catch (error) {
-      Swal.fire('Error!', 'Failed to delete the pharmacy.' + error.data.message, 'error');
+      Swal.fire(t('pharmacy.deleteError'), error.data?.message || '', 'error');
     }
   };
 
@@ -125,15 +127,15 @@ const Pharmacy = () => {
 
   const columns = [
     columnHelper.accessor('name', {
-      header: 'Name',
+      header: t('pharmacy.name'),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('imageKey', {
-      header: 'Image',
+      header: t('pharmacy.image'),
       cell: (info) => (
         <img
           src={info.getValue()}
-          alt="Pharmacy"
+          alt={t('pharmacy.image')}
           width={70}
           height={70}
           style={{ borderRadius: '8px' }}
@@ -141,24 +143,24 @@ const Pharmacy = () => {
       ),
     }),
     columnHelper.accessor('whatsappNumber', {
-      header: 'WhatsApp',
+      header: t('pharmacy.whatsapp'),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('revenueShare', {
-      header: 'Revenue Share',
+      header: t('pharmacy.revenueShare'),
       cell: (info) => <Text color={textColor}>{info.getValue()}%</Text>,
     }),
     columnHelper.accessor('isActive', {
-      header: 'Active',
+      header: t('pharmacy.isActive'),
       cell: (info) =>
         info.getValue() ? (
-          <Text color="green.500">Active</Text>
+          <Text color="green.500">{t('pharmacy.active')}</Text>
         ) : (
-          <Text color="red.500">Inactive</Text>
+          <Text color="red.500">{t('pharmacy.inactive')}</Text>
         ),
     }),
     columnHelper.accessor('id', {
-      header: 'Actions',
+      header: t('pharmacy.actions'),
       cell: (info) => (
         <Flex align="center">
           <Icon
@@ -215,11 +217,11 @@ const Pharmacy = () => {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>{t('pharmacy.loading')}</div>;
   }
 
   if (isError) {
-    return <div>Error loading data</div>;
+    return <div>{t('pharmacy.errorFetching')}</div>;
   }
 
   return (
@@ -237,7 +239,7 @@ const Pharmacy = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            All Pharmacies
+            {t('pharmacy.title')}
           </Text>
 
           <InputGroup w={{ base: '100%', md: '400px' }}>
@@ -265,7 +267,7 @@ const Pharmacy = () => {
               fontWeight="500"
               _placeholder={{ color: 'gray.400', fontSize: '14px' }}
               borderRadius="30px"
-              placeholder="Search..."
+              placeholder={t('pharmacy.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -281,7 +283,7 @@ const Pharmacy = () => {
             onClick={() => navigate('/admin/add-pharmacy')}
             width={'200px'}
           >
-            Create New Pharmacy
+            {t('pharmacy.addPharmacy')}
           </Button>
         </Flex>
         <Box>
@@ -350,7 +352,7 @@ const Pharmacy = () => {
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
-              Rows per page:
+              {t('pharmacy.rowsPerPage')}
             </Text>
             <Select
               value={limit}
@@ -369,7 +371,7 @@ const Pharmacy = () => {
             </Select>
           </Flex>
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages}
+            {t('pharmacy.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
           </Text>
           <Flex>
             <Button
@@ -380,7 +382,7 @@ const Pharmacy = () => {
               mr="10px"
             >
               <Icon as={ChevronLeftIcon} mr="5px" />
-              Previous
+              {t('pharmacy.previous')}
             </Button>
             <Button
               onClick={handleNextPage}
@@ -388,7 +390,7 @@ const Pharmacy = () => {
               variant="outline"
               size="sm"
             >
-              Next
+              {t('pharmacy.next')}
               <Icon as={ChevronRightIcon} ml="5px" />
             </Button>
           </Flex>

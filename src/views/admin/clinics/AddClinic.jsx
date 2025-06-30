@@ -14,6 +14,8 @@ import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
 import { useAddClinicMutation } from 'api/clinicSlice';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const AddClinic = () => {
   const [name, setName] = useState('');
@@ -36,6 +38,8 @@ const AddClinic = () => {
   const inputBorder = useColorModeValue('gray.300', 'gray.600');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   const handleCancel = () => {
     setName('');
@@ -85,7 +89,7 @@ const AddClinic = () => {
 
     try {
       const response = await addClinic(clinicData).unwrap();
-      Swal.fire('Success!', 'Brand added successfully.', 'success');
+      Swal.fire(t('clinics.success'), t('clinics.clinicAddedSuccessfully'), 'success');
       navigate('/admin/clinics');
     } catch (error) {
       if (error.data?.errors) {
@@ -93,13 +97,13 @@ const AddClinic = () => {
 
         error.data.errors.forEach((err) => {
           const fieldMap = {
-            name: 'English Name',
-            'translations.0.name': 'Arabic Name',
-            password: 'Password',
-            fromTime: 'Opening Time',
-            toTime: 'Closing Time',
-            'locations.0.name': 'Location English Name',
-            'locations.0.translations.0.name': 'Location Arabic Name',
+            name: t('clinics.englishName'),
+            'translations.0.name': t('clinics.arabicName'),
+            password: t('clinics.password'),
+            fromTime: t('clinics.openingTime'),
+            toTime: t('clinics.closingTime'),
+            'locations.0.name': t('clinics.locationEnglishName'),
+            'locations.0.translations.0.name': t('clinics.locationArabicName'),
           };
 
           const fieldName = fieldMap[err.field] || err.field;
@@ -120,14 +124,14 @@ const AddClinic = () => {
         });
 
         Swal.fire({
-          title: 'Validation Error!',
+          title: t('clinics.validationError'),
           html: errorList,
           icon: 'error',
         });
       } else {
         Swal.fire(
-          'Error!',
-          error.data?.message || 'Failed to add clinic.',
+          t('clinics.error'),
+          error.data?.message || t('clinics.failedToAddClinic'),
           'error',
         );
       }
@@ -156,7 +160,7 @@ const AddClinic = () => {
       <Box w="100%" p="6" boxShadow="md" borderRadius="lg" bg={cardBg}>
         <Flex justify="space-between" align="center" mb="20px">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Add New Clinic
+            {t('clinics.addNewClinic')}
           </Text>
           <Button
             onClick={() => navigate(-1)}
@@ -164,21 +168,21 @@ const AddClinic = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('clinics.back')}
           </Button>
         </Flex>
 
-        <form>
+        <form dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
           <Grid templateColumns="repeat(2, 1fr)" gap={6}>
             {/* Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                English Name
+                {t('clinics.englishName')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="text"
-                placeholder="Enter Clinic Name (English)"
+                placeholder={t('clinics.enterClinicNameEn')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 bg={inputBg}
@@ -192,12 +196,12 @@ const AddClinic = () => {
             {/* Arabic Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Arabic Name
+                {t('clinics.arabicName')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="text"
-                placeholder="أدخل اسم العيادة"
+                placeholder={t('clinics.enterClinicNameAr')}
                 value={arabicName}
                 onChange={(e) => setArabicName(e.target.value)}
                 bg={inputBg}
@@ -212,7 +216,7 @@ const AddClinic = () => {
             {/* From Time Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Opening Time
+                {t('clinics.openingTime')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
@@ -230,7 +234,7 @@ const AddClinic = () => {
             {/* To Time Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Closing Time
+                {t('clinics.closingTime')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
@@ -248,12 +252,12 @@ const AddClinic = () => {
             {/* Email Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Email
+                {t('clinics.email')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="email"
-                placeholder="Enter Email"
+                placeholder={t('clinics.enterEmail')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 bg={inputBg}
@@ -267,12 +271,12 @@ const AddClinic = () => {
             {/* Password Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Password
+                {t('clinics.password')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="password"
-                placeholder="Enter Password"
+                placeholder={t('clinics.enterPassword')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 bg={inputBg}
@@ -286,7 +290,7 @@ const AddClinic = () => {
             {/* Locations Field */}
             <Box gridColumn="1 / -1">
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Locations
+                {t('clinics.locations')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
 
@@ -304,11 +308,11 @@ const AddClinic = () => {
                     {/* Location Name */}
                     <Box>
                       <Text fontSize="sm" fontWeight="600" mb={1} color={textColor}>
-                        Location Name (English)
+                        {t('clinics.locationNameEn')}
                       </Text>
                       <Input
                         type="text"
-                        placeholder="Enter location name"
+                        placeholder={t('clinics.enterLocationName')}
                         value={location.name}
                         onChange={(e) =>
                           handleLocationChange(index, 'name', e.target.value)
@@ -323,11 +327,11 @@ const AddClinic = () => {
                     {/* Arabic Location Name */}
                     <Box>
                       <Text fontSize="sm" fontWeight="600" mb={1} color={textColor}>
-                        Location Name (Arabic)
+                        {t('clinics.locationNameAr')}
                       </Text>
                       <Input
                         type="text"
-                        placeholder="أدخل اسم الموقع"
+                        placeholder={t('clinics.enterLocationNameAr')}
                         value={location.arabicName}
                         onChange={(e) =>
                           handleLocationChange(
@@ -359,7 +363,7 @@ const AddClinic = () => {
                           size="sm"
                           onClick={() => handleDeleteLocation(index)}
                         >
-                          Remove Location
+                          {t('clinics.removeLocation')}
                         </Button>
                       )}
                     </Box>
@@ -374,7 +378,7 @@ const AddClinic = () => {
                 mt={2}
                 onClick={handleAddLocation}
               >
-                Add Another Location
+                {t('clinics.addAnotherLocation')}
               </Button>
             </Box>
           </Grid>
@@ -387,7 +391,7 @@ const AddClinic = () => {
               onClick={handleCancel}
               width="120px"
             >
-              Cancel
+              {t('clinics.cancel')}
             </Button>
             <Button
               colorScheme="brandScheme"
@@ -401,7 +405,7 @@ const AddClinic = () => {
               width="120px"
               isLoading={isLoading}
             >
-              Save
+              {t('clinics.save')}
             </Button>
           </Flex>
         </form>

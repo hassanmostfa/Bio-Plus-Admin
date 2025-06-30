@@ -11,12 +11,16 @@ import {
 } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const AddBranch = () => {
   const [formData, setFormData] = useState({});
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,7 +36,7 @@ const AddBranch = () => {
       <div className="add-admin-card shadow p-4 bg-white w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Add New Branch
+            {t('branches.addNewBranch')}
           </Text>
           <Button
             type="button"
@@ -41,10 +45,10 @@ const AddBranch = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('branches.back')}
           </Button>
         </div>
-        <form>
+        <form dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
           <Grid templateColumns="repeat(2, 1fr)" gap={4}>
             {[
               { label: "En-Name", name: "name" },
@@ -86,7 +90,7 @@ const AddBranch = () => {
 
           <Flex justify="center" mt={6}>
             <Button variant="outline" colorScheme="red" mr={2}>
-              Cancel
+              {t('branches.cancel')}
             </Button>
             <Button
               variant='darkBrand'
@@ -98,7 +102,7 @@ const AddBranch = () => {
               py='5px'
               onClick={handleSend}
             >
-              Save
+              {t('branches.save')}
             </Button>
           </Flex>
         </form>
