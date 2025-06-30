@@ -41,6 +41,8 @@ import { useNavigate } from 'react-router-dom';
 import { useGetDoctorsQuery, useDeleteDoctorMutation, useAssignDoctorMutation } from 'api/doctorSlice';
 import Swal from 'sweetalert2';
 import { useGetClinicsQuery } from 'api/clinicSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
@@ -53,6 +55,8 @@ const Doctors = () => {
   const { data: clinicsResponse } = useGetClinicsQuery({});
   const clinics = clinicsResponse?.data || [];
   const toast = useToast();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   
   const doctors = doctorsData?.data || [];
   const pagination = doctorsData?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
@@ -93,8 +97,8 @@ const Doctors = () => {
       await assignDoctor({ id, data: { clinicIds: selectedClinics } }).unwrap();
       
       toast({
-        title: 'Success',
-        description: 'Clinics assigned successfully',
+        title: t('doctors.success'),
+        description: t('doctors.clinicsAssignedSuccessfully'),
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -105,8 +109,8 @@ const Doctors = () => {
       setSelectedClinics([]);
     } catch (err) {
       toast({
-        title: 'Error',
-        description: err.data?.message || 'Failed to assign clinics',
+        title: t('doctors.error'),
+        description: err.data?.message || t('doctors.failedToAssignClinics'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -116,21 +120,21 @@ const Doctors = () => {
 
   const handleDeleteDoctor = async (doctorId) => {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: t('doctors.confirmDelete'),
+      text: t('doctors.deleteWarning'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: t('doctors.delete')
     });
     
     if (result.isConfirmed) {
       try {
         await deleteDoctor(doctorId).unwrap();
         toast({
-          title: 'Deleted!',
-          description: 'Doctor has been deleted.',
+          title: t('doctors.deleteSuccess'),
+          description: t('doctors.doctorDeleted'),
           status: 'success',
           duration: 5000,
           isClosable: true,
@@ -138,8 +142,8 @@ const Doctors = () => {
         refetch();
       } catch (err) {
         toast({
-          title: 'Error',
-          description: err.data?.message || 'Failed to delete doctor',
+          title: t('doctors.error'),
+          description: err.data?.message || t('doctors.failedToDeleteDoctor'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -168,7 +172,7 @@ const Doctors = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          ID
+          {t('doctors.id')}
         </Text>
       ),
       cell: (info) => (
@@ -188,7 +192,7 @@ const Doctors = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          First Name
+          {t('doctors.firstName')}
         </Text>
       ),
       cell: (info) => (
@@ -206,7 +210,7 @@ const Doctors = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Last Name
+          {t('doctors.lastName')}
         </Text>
       ),
       cell: (info) => (
@@ -224,12 +228,12 @@ const Doctors = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Specialization
+          {t('doctors.specialization')}
         </Text>
       ),
       cell: (info) => (
         <Text color={textColor} fontSize="sm">
-          {info.getValue() || 'N/A'}
+          {info.getValue() || t('doctors.notAvailable')}
         </Text>
       ),
     }),
@@ -242,7 +246,7 @@ const Doctors = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Status
+          {t('doctors.status')}
         </Text>
       ),
       cell: (info) => (
@@ -252,7 +256,7 @@ const Doctors = () => {
           fontSize="sm"
           borderRadius="8px"
         >
-          {info.getValue() ? 'Active' : 'Inactive'}
+          {info.getValue() ? t('doctors.active') : t('doctors.inactive')}
         </Badge>
       ),
     }),
@@ -265,7 +269,7 @@ const Doctors = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Actions
+          {t('doctors.actions')}
         </Text>
       ),
       cell: (info) => (
@@ -304,7 +308,7 @@ const Doctors = () => {
             color={textColor}
             as={CgAssign}
             cursor="pointer"
-            title="Assign to clinic"
+            title={t('doctors.assignToClinic')}
             onClick={() => handleAssignClick(info.row.original.id)}
           />
         </Flex>
@@ -335,13 +339,13 @@ const Doctors = () => {
   if (isError) {
     return (
       <Flex justify="center" align="center" h="100vh">
-        <Text>Error loading doctors. Please try again.</Text>
+        <Text>{t('doctors.errorLoadingDoctors')}</Text>
       </Flex>
     );
   }
 
   return (
-    <div className="container">
+    <div className="container" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <Card
         flexDirection="column"
         w="100%"
@@ -355,7 +359,7 @@ const Doctors = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            All Doctors
+            {t('doctors.allDoctors')}
           </Text>
           <Button
             variant="darkBrand"
@@ -368,11 +372,11 @@ const Doctors = () => {
             onClick={() => navigate('/admin/add/doctor')}
             width={'200px'}
           >
-            Add New Doctor
+            {t('doctors.addNewDoctor')}
           </Button>
         </Flex>
         <Box>
-          <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+          <Table variant="simple" color="gray.500" mb="24px" mt="12px" dir="ltr">
             <Thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <Tr key={headerGroup.id}>
@@ -435,7 +439,7 @@ const Doctors = () => {
         {/* Pagination Controls */}
         <Flex justify="space-between" align="center" px="25px" py="15px">
           <Flex align="center">
-            <Text mr={2}>Rows per page:</Text>
+            <Text mr={2}>{t('doctors.rowsPerPage')}:</Text>
             <Select
               value={limit}
               onChange={handleLimitChange}
@@ -450,7 +454,7 @@ const Doctors = () => {
           </Flex>
           <Flex align="center">
             <Text mr={4}>
-              Page {page} of {pagination.totalPages}
+              {t('doctors.page')} {page} {t('doctors.of')} {pagination.totalPages}
             </Text>
             <Button
               size="sm"
@@ -458,14 +462,14 @@ const Doctors = () => {
               isDisabled={page === 1}
               mr={2}
             >
-              Previous
+              {t('doctors.previous')}
             </Button>
             <Button
               size="sm"
               onClick={() => handlePageChange(page + 1)}
               isDisabled={page === pagination.totalPages}
             >
-              Next
+              {t('doctors.next')}
             </Button>
           </Flex>
         </Flex>
@@ -478,7 +482,7 @@ const Doctors = () => {
       }}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Assign Clinics to Doctor</ModalHeader>
+          <ModalHeader>{t('doctors.assignClinicsToDoctor')}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             {clinics.map((clinic) => (
@@ -505,7 +509,7 @@ const Doctors = () => {
               mr={3}
               onClick={handleAssignClinics}
             >
-              Assign
+              {t('doctors.assign')}
             </Button>
             <Button 
               bg='gray.200'
@@ -515,7 +519,7 @@ const Doctors = () => {
                 setSelectedClinics([]);
               }}
             >
-              Cancel
+              {t('doctors.cancel')}
             </Button>
           </ModalFooter>
         </ModalContent>

@@ -36,11 +36,15 @@ import Swal from 'sweetalert2';
 import { FaSearch } from 'react-icons/fa';
 import { useGetSpecializationsQuery } from 'api/doctorSpecializationSlice';
 import { useDeleteSpecializationMutation } from 'api/doctorSpecializationSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
 const Specialization = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,45 +76,45 @@ const Specialization = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('specializations.confirmDelete'),
+        text: t('specializations.deleteWarning'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('specializations.delete'),
       });
 
       if (result.isConfirmed) {
         await deleteSpecialization(id).unwrap();
         refetch();
-        Swal.fire('Deleted!', 'The tag has been deleted.', 'success');
+        Swal.fire(t('specializations.deleteSuccess'), t('specializations.specializationDeleted'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete tag:', error);
-      Swal.fire('Error!', 'Failed to delete the tag.', 'error');
+      Swal.fire(t('specializations.error'), t('specializations.failedToDeleteSpecialization'), 'error');
     }
   };
 
   const columns = [
     columnHelper.accessor('id', {
       id: 'id',
-      header: () => <Text color="gray.400">ID</Text>,
+      header: () => <Text color="gray.400">{t('specializations.id')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('name', {
       id: 'en_title',
-      header: () => <Text color="gray.400">English Title</Text>,
+      header: () => <Text color="gray.400">{t('specializations.englishTitle')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('name', {
       id: 'ar_title',
-      header: () => <Text color="gray.400">Arabic Title</Text>,
+      header: () => <Text color="gray.400">{t('specializations.arabicTitle')}</Text>,
       cell: (info) => <Text color={textColor} dir="">{info.getValue()}</Text>,
     }),
     columnHelper.accessor('id', {
       id: 'actions',
-      header: () => <Text color="gray.400">Actions</Text>,
+      header: () => <Text color="gray.400">{t('specializations.actions')}</Text>,
       cell: (info) => (
         <Flex>
           <Icon
@@ -179,11 +183,11 @@ const Specialization = () => {
   }
 
   return (
-    <div className="container">
+    <div className="container" >
       <Card flexDirection="column" w="100%" px="0px" overflowX={{ sm: 'scroll', lg: 'hidden' }}>
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
-            Doctor Specializations
+            {t('specializations.doctorSpecializations')}
           </Text>
           
           <Flex align="center" gap={4}>
@@ -200,7 +204,7 @@ const Specialization = () => {
               <Input
                 variant="search"
                 fontSize="sm"
-                placeholder="Search..."
+                placeholder={t('specializations.search')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -217,13 +221,13 @@ const Specialization = () => {
               onClick={() => navigate('/admin/add-specialization')}
               leftIcon={<PlusSquareIcon />}
             >
-              Add Specialize
+              {t('specializations.addSpecialization')}
             </Button>
           </Flex>
         </Flex>
         
         <Box>
-          <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+          <Table variant="simple" color="gray.500" mb="24px" mt="12px" dir="ltr">
             <Thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <Tr key={headerGroup.id}>
@@ -253,7 +257,7 @@ const Specialization = () => {
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
-              Rows per page:
+              {t('specializations.rowsPerPage')}:
             </Text>
             <Select
               value={limit}
@@ -268,7 +272,7 @@ const Specialization = () => {
           </Flex>
           
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages}
+            {t('specializations.page')} {pagination.page} {t('specializations.of')} {pagination.totalPages}
           </Text>
           
           <Flex>
@@ -280,7 +284,7 @@ const Specialization = () => {
               mr="10px"
               leftIcon={<ChevronLeftIcon />}
             >
-              Previous
+              {t('specializations.previous')}
             </Button>
             <Button
               onClick={handleNextPage}
@@ -289,7 +293,7 @@ const Specialization = () => {
               size="sm"
               rightIcon={<ChevronRightIcon />}
             >
-              Next
+              {t('specializations.next')}
             </Button>
           </Flex>
         </Flex>

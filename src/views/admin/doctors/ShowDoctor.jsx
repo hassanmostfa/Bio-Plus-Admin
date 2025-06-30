@@ -28,11 +28,16 @@ import {
   FaEnvelope
 } from 'react-icons/fa';
 import { GiDoctorFace } from 'react-icons/gi';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 
 const ShowDoctor = () => {
   const {id} = useParams();
   const {data: doctorData,refetch} = useGetDoctorQuery(id);
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
+  
   useEffect(() => {
     refetch();
   }, []);
@@ -45,12 +50,12 @@ const ShowDoctor = () => {
 
   if (!doctor) return (
     <Flex justify="center" align="center" h="100vh">
-      <Text>Loading...</Text>
+      <Text>{t('doctors.loading')}</Text>
     </Flex>
   );
 
   return (
-    <Box className="container row py-5">
+    <Box className="container row py-5" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       {/* Main Profile Card */}
       <Box className="row">
         <Box className="col-12">
@@ -104,23 +109,23 @@ const ShowDoctor = () => {
                 <Flex align="center" mt={4} wrap="wrap" gap={4}>
                   <Flex align="center">
                     <Box as={FaVenusMars} mr={2} />
-                    <Text>{doctor.gender === 'MALE' ? 'Male' : 'Female'}</Text>
+                    <Text>{doctor.gender === 'MALE' ? t('doctors.male') : t('doctors.female')}</Text>
                   </Flex>
                   
                   <Flex align="center">
                     <Box as={FaUserMd} mr={2} />
                     <Text color={doctor.isRecommended ? 'green.500' : 'gray.500'}>
-                      {doctor.isRecommended ? 'Recommended' : 'Not Recommended'}
+                      {doctor.isRecommended ? t('doctors.recommended') : t('doctors.notRecommended')}
                     </Text>
                   </Flex>
                 </Flex>
                 
                 <Box mt={6}>
                   <Heading as="h2" size="md" mb={2}>
-                    About
+                    {t('doctors.about')}
                   </Heading>
                   <Text color="gray.600">
-                    {doctor.about || 'No information provided'}
+                    {doctor.about || t('doctors.noInformationProvided')}
                   </Text>
                 </Box>
               </Box>
@@ -139,7 +144,7 @@ const ShowDoctor = () => {
             p={6}
           >
             <Heading as="h2" size="lg" mb={4}>
-              Contact Information
+              {t('doctors.contactInformation')}
             </Heading>
             
             <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={6}>
@@ -147,7 +152,7 @@ const ShowDoctor = () => {
                 <Flex align="center" mb={2}>
                   <Box as={FaPhone} color={primaryColor} mr={2} />
                   <Heading as="h3" size="sm">
-                    Phone Numbers
+                    {t('doctors.phoneNumbers')}
                   </Heading>
                 </Flex>
                 <List spacing={2}>
@@ -163,7 +168,7 @@ const ShowDoctor = () => {
                 <Flex align="center" mb={2}>
                   <Box as={FaEnvelope} color={primaryColor} mr={2} />
                   <Heading as="h3" size="sm">
-                    Email
+                    {t('doctors.email')}
                   </Heading>
                 </Flex>
                 <Text>{doctor.email}</Text>
@@ -184,7 +189,7 @@ const ShowDoctor = () => {
               p={6}
             >
               <Heading as="h2" size="lg" mb={4}>
-                Languages Spoken
+                {t('doctors.languagesSpoken')}
               </Heading>
               <Flex wrap="wrap" gap={2}>
                 {doctor.languages.map((language, index) => (

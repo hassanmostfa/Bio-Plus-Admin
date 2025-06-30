@@ -16,10 +16,14 @@ import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useGetSpecializationQuery, useUpdateSpecializationMutation } from "api/doctorSpecializationSlice";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const EditSpecialization = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   
   // Color mode values
   const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -66,13 +70,13 @@ const EditSpecialization = () => {
 
     try {
       await updateTag({ id, data: tagData }).unwrap();
-      Swal.fire('Success!', 'Specialization updated successfully.', 'success');
+      Swal.fire(t('specializations.success'), t('specializations.specializationUpdatedSuccessfully'), 'success');
       navigate('/admin/specializations');
     } catch (error) {
       console.error('Failed to update specialization:', error);
       Swal.fire(
-        'Error!',
-        error.data?.message || 'Failed to update specialization.',
+        t('specializations.error'),
+        error.data?.message || t('specializations.failedToUpdateSpecialization'),
         'error'
       );
     }
@@ -95,11 +99,11 @@ const EditSpecialization = () => {
   }
 
   return (
-    <Flex justify="center" p="20px" mt={'80px'}>
+    <Flex justify="center" p="20px" mt={'80px'} dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <Box w="100%" p="6" boxShadow="md" borderRadius="lg" bg={cardBg}>
         <Flex justify="space-between" align="center" mb="20px">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Edit Specialization
+            {t('specializations.editSpecialization')}
           </Text>
           <Button
             type="button"
@@ -108,7 +112,7 @@ const EditSpecialization = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('specializations.back')}
           </Button>
         </Flex>
 
@@ -117,13 +121,13 @@ const EditSpecialization = () => {
             {/* English Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                English Name
+                {t('specializations.englishName')}
                 <span style={{ color: 'red' }}> *</span>
               </Text>
               <Input
                 type="text"
                 name="name"
-                placeholder="Enter English Name"
+                placeholder={t('specializations.enterEnglishName')}
                 value={formData.name}
                 onChange={handleInputChange}
                 bg={inputBg}
@@ -136,13 +140,13 @@ const EditSpecialization = () => {
             {/* Arabic Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Arabic Name
+                {t('specializations.arabicName')}
                 <span style={{ color: 'red' }}> *</span>
               </Text>
               <Input
                 type="text"
                 name="arabicName"
-                placeholder="ادخل الاسم بالعربية"
+                placeholder={t('specializations.enterArabicName')}
                 value={formData.arabicName}
                 onChange={handleInputChange}
                 bg={inputBg}
@@ -157,7 +161,7 @@ const EditSpecialization = () => {
             <Box>
               <FormControl display="flex" alignItems="center">
                 <FormLabel htmlFor="isActive" mb="0" color={textColor}>
-                  Active Status
+                  {t('specializations.activeStatus')}
                 </FormLabel>
                 <Switch
                   id="isActive"
@@ -165,6 +169,7 @@ const EditSpecialization = () => {
                   onChange={() => setIsActive(!isActive)}
                   colorScheme="teal"
                   size="md"
+                  dir="ltr"
                 />
               </FormControl>
             </Box>
@@ -178,7 +183,7 @@ const EditSpecialization = () => {
               onClick={() => navigate('/admin/specializations')}
               width="120px"
             >
-              Cancel
+              {t('specializations.cancel')}
             </Button>
             <Button
               variant='solid'
@@ -191,10 +196,10 @@ const EditSpecialization = () => {
               py='5px'
               type="submit"
               isLoading={isUpdating}
-              loadingText="Saving..."
+              loadingText={t('specializations.saving')}
               width="120px"
             >
-              Save Changes
+              {t('specializations.saveChanges')}
             </Button>
           </Flex>
         </form>
