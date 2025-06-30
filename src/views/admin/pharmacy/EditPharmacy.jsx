@@ -46,7 +46,6 @@ const EditPharmacy = () => {
   const pharmacy = data?.data;
   
   const [updatePharmacy, { isLoading: isUpdating }] = useUpdatePharmacyMutation();
-
   const [formData, setFormData] = useState({
     name: '',
     imageKey: '',

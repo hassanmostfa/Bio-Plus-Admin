@@ -22,7 +22,7 @@ import {
 	  };
 	});
   
-	const { secondary, message, brandText } = props;
+	const { secondary, message, brandText, routes } = props;
   
 	// Remove the ID from the brandText if it exists
 	const processedBrandText = removeIdFromRoute(brandText);
@@ -130,6 +130,7 @@ import {
 			  secondary={props.secondary}
 			  fixed={props.fixed}
 			  scrolled={scrolled}
+			  routes={routes}
 			/>
 		  </Box>
 		</Flex>
@@ -144,4 +145,5 @@ import {
 	secondary: PropTypes.bool,
 	fixed: PropTypes.bool,
 	onOpen: PropTypes.func,
+	routes: PropTypes.array,
   };

@@ -18,6 +18,7 @@ import {
 import { ItemContent } from 'components/menu/ItemContent';
 import { SearchBar } from 'components/navbar/searchBar/SearchBar';
 import { SidebarResponsive } from 'components/sidebar/Sidebar';
+import LanguageSwitcher from 'components/LanguageSwitcher';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { RiLogoutCircleLine } from "react-icons/ri";
@@ -27,9 +28,9 @@ import navImage from 'assets/img/layout/Navbar.png';
 import { MdNotificationsNone, MdInfoOutline } from 'react-icons/md';
 import { IoMdMoon, IoMdSunny } from 'react-icons/io';
 import { FaEthereum } from 'react-icons/fa';
-import routes from 'routes';
+
 export default function HeaderLinks(props) {
-  const { secondary } = props;
+  const { secondary, routes } = props;
   const { colorMode, toggleColorMode } = useColorMode();
   // Chakra Color Mode
   const navbarIcon = useColorModeValue('gray.400', 'white');
@@ -167,7 +168,7 @@ export default function HeaderLinks(props) {
         </MenuList>
       </Menu>
 
-      
+      <LanguageSwitcher me="10px" />
 
       <Button
         variant="no-hover"

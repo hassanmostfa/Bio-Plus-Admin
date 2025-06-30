@@ -6,13 +6,15 @@ import RTLLayout from './layouts/rtl';
 import { ChakraProvider } from '@chakra-ui/react';
 import initialTheme from './theme/theme';
 import { useState } from 'react';
-import routes from './routes'; // Import your routes
+import getRoutes from './routes'; // Import your routes function
 import SignInCentered from './views/auth/signIn/index';
 import ProtectedRoute from 'components/protectedRoute/ProtectedRoute';
 import { LanguageProvider } from "./components/auth/LanguageContext";
+import { useTranslation } from 'react-i18next';
 
 export default function Main() {
   const [currentTheme, setCurrentTheme] = useState(initialTheme);
+  const { t } = useTranslation();
 
   return (
     <ChakraProvider theme={currentTheme}>
@@ -25,7 +27,7 @@ export default function Main() {
               <AdminLayout
                 theme={currentTheme}
                 setTheme={setCurrentTheme}
-                routes={routes} // Pass routes to AdminLayout
+                routes={getRoutes(t)} // Pass routes to AdminLayout
               />
             }
           />

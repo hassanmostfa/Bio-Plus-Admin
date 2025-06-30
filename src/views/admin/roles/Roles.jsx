@@ -31,11 +31,13 @@ import { ChevronLeftIcon, ChevronRightIcon, EditIcon, PlusSquareIcon, SearchIcon
 import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { useGetRolesQuery, useDeleteRoleMutation } from 'api/roleSlice';
+import { useTranslation } from 'react-i18next';
 import Swal from 'sweetalert2';
 
 const columnHelper = createColumnHelper();
 
 const Roles = () => {
+  const { t } = useTranslation();
   const [page, setPage] = React.useState(1); // Current page
   const [limit, setLimit] = React.useState(10); // Items per page
   const [searchQuery, setSearchQuery] = React.useState(''); // Search query
@@ -75,7 +77,7 @@ const Roles = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          NAME
+          {t('name')}
         </Text>
       ),
       cell: (info) => (
@@ -95,7 +97,7 @@ const Roles = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Actions
+          {t('actions')}
         </Text>
       ),
       cell: (info) => (
@@ -148,23 +150,23 @@ const Roles = () => {
   const handleDeleteRole = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('confirmDeleteRole'),
+        text: t('deleteRoleWarning'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('messages.yesDelete'),
       });
 
       if (result.isConfirmed) {
         await deleteRole(id).unwrap(); // Delete the role
         refetch(); // Refetch the data
-        Swal.fire('Deleted!', 'The role has been deleted.', 'success');
+        Swal.fire(t('messages.deleted'), t('deleteRoleSuccess'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete role:', error);
-      Swal.fire('Error!', 'Failed to delete the role.', 'error');
+      Swal.fire(t('messages.error'), t('deleteRoleError'), 'error');
     }
   };
 
@@ -201,7 +203,7 @@ const Roles = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            Roles
+            {t('roles')}
           </Text>
           <div className='d-flex align-items-center gap-2'>
             <InputGroup w={{ base: "100%", md: "400px" }}>
@@ -234,7 +236,7 @@ const Roles = () => {
                 fontWeight='500'
                 _placeholder={{ color: "gray.400", fontSize: "14px" }}
                 borderRadius='30px' // Default value
-                placeholder='Search...' // Default value
+                placeholder={t('searchRoles')} // Default value
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -251,7 +253,7 @@ const Roles = () => {
             onClick={() => navigate('/admin/add-New-Role')}
             width={'200px'}
           >
-            Create New Role
+            {t('createNewRole')}
           </Button>
         </Flex>
 
@@ -321,7 +323,7 @@ const Roles = () => {
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
-              Rows per page:
+              {t('table.rowsPerPage')}
             </Text>
             <select
               value={limit}
@@ -334,7 +336,7 @@ const Roles = () => {
             </select>
           </Flex>
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages}
+            {t('table.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
           </Text>
           <Flex>
             <Button
@@ -345,7 +347,7 @@ const Roles = () => {
               mr="10px"
             >
               <Icon as={ChevronLeftIcon} ml="5px" />
-              Previous
+              {t('table.previous')}
             </Button>
             <Button
               onClick={handleNextPage}
@@ -353,7 +355,7 @@ const Roles = () => {
               variant="outline"
               size="sm"
             >
-              Next
+              {t('table.next')}
               <Icon as={ChevronRightIcon} ml="5px" />
             </Button>
           </Flex>

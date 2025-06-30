@@ -35,6 +35,8 @@ import Swal from 'sweetalert2';
 import { useGetPharmaciesQuery } from 'api/pharmacySlice';
 import { useAddFileMutation } from 'api/filesSlice';
 import { useGetTypesQuery } from 'api/typeSlice';
+import { useTranslation } from 'react-i18next';
+import FormWrapper from 'components/FormWrapper';
 
 const AddProduct = () => {
   const [nameEn, setNameEn] = useState('');
@@ -78,6 +80,7 @@ const AddProduct = () => {
   const [addProduct, { isLoading }] = useAddProductMutation();
   const toast = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Fetch data
   const { data: categoriesResponse } = useGetCategoriesQuery({
@@ -337,7 +340,7 @@ const AddProduct = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Product
+            {t('product.addProduct')}
           </Text>
           <Button
             type="button"
@@ -346,684 +349,686 @@ const AddProduct = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('common.back')}
           </Button>
         </div>
-        <form onSubmit={handleSubmit}>
-          {/* Basic Information */}
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
-            <Box>
-              <FormControl isRequired>
-                <FormLabel>Product Name (English)</FormLabel>
-                <Input
-                  placeholder="Enter Product Name"
-                  value={nameEn}
-                  onChange={(e) => setNameEn(e.target.value)}
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl>
-                <FormLabel>Product Name (Arabic)</FormLabel>
-                <Input
-                  placeholder="أدخل اسم المنتج"
-                  value={nameAr}
-                  onChange={(e) => setNameAr(e.target.value)}
-                  dir="rtl"
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-          </SimpleGrid>
-
-          {/* Description Sections */}
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
-            <Box>
-              <FormControl isRequired>
-                <FormLabel>Description (English)</FormLabel>
-                <Textarea
-                  placeholder="Enter Product Description"
-                  value={descriptionEn}
-                  onChange={(e) => setDescriptionEn(e.target.value)}
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl>
-                <FormLabel>Description (Arabic)</FormLabel>
-                <Textarea
-                  placeholder="أدخل وصف المنتج"
-                  value={descriptionAr}
-                  onChange={(e) => setDescriptionAr(e.target.value)}
-                  dir="rtl"
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-
-            {/* Guide Line */}
-            {/* <Box>
-              <FormControl>
-                <FormLabel>Guide Line (English)</FormLabel>
-                <Textarea
-                  placeholder="Enter Guide Line"
-                  value={guideLineEn}
-                  onChange={(e) => setGuideLineEn(e.target.value)}
-                />
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl>
-                <FormLabel>Guide Line (Arabic)</FormLabel>
-                <Textarea
-                  placeholder="أدخل دليل الاستخدام"
-                  value={guideLineAr}
-                  onChange={(e) => setGuideLineAr(e.target.value)}
-                  dir="rtl"
-                />
-              </FormControl>
-            </Box> */}
-
-            {/* How To Use */}
-            <Box>
-              <FormControl>
-                <FormLabel>How To Use (English)</FormLabel>
-                <Textarea
-                  placeholder="Enter How To Use"
-                  value={howToUseEn}
-                  onChange={(e) => setHowToUseEn(e.target.value)}
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl>
-                <FormLabel>How To Use (Arabic)</FormLabel>
-                <Textarea
-                  placeholder="أدخل طريقة الاستخدام"
-                  value={howToUseAr}
-                  onChange={(e) => setHowToUseAr(e.target.value)}
-                  dir="rtl"
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-
-            {/* Treatment */}
-            <Box>
-              <FormControl>
-                <FormLabel>Treatment (English)</FormLabel>
-                <Textarea
-                  placeholder="Enter Treatment Information"
-                  value={treatmentEn}
-                  onChange={(e) => setTreatmentEn(e.target.value)}
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl>
-                <FormLabel>Treatment (Arabic)</FormLabel>
-                <Textarea
-                  placeholder="أدخل معلومات العلاج"
-                  value={treatmentAr}
-                  onChange={(e) => setTreatmentAr(e.target.value)}
-                  dir="rtl"
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-
-            {/* Ingredients */}
-            <Box>
-              <FormControl>
-                <FormLabel>Ingredients (English)</FormLabel>
-                <Textarea
-                  placeholder="Enter Ingredients"
-                  value={ingredientsEn}
-                  onChange={(e) => setIngredientsEn(e.target.value)}
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl>
-                <FormLabel>Ingredients (Arabic)</FormLabel>
-                <Textarea
-                  placeholder="أدخل المكونات"
-                  value={ingredientsAr}
-                  onChange={(e) => setIngredientsAr(e.target.value)}
-                  dir="rtl"
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-          </SimpleGrid>
-
-          {/* SKU, Lot Number, Expiry Date (only if no variants) */}
-          {!hasVariants && (
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
+        <FormWrapper>
+          <form onSubmit={handleSubmit} dir="rtl">
+            {/* Basic Information */}
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
               <Box>
-                <FormControl>
-                  <FormLabel>SKU</FormLabel>
+                <FormControl isRequired>
+                  <FormLabel>{t('product.productName')} (English)</FormLabel>
                   <Input
-                    type="text"
-                    placeholder="Enter SKU"
-                    value={sku}
-                    onChange={(e) => setSku(e.target.value)}
+                    placeholder={t('forms.enterProductName')}
+                    value={nameEn}
+                    onChange={(e) => setNameEn(e.target.value)}
                     color={textColor}
                   />
                 </FormControl>
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>Lot Number</FormLabel>
+                  <FormLabel>{t('product.productName')} (Arabic)</FormLabel>
                   <Input
-                    type="text"
-                    placeholder="Enter Lot Number"
-                    value={lotNumber}
-                    onChange={(e) => setLotNumber(e.target.value)}
-                    color={textColor}
-                  />
-                </FormControl>
-              </Box>
-              <Box>
-                <FormControl>
-                  <FormLabel>Expiry Date</FormLabel>
-                  <Input
-                    type="date"
-                    value={expiryDate}
-                    onChange={(e) => setExpiryDate(e.target.value)}
+                    placeholder={t('forms.enterProductNameAr')}
+                    value={nameAr}
+                    onChange={(e) => setNameAr(e.target.value)}
+                    dir="rtl"
                     color={textColor}
                   />
                 </FormControl>
               </Box>
             </SimpleGrid>
-          )}
 
-          {/* Category, Brand, Pharmacy and Product Type */}
-          <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
-            <Box>
-              <FormControl isRequired>
-                <FormLabel>Category</FormLabel>
-                <Select
-                  placeholder="Select Category"
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  color={textColor}
-                >
-                  {categories?.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.translations?.find((t) => t.languageId === 'en')
-                        ?.name || cat.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl isRequired>
-                <FormLabel>Brand</FormLabel>
-                <Select
-                  placeholder="Select Brand"
-                  value={brandId}
-                  onChange={(e) => setBrandId(e.target.value)}
-                  color={textColor}
-                >
-                  {brands.map((brand) => (
-                    <option key={brand.id} value={brand.id}>
-                      {brand.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl>
-                <FormLabel>Pharmacy</FormLabel>
-                <Select
-                  placeholder="Select Pharmacy"
-                  value={pharmacyId}
-                  onChange={(e) => setPharmacyId(e.target.value)}
-                  color={textColor}
-                >
-                  {pharmacies?.map((pharmacy) => (
-                    <option key={pharmacy.id} value={pharmacy.id}>
-                      {pharmacy.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl>
-                <FormLabel>Product Type</FormLabel>
-                <Select
-                  placeholder="Select Product Type"
-                  value={productTypeId}
-                  onChange={(e) => setProductTypeId(e.target.value)}
-                  color={textColor}
-                >
-                  {productTypes.map((type) => (
-                    <option key={type.id} value={type.id}>
-                      {type.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-          </SimpleGrid>
-
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
-            <Box>
-              <FormControl isRequired>
-                <FormLabel>Cost</FormLabel>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={cost}
-                  onChange={(e) => setCost(e.target.value)}
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl isRequired>
-                <FormLabel>Price</FormLabel>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl isRequired>
-                <FormLabel>Quantity</FormLabel>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  color={textColor}
-                />
-              </FormControl>
-            </Box>
-            
-          </SimpleGrid>
-
-          {/* Offer Type */}
-          <Box mb={4}>
-            <FormLabel>Offer Type</FormLabel>
-            <RadioGroup value={offerType} onChange={setOfferType}>
-              <Stack direction="row">
-                <Radio value="MONTHLY_OFFER">Monthly Offer</Radio>
-                <Radio value="NEW_ARRIVAL">New Arrival</Radio>
-                <Radio value="NONE">None</Radio>
-              </Stack>
-            </RadioGroup>
-            {offerType === 'MONTHLY_OFFER' && (
-              <Box mt={2}>
-                <FormControl>
-                  <FormLabel>Offer Percentage</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder="0.0"
-                    value={offerPercentage}
-                    onChange={(e) => setOfferPercentage(e.target.value)}
-                    color={textColor}
-                  />
-                </FormControl>
-              </Box>
-            )}
-          </Box>
-
-          {/* Discount Fields (only if no variants) */}
-          {!hasVariants && (
+            {/* Description Sections */}
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
               <Box>
-                <FormControl>
-                  <FormLabel>Discount</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder="Enter discount value"
-                    value={discount != null ? discount : ''}
-                    onChange={(e) => setDiscount(e.target.value)}
+                <FormControl isRequired>
+                  <FormLabel>Description (English)</FormLabel>
+                  <Textarea
+                    placeholder="Enter Product Description"
+                    value={descriptionEn}
+                    onChange={(e) => setDescriptionEn(e.target.value)}
                     color={textColor}
                   />
                 </FormControl>
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>Discount Type</FormLabel>
+                  <FormLabel>Description (Arabic)</FormLabel>
+                  <Textarea
+                    placeholder="أدخل وصف المنتج"
+                    value={descriptionAr}
+                    onChange={(e) => setDescriptionAr(e.target.value)}
+                    dir="rtl"
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+
+              {/* Guide Line */}
+              {/* <Box>
+                <FormControl>
+                  <FormLabel>Guide Line (English)</FormLabel>
+                  <Textarea
+                    placeholder="Enter Guide Line"
+                    value={guideLineEn}
+                    onChange={(e) => setGuideLineEn(e.target.value)}
+                  />
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl>
+                  <FormLabel>Guide Line (Arabic)</FormLabel>
+                  <Textarea
+                    placeholder="أدخل دليل الاستخدام"
+                    value={guideLineAr}
+                    onChange={(e) => setGuideLineAr(e.target.value)}
+                    dir="rtl"
+                  />
+                </FormControl>
+              </Box> */}
+
+              {/* How To Use */}
+              <Box>
+                <FormControl>
+                  <FormLabel>How To Use (English)</FormLabel>
+                  <Textarea
+                    placeholder="Enter How To Use"
+                    value={howToUseEn}
+                    onChange={(e) => setHowToUseEn(e.target.value)}
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl>
+                  <FormLabel>How To Use (Arabic)</FormLabel>
+                  <Textarea
+                    placeholder="أدخل طريقة الاستخدام"
+                    value={howToUseAr}
+                    onChange={(e) => setHowToUseAr(e.target.value)}
+                    dir="rtl"
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+
+              {/* Treatment */}
+              <Box>
+                <FormControl>
+                  <FormLabel>Treatment (English)</FormLabel>
+                  <Textarea
+                    placeholder="Enter Treatment Information"
+                    value={treatmentEn}
+                    onChange={(e) => setTreatmentEn(e.target.value)}
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl>
+                  <FormLabel>Treatment (Arabic)</FormLabel>
+                  <Textarea
+                    placeholder="أدخل معلومات العلاج"
+                    value={treatmentAr}
+                    onChange={(e) => setTreatmentAr(e.target.value)}
+                    dir="rtl"
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+
+              {/* Ingredients */}
+              <Box>
+                <FormControl>
+                  <FormLabel>Ingredients (English)</FormLabel>
+                  <Textarea
+                    placeholder="Enter Ingredients"
+                    value={ingredientsEn}
+                    onChange={(e) => setIngredientsEn(e.target.value)}
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl>
+                  <FormLabel>Ingredients (Arabic)</FormLabel>
+                  <Textarea
+                    placeholder="أدخل المكونات"
+                    value={ingredientsAr}
+                    onChange={(e) => setIngredientsAr(e.target.value)}
+                    dir="rtl"
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+            </SimpleGrid>
+
+            {/* SKU, Lot Number, Expiry Date (only if no variants) */}
+            {!hasVariants && (
+              <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
+                <Box>
+                  <FormControl>
+                    <FormLabel>SKU</FormLabel>
+                    <Input
+                      type="text"
+                      placeholder="Enter SKU"
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value)}
+                      color={textColor}
+                    />
+                  </FormControl>
+                </Box>
+                <Box>
+                  <FormControl>
+                    <FormLabel>Lot Number</FormLabel>
+                    <Input
+                      type="text"
+                      placeholder="Enter Lot Number"
+                      value={lotNumber}
+                      onChange={(e) => setLotNumber(e.target.value)}
+                      color={textColor}
+                    />
+                  </FormControl>
+                </Box>
+                <Box>
+                  <FormControl>
+                    <FormLabel>Expiry Date</FormLabel>
+                    <Input
+                      type="date"
+                      value={expiryDate}
+                      onChange={(e) => setExpiryDate(e.target.value)}
+                      color={textColor}
+                    />
+                  </FormControl>
+                </Box>
+              </SimpleGrid>
+            )}
+
+            {/* Category, Brand, Pharmacy and Product Type */}
+            <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
+              <Box>
+                <FormControl isRequired>
+                  <FormLabel>Category</FormLabel>
                   <Select
-                    placeholder="Select discount type"
-                    value={discountType || ''}
-                    onChange={(e) => setDiscountType(e.target.value)}
+                    placeholder="Select Category"
+                    value={categoryId}
+                    onChange={(e) => setCategoryId(e.target.value)}
                     color={textColor}
                   >
-                    <option value="PERCENTAGE">Percentage</option>
-                    <option value="FIXED">Fixed</option>
+                    {categories?.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.translations?.find((t) => t.languageId === 'en')
+                          ?.name || cat.name}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl isRequired>
+                  <FormLabel>Brand</FormLabel>
+                  <Select
+                    placeholder="Select Brand"
+                    value={brandId}
+                    onChange={(e) => setBrandId(e.target.value)}
+                    color={textColor}
+                  >
+                    {brands.map((brand) => (
+                      <option key={brand.id} value={brand.id}>
+                        {brand.name}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl>
+                  <FormLabel>Pharmacy</FormLabel>
+                  <Select
+                    placeholder="Select Pharmacy"
+                    value={pharmacyId}
+                    onChange={(e) => setPharmacyId(e.target.value)}
+                    color={textColor}
+                  >
+                    {pharmacies?.map((pharmacy) => (
+                      <option key={pharmacy.id} value={pharmacy.id}>
+                        {pharmacy.name}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl>
+                  <FormLabel>Product Type</FormLabel>
+                  <Select
+                    placeholder="Select Product Type"
+                    value={productTypeId}
+                    onChange={(e) => setProductTypeId(e.target.value)}
+                    color={textColor}
+                  >
+                    {productTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.name}
+                      </option>
+                    ))}
                   </Select>
                 </FormControl>
               </Box>
             </SimpleGrid>
-          )}
 
-          {/* Status Switches */}
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
-          <FormControl display="flex" alignItems="center">
-              <FormLabel mb="0">Published</FormLabel>
-              <Switch
-                isChecked={isPublished}
-                onChange={() => setIsPublished(!isPublished)}
-              />
-            </FormControl>
+            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
+              <Box>
+                <FormControl isRequired>
+                  <FormLabel>Cost</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={cost}
+                    onChange={(e) => setCost(e.target.value)}
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl isRequired>
+                  <FormLabel>Price</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl isRequired>
+                  <FormLabel>Quantity</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+              
+            </SimpleGrid>
 
-            <FormControl display="flex" alignItems="center">
-              <FormLabel mb="0">Active</FormLabel>
-              <Switch
-                isChecked={isActive}
-                onChange={() => setIsActive(!isActive)}
-              />
-            </FormControl>
-            
-            <FormControl display="flex" alignItems="center">
-              <FormLabel mb="0">Has Variants</FormLabel>
-              <Switch
-                isChecked={hasVariants}
-                onChange={() => setHasVariants(!hasVariants)}
-              />
-            </FormControl>
-          </SimpleGrid>
-
-          {/* Variants Section */}
-          {hasVariants && (
+            {/* Offer Type */}
             <Box mb={4}>
-              <FormControl mb={4}>
-                <FormLabel>Select Variant</FormLabel>
-                <Select
-                  placeholder="Select Variant"
-                  onChange={handleVariantSelect}
-                  color={textColor}
-                >
-                  {variants.map((variant) => (
-                    <option key={variant.id} value={variant.id}>
-                      {variant.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {selectedAttributes.length > 0 && (
-                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-                  {selectedAttributes.map((attr, index) => (
-                    <Card key={index}>
-                      <CardHeader>
-                        <Flex justify="space-between" align="center">
-                          <Text fontWeight="bold">
-                            {attr.variantName} - {attr.attributeValue}
-                          </Text>
-                          <IconButton
-                            icon={<FaTrash />}
-                            aria-label="Delete variant"
-                            size="sm"
-                            colorScheme="red"
-                            onClick={() => handleDeleteAttribute(index)}
-                          />
-                        </Flex>
-                      </CardHeader>
-                      <CardBody>
-                        <SimpleGrid columns={2} spacing={2}>
-                          <FormControl isRequired>
-                            <FormLabel>Cost</FormLabel>
-                            <Input
-                              type="number"
-                              value={attr.cost}
-                              onChange={(e) =>
-                                handleAttributeChange(
-                                  index,
-                                  'cost',
-                                  e.target.value,
-                                )
-                              }
-                              color={textColor}
-                            />
-                          </FormControl>
-                          <FormControl isRequired>
-                            <FormLabel>Price</FormLabel>
-                            <Input
-                              type="number"
-                              value={attr.price}
-                              onChange={(e) =>
-                                handleAttributeChange(
-                                  index,
-                                  'price',
-                                  e.target.value,
-                                )
-                              }
-                              color={textColor}
-                            />
-                          </FormControl>
-                          <FormControl isRequired>
-                            <FormLabel>Quantity</FormLabel>
-                            <Input
-                              type="number"
-                              value={attr.quantity}
-                              onChange={(e) =>
-                                handleAttributeChange(
-                                  index,
-                                  'quantity',
-                                  e.target.value,
-                                )
-                              }
-                              color={textColor}
-                            />
-                          </FormControl>
-                          <FormControl>
-                            <FormLabel>Variant Image</FormLabel>
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => {
-                                if (e.target.files && e.target.files[0]) {
-                                  if (
-                                    !e.target.files[0].type.startsWith('image/')
-                                  ) {
-                                    toast({
-                                      title: 'Error',
-                                      description:
-                                        'Please upload only image files',
-                                      status: 'error',
-                                      duration: 5000,
-                                      isClosable: true,
-                                    });
-                                    return;
-                                  }
-                                  handleAttributeChange(
-                                    index,
-                                    'image',
-                                    e.target.files[0],
-                                  );
-                                }
-                              }}
-                              color={textColor}
-                            />
-                            {attr.image && (
-                              <Image
-                                src={URL.createObjectURL(attr.image)}
-                                alt="Variant preview"
-                                mt={2}
-                                maxH="100px"
-                              />
-                            )}
-                          </FormControl>
-
-                          {/* Variant Lot Number and Expiry Date */}
-                          <FormControl>
-                            <FormLabel>Lot Number</FormLabel>
-                            <Input
-                              type="text"
-                              placeholder="Enter Lot Number"
-                              value={attr.lotNumber}
-                              onChange={(e) =>
-                                handleAttributeChange(
-                                  index,
-                                  'lotNumber',
-                                  e.target.value,
-                                )
-                              }
-                              color={textColor}
-                            />
-                          </FormControl>
-                          <FormControl>
-                            <FormLabel>Expiry Date</FormLabel>
-                            <Input
-                              type="date"
-                              value={attr.expiryDate}
-                              onChange={(e) =>
-                                handleAttributeChange(
-                                  index,
-                                  'expiryDate',
-                                  e.target.value,
-                                )
-                              }
-                              color={textColor}
-                            />
-                          </FormControl>
-
-                          {/* Variant Discount Fields */}
-                          <FormControl>
-                            <FormLabel>Discount</FormLabel>
-                            <Input
-                              type="number"
-                              placeholder="Enter discount value"
-                              value={attr.discount != null ? attr.discount : ''}
-                              onChange={(e) =>
-                                handleAttributeChange(index, 'discount', e.target.value)
-                              }
-                              color={textColor}
-                            />
-                          </FormControl>
-                          <FormControl>
-                            <FormLabel>Discount Type</FormLabel>
-                            <Select
-                              placeholder="Select discount type"
-                              value={attr.discountType || ''}
-                              onChange={(e) =>
-                                handleAttributeChange(index, 'discountType', e.target.value)
-                              }
-                              color={textColor}
-                            >
-                              <option value="PERCENTAGE">Percentage</option>
-                              <option value="FIXED">Fixed</option>
-                            </Select>
-                          </FormControl>
-                        </SimpleGrid>
-                      </CardBody>
-                    </Card>
-                  ))}
-                </SimpleGrid>
+              <FormLabel>Offer Type</FormLabel>
+              <RadioGroup value={offerType} onChange={setOfferType}>
+                <Stack direction="row">
+                  <Radio value="MONTHLY_OFFER">Monthly Offer</Radio>
+                  <Radio value="NEW_ARRIVAL">New Arrival</Radio>
+                  <Radio value="NONE">None</Radio>
+                </Stack>
+              </RadioGroup>
+              {offerType === 'MONTHLY_OFFER' && (
+                <Box mt={2}>
+                  <FormControl>
+                    <FormLabel>Offer Percentage</FormLabel>
+                    <Input
+                      type="number"
+                      placeholder="0.0"
+                      value={offerPercentage}
+                      onChange={(e) => setOfferPercentage(e.target.value)}
+                      color={textColor}
+                    />
+                  </FormControl>
+                </Box>
               )}
             </Box>
-          )}
 
-          {/* Product Images */}
-          <Box mb={4}>
-            <FormControl isRequired={images.length === 0}>
-              <FormLabel>
-                Product Images{' '}
-                {images.length === 0 && <span style={{ color: 'red' }}>*</span>}
-              </FormLabel>
-              <Box
-                border="1px dashed"
-                borderColor={isDragging ? 'brand.500' : 'gray.300'}
-                borderRadius="md"
-                p={4}
-                textAlign="center"
-                backgroundColor={isDragging ? 'brand.50' : inputBg}
-                cursor="pointer"
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                mb={4}
-              >
-                {images.length > 0 ? (
-                  <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
-                    {images.map((img, index) => (
-                      <Box key={index} position="relative" display="flex" flexDirection="column" alignItems="center">
-                        <Image
-                          src={img.preview}
-                          alt={`Product image ${index + 1}`}
-                          borderRadius="md"
-                          maxH="150px"
-                          border={mainImageIndex === index ? '2px solid' : '1px solid'}
-                          borderColor={mainImageIndex === index ? 'brand.500' : 'gray.300'}
-                          cursor="pointer"
-                          onClick={() => handleSetMainImage(index)}
-                        />
-                        {mainImageIndex === index && (
-                          <Badge position="absolute" top={2} left={2} colorScheme="brand">
-                            Main
-                          </Badge>
-                        )}
-                        <IconButton
-                          icon={<FaTrash />}
-                          aria-label="Remove image"
-                          size="sm"
-                          colorScheme="red"
-                          position="absolute"
-                          top={2}
-                          right={2}
-                          onClick={() => handleRemoveImage(index)}
-                        />
-                      </Box>
+            {/* Discount Fields (only if no variants) */}
+            {!hasVariants && (
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
+                <Box>
+                  <FormControl>
+                    <FormLabel>Discount</FormLabel>
+                    <Input
+                      type="number"
+                      placeholder="Enter discount value"
+                      value={discount != null ? discount : ''}
+                      onChange={(e) => setDiscount(e.target.value)}
+                      color={textColor}
+                    />
+                  </FormControl>
+                </Box>
+                <Box>
+                  <FormControl>
+                    <FormLabel>Discount Type</FormLabel>
+                    <Select
+                      placeholder="Select discount type"
+                      value={discountType || ''}
+                      onChange={(e) => setDiscountType(e.target.value)}
+                      color={textColor}
+                    >
+                      <option value="PERCENTAGE">Percentage</option>
+                      <option value="FIXED">Fixed</option>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </SimpleGrid>
+            )}
+
+            {/* Status Switches */}
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
+            <FormControl display="flex" alignItems="center">
+                <FormLabel mb="0">Published</FormLabel>
+                <Switch
+                  isChecked={isPublished}
+                  onChange={() => setIsPublished(!isPublished)}
+                />
+              </FormControl>
+
+              <FormControl display="flex" alignItems="center">
+                <FormLabel mb="0">Active</FormLabel>
+                <Switch
+                  isChecked={isActive}
+                  onChange={() => setIsActive(!isActive)}
+                />
+              </FormControl>
+              
+              <FormControl display="flex" alignItems="center">
+                <FormLabel mb="0">Has Variants</FormLabel>
+                <Switch
+                  isChecked={hasVariants}
+                  onChange={() => setHasVariants(!hasVariants)}
+                />
+              </FormControl>
+            </SimpleGrid>
+
+            {/* Variants Section */}
+            {hasVariants && (
+              <Box mb={4}>
+                <FormControl mb={4}>
+                  <FormLabel>Select Variant</FormLabel>
+                  <Select
+                    placeholder="Select Variant"
+                    onChange={handleVariantSelect}
+                    color={textColor}
+                  >
+                    {variants.map((variant) => (
+                      <option key={variant.id} value={variant.id}>
+                        {variant.name}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {selectedAttributes.length > 0 && (
+                  <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                    {selectedAttributes.map((attr, index) => (
+                      <Card key={index}>
+                        <CardHeader>
+                          <Flex justify="space-between" align="center">
+                            <Text fontWeight="bold">
+                              {attr.variantName} - {attr.attributeValue}
+                            </Text>
+                            <IconButton
+                              icon={<FaTrash />}
+                              aria-label="Delete variant"
+                              size="sm"
+                              colorScheme="red"
+                              onClick={() => handleDeleteAttribute(index)}
+                            />
+                          </Flex>
+                        </CardHeader>
+                        <CardBody>
+                          <SimpleGrid columns={2} spacing={2}>
+                            <FormControl isRequired>
+                              <FormLabel>Cost</FormLabel>
+                              <Input
+                                type="number"
+                                value={attr.cost}
+                                onChange={(e) =>
+                                  handleAttributeChange(
+                                    index,
+                                    'cost',
+                                    e.target.value,
+                                  )
+                                }
+                                color={textColor}
+                              />
+                            </FormControl>
+                            <FormControl isRequired>
+                              <FormLabel>Price</FormLabel>
+                              <Input
+                                type="number"
+                                value={attr.price}
+                                onChange={(e) =>
+                                  handleAttributeChange(
+                                    index,
+                                    'price',
+                                    e.target.value,
+                                  )
+                                }
+                                color={textColor}
+                              />
+                            </FormControl>
+                            <FormControl isRequired>
+                              <FormLabel>Quantity</FormLabel>
+                              <Input
+                                type="number"
+                                value={attr.quantity}
+                                onChange={(e) =>
+                                  handleAttributeChange(
+                                    index,
+                                    'quantity',
+                                    e.target.value,
+                                  )
+                                }
+                                color={textColor}
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel>Variant Image</FormLabel>
+                              <Input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    if (
+                                      !e.target.files[0].type.startsWith('image/')
+                                    ) {
+                                      toast({
+                                        title: 'Error',
+                                        description:
+                                          'Please upload only image files',
+                                        status: 'error',
+                                        duration: 5000,
+                                        isClosable: true,
+                                      });
+                                      return;
+                                    }
+                                    handleAttributeChange(
+                                      index,
+                                      'image',
+                                      e.target.files[0],
+                                    );
+                                  }
+                                }}
+                                color={textColor}
+                              />
+                              {attr.image && (
+                                <Image
+                                  src={URL.createObjectURL(attr.image)}
+                                  alt="Variant preview"
+                                  mt={2}
+                                  maxH="100px"
+                                />
+                              )}
+                            </FormControl>
+
+                            {/* Variant Lot Number and Expiry Date */}
+                            <FormControl>
+                              <FormLabel>Lot Number</FormLabel>
+                              <Input
+                                type="text"
+                                placeholder="Enter Lot Number"
+                                value={attr.lotNumber}
+                                onChange={(e) =>
+                                  handleAttributeChange(
+                                    index,
+                                    'lotNumber',
+                                    e.target.value,
+                                  )
+                                }
+                                color={textColor}
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel>Expiry Date</FormLabel>
+                              <Input
+                                type="date"
+                                value={attr.expiryDate}
+                                onChange={(e) =>
+                                  handleAttributeChange(
+                                    index,
+                                    'expiryDate',
+                                    e.target.value,
+                                  )
+                                }
+                                color={textColor}
+                              />
+                            </FormControl>
+
+                            {/* Variant Discount Fields */}
+                            <FormControl>
+                              <FormLabel>Discount</FormLabel>
+                              <Input
+                                type="number"
+                                placeholder="Enter discount value"
+                                value={attr.discount != null ? attr.discount : ''}
+                                onChange={(e) =>
+                                  handleAttributeChange(index, 'discount', e.target.value)
+                                }
+                                color={textColor}
+                              />
+                            </FormControl>
+                            <FormControl>
+                              <FormLabel>Discount Type</FormLabel>
+                              <Select
+                                placeholder="Select discount type"
+                                value={attr.discountType || ''}
+                                onChange={(e) =>
+                                  handleAttributeChange(index, 'discountType', e.target.value)
+                                }
+                                color={textColor}
+                              >
+                                <option value="PERCENTAGE">Percentage</option>
+                                <option value="FIXED">Fixed</option>
+                              </Select>
+                            </FormControl>
+                          </SimpleGrid>
+                        </CardBody>
+                      </Card>
                     ))}
                   </SimpleGrid>
-                ) : (
-                  <>
-                    <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
-                    <Text color="gray.500" mb={2}>
-                      Drag & Drop Image Here
-                    </Text>
-                    <Text color="gray.500" mb={2}>
-                      or
-                    </Text>
-                    <Button
-                      variant="outline"
-                      color="#422afb"
-                      border="none"
-                      onClick={() => document.getElementById('file-upload').click()}
-                    >
-                      Upload Image
-                      <input
-                        type="file"
-                        id="file-upload"
-                        hidden
-                        accept="image/*"
-                        multiple
-                        onChange={(e) => handleImageUpload(e.target.files)}
-                      />
-                    </Button>
-                  </>
                 )}
               </Box>
-            </FormControl>
-          </Box>
-          {/* Submit Buttons */}
-          <Flex justify="flex-end" gap={4}>
-            <Button variant="outline" colorScheme="red" onClick={handleCancel}>
-              Cancel
-            </Button>
-            <Button type="submit" colorScheme="blue" isLoading={isLoading}>
-              Save Product
-            </Button>
-          </Flex>
-        </form>
+            )}
+
+            {/* Product Images */}
+            <Box mb={4}>
+              <FormControl isRequired={images.length === 0}>
+                <FormLabel>
+                  Product Images{' '}
+                  {images.length === 0 && <span style={{ color: 'red' }}>*</span>}
+                </FormLabel>
+                <Box
+                  border="1px dashed"
+                  borderColor={isDragging ? 'brand.500' : 'gray.300'}
+                  borderRadius="md"
+                  p={4}
+                  textAlign="center"
+                  backgroundColor={isDragging ? 'brand.50' : inputBg}
+                  cursor="pointer"
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  mb={4}
+                >
+                  {images.length > 0 ? (
+                    <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
+                      {images.map((img, index) => (
+                        <Box key={index} position="relative" display="flex" flexDirection="column" alignItems="center">
+                          <Image
+                            src={img.preview}
+                            alt={`Product image ${index + 1}`}
+                            borderRadius="md"
+                            maxH="150px"
+                            border={mainImageIndex === index ? '2px solid' : '1px solid'}
+                            borderColor={mainImageIndex === index ? 'brand.500' : 'gray.300'}
+                            cursor="pointer"
+                            onClick={() => handleSetMainImage(index)}
+                          />
+                          {mainImageIndex === index && (
+                            <Badge position="absolute" top={2} left={2} colorScheme="brand">
+                              Main
+                            </Badge>
+                          )}
+                          <IconButton
+                            icon={<FaTrash />}
+                            aria-label="Remove image"
+                            size="sm"
+                            colorScheme="red"
+                            position="absolute"
+                            top={2}
+                            right={2}
+                            onClick={() => handleRemoveImage(index)}
+                          />
+                        </Box>
+                      ))}
+                    </SimpleGrid>
+                  ) : (
+                    <>
+                      <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
+                      <Text color="gray.500" mb={2}>
+                        Drag & Drop Image Here
+                      </Text>
+                      <Text color="gray.500" mb={2}>
+                        or
+                      </Text>
+                      <Button
+                        variant="outline"
+                        color="#422afb"
+                        border="none"
+                        onClick={() => document.getElementById('file-upload').click()}
+                      >
+                        Upload Image
+                        <input
+                          type="file"
+                          id="file-upload"
+                          hidden
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => handleImageUpload(e.target.files)}
+                        />
+                      </Button>
+                    </>
+                  )}
+                </Box>
+              </FormControl>
+            </Box>
+            {/* Submit Buttons */}
+            <Flex justify="flex-end" gap={4}>
+              <Button variant="outline" colorScheme="red" onClick={handleCancel}>
+                Cancel
+              </Button>
+              <Button type="submit" colorScheme="blue" isLoading={isLoading}>
+                Save Product
+              </Button>
+            </Flex>
+          </form>
+        </FormWrapper>
       </Box>
     </Box>
   );

@@ -17,13 +17,22 @@ import {
 import * as React from 'react';
 import Card from 'components/card/Card';
 import { useGetActivityLogsQuery } from '../../../api/userSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const ActivityLog = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(10);
   const { data, isLoading, error } = useGetActivityLogsQuery({ page, limit });
+
+  // Conditional styling for RTL
+  const isRTL = language === 'ar';
+  const textAlign = isRTL ? 'right' : 'left';
+  const direction = isRTL ? 'rtl' : 'ltr';
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -61,7 +70,7 @@ const ActivityLog = () => {
   if (error) {
     return (
       <Center h="100vh">
-        <Text color="red.500">Error loading activity logs</Text>
+        <Text color="red.500">{t('activityLog.error')}</Text>
       </Center>
     );
   }
@@ -84,7 +93,7 @@ const ActivityLog = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            Admin Actions Log
+            {t('activityLog.title')}
           </Text>
         </Flex>
         <Box>
@@ -92,19 +101,19 @@ const ActivityLog = () => {
             <Thead>
               <Tr>
                 <Th borderColor={borderColor}>
-                  <Text color="gray.400" fontSize="12px">Action</Text>
+                  <Text color="gray.400" fontSize="12px" textAlign={textAlign}>{t('activityLog.action')}</Text>
                 </Th>
                 <Th borderColor={borderColor}>
-                  <Text color="gray.400" fontSize="12px">IP Address</Text>
+                  <Text color="gray.400" fontSize="12px" textAlign={textAlign}>{t('activityLog.ipAddress')}</Text>
                 </Th>
                 <Th borderColor={borderColor}>
-                  <Text color="gray.400" fontSize="12px">User Agent</Text>
+                  <Text color="gray.400" fontSize="12px" textAlign={textAlign}>{t('activityLog.userAgent')}</Text>
                 </Th>
                 <Th borderColor={borderColor}>
-                  <Text color="gray.400" fontSize="12px">Date</Text>
+                  <Text color="gray.400" fontSize="12px" textAlign={textAlign}>{t('activityLog.date')}</Text>
                 </Th>
                 <Th borderColor={borderColor}>
-                  <Text color="gray.400" fontSize="12px">Time</Text>
+                  <Text color="gray.400" fontSize="12px" textAlign={textAlign}>{t('activityLog.time')}</Text>
                 </Th>
               </Tr>
             </Thead>
@@ -113,19 +122,19 @@ const ActivityLog = () => {
                 const { date, time } = formatDate(log.createdAt);
                 return (
                   <Tr key={log.id}>
-                    <Td borderColor="transparent" fontSize="14px">
+                    <Td borderColor="transparent" fontSize="14px" textAlign={textAlign}>
                       {formatAction(log.action)}
                     </Td>
-                    <Td borderColor="transparent" fontSize="14px">
+                    <Td borderColor="transparent" fontSize="14px" textAlign={textAlign}>
                       {log.ipAddress}
                     </Td>
-                    <Td borderColor="transparent" fontSize="14px">
+                    <Td borderColor="transparent" fontSize="14px" textAlign={textAlign}>
                       {log.userAgent}
                     </Td>
-                    <Td borderColor="transparent" fontSize="14px">
+                    <Td borderColor="transparent" fontSize="14px" textAlign={textAlign}>
                       {date}
                     </Td>
-                    <Td borderColor="transparent" fontSize="14px">
+                    <Td borderColor="transparent" fontSize="14px" textAlign={textAlign}>
                       {time}
                     </Td>
                   </Tr>
@@ -137,7 +146,7 @@ const ActivityLog = () => {
         {/* Pagination Controls */}
         <Flex justify="space-between" align="center" px="25px" py="15px">
           <Flex align="center">
-            <Text mr={2}>Rows per page:</Text>
+            <Text mr={2} textAlign={textAlign}>{t('activityLog.rowsPerPage')}</Text>
             <Select
               value={limit}
               onChange={handleLimitChange}
@@ -151,8 +160,8 @@ const ActivityLog = () => {
             </Select>
           </Flex>
           <Flex align="center">
-            <Text mr={4}>
-              Page {page} of {pagination.totalPages}
+            <Text mr={4} textAlign={textAlign}>
+              {t('activityLog.pageOf', { page, totalPages: pagination.totalPages })}
             </Text>
             <Button
               size="sm"
@@ -160,14 +169,14 @@ const ActivityLog = () => {
               isDisabled={page === 1}
               mr={2}
             >
-              Previous
+              {t('activityLog.previous')}
             </Button>
             <Button
               size="sm"
               onClick={() => handlePageChange(page + 1)}
               isDisabled={page === pagination.totalPages}
             >
-              Next
+              {t('activityLog.next')}
             </Button>
           </Flex>
         </Flex>

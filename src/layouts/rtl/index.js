@@ -8,7 +8,8 @@ import { RtlProvider } from 'components/rtlProvider/RtlProvider.js';
 import { SidebarContext } from 'contexts/SidebarContext';
 import React, { useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import routes from 'routes.js';
+import getRoutes from 'routes.js';
+import { useTranslation } from 'react-i18next';
 
 // Custom Chakra theme
 export default function Dashboard(props) {
@@ -16,6 +17,8 @@ export default function Dashboard(props) {
   // states and functions
   const [fixed] = useState(false);
   const [toggleSidebar, setToggleSidebar] = useState(false);
+  const { t } = useTranslation();
+  const routes = getRoutes(t);
   // functions for changing the states from components
   const getRoute = () => {
     return window.location.pathname !== '/rtl/full-screen-maps';

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import routes from 'routes.js';
+import getRoutes from 'routes.js';
+import { useTranslation } from 'react-i18next';
 
 // Chakra imports
 import { Box, useColorModeValue } from '@chakra-ui/react';
@@ -12,6 +13,9 @@ import { SidebarContext } from 'contexts/SidebarContext';
 export default function Auth() {
   // states and functions
   const [toggleSidebar, setToggleSidebar] = useState(false);
+  const { t } = useTranslation();
+  const routes = getRoutes(t);
+  
   // functions for changing the states from components
   const getRoute = () => {
     return window.location.pathname !== '/auth/full-screen-maps';

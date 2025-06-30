@@ -5,7 +5,6 @@ import Footer from "components/footer/FooterAdmin.js";
 import Navbar from "components/navbar/NavbarAdmin.js";
 import Sidebar from "components/sidebar/Sidebar.js";
 import { SidebarContext } from "contexts/SidebarContext";
-import routes from "routes.js";
 
 // Helper function to capitalize the first letter of each word
 const capitalizeFirstLetter = (string) => {
@@ -64,7 +63,7 @@ const getBreadcrumbPath = (pathname, routes) => {
 };
 
 const AdminLayout = (props) => {
-  const { ...rest } = props;
+  const { routes, ...rest } = props;
   const [toggleSidebar, setToggleSidebar] = useState(false);
   const [activeRoute, setActiveRoute] = useState("Dashboard");
   const location = useLocation();
@@ -74,7 +73,7 @@ const AdminLayout = (props) => {
   useEffect(() => {
     const breadcrumbPath = getBreadcrumbPath(location.pathname, routes);
     setActiveRoute(breadcrumbPath);
-  }, [location]);
+  }, [location, routes]);
 
   // Render routes for the app, including subroutes
   const getRoutes = (routes) => {
@@ -132,6 +131,7 @@ const AdminLayout = (props) => {
                 secondary={false}
                 message={""}
                 fixed={false}
+                routes={routes}
                 {...rest}
               />
             </Box>

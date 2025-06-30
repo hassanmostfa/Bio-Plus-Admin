@@ -185,7 +185,7 @@ const AddCategory = () => {
             Back
           </Button>
         </div>
-        <form>
+        <form dir="rtl">
           {/* English Name Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">

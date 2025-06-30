@@ -36,12 +36,15 @@ import Card from "components/card/Card";
 import { useNavigate } from "react-router-dom";
 import { useGetUsersQuery, useUpdateUserMutation } from "api/clientSlice";
 import Swal from "sweetalert2";
+import { useTranslation } from "react-i18next";
+import FormWrapper from "components/FormWrapper";
 
 const columnHelper = createColumnHelper();
 
 const Users = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
@@ -115,12 +118,12 @@ const Users = () => {
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
-      header: () => <Text color="gray.400">Name</Text>,
+      header: () => <Text color="gray.400">{t('common.name')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor("email", {
       id: "email",
-      header: () => <Text color="gray.400">Email</Text>,
+      header: () => <Text color="gray.400">{t('common.email')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor("gender", {
@@ -130,12 +133,12 @@ const Users = () => {
     }),
     columnHelper.accessor("phoneNumber", {
       id: "phone",
-      header: () => <Text color="gray.400">Phone</Text>,
+      header: () => <Text color="gray.400">{t('common.phone')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor("status", {
       id: "status",
-      header: () => <Text color="gray.400">Status</Text>,
+      header: () => <Text color="gray.400">{t('common.status')}</Text>,
       cell: (info) => (
         <Text 
           color={info.getValue() === 'ACTIVE' ? 'green.500' : 
@@ -149,7 +152,7 @@ const Users = () => {
     }),
     columnHelper.accessor("actions", {
       id: "actions",
-      header: () => <Text color="gray.400">Actions</Text>,
+      header: () => <Text color="gray.400">{t('common.actions')}</Text>,
       cell: (info) => (
         <Flex alignItems="center"> 
           <Icon 
@@ -170,7 +173,7 @@ const Users = () => {
               variant="outline"
               colorScheme="teal"
             >
-              Edit Status
+              {t('common.edit')} {t('common.status')}
             </MenuButton>
             <MenuList>
               <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'PENDING')}>PENDING</MenuItem>
@@ -195,35 +198,37 @@ const Users = () => {
     <div className="container">
       <Card flexDirection="column" w="100%" px="0px" overflowX="auto">
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
-          <Text color={textColor} fontSize="22px" fontWeight="700">Users</Text>
+          <Text color={textColor} fontSize="22px" fontWeight="700">{t('common.users')}</Text>
           <HStack spacing={4}>
-            <Box width="300px">
-              <InputGroup>
-                <InputLeftElement pointerEvents="none">
-                  <Icon as={FaSearch} color="gray.400" />
-                </InputLeftElement>
-                <Input
-                  type="text"
-                  placeholder="Search users..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  bg={useColorModeValue("white", "gray.700")}
-                  borderRadius="10px"
-                />
-              </InputGroup>
-            </Box>
-            <Select
-              placeholder="Filter by status"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              width="200px"
-            >
-              <option value="">All Status</option>
-              <option value="PENDING">PENDING</option>
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="SUSPENDED">SUSPENDED</option>
-              <option value="BLOCKED">BLOCKED</option>
-            </Select>
+            <FormWrapper>
+              <Box width="300px">
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none">
+                    <Icon as={FaSearch} color="gray.400" />
+                  </InputLeftElement>
+                  <Input
+                    type="text"
+                    placeholder={t('common.search') + ' ' + t('common.users').toLowerCase() + '...'}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    bg={useColorModeValue("white", "gray.700")}
+                    borderRadius="10px"
+                  />
+                </InputGroup>
+              </Box>
+              <Select
+                placeholder={t('common.search') + ' ' + t('common.status').toLowerCase()}
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                width="200px"
+              >
+                <option value="">All {t('common.status')}</option>
+                <option value="PENDING">PENDING</option>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="SUSPENDED">SUSPENDED</option>
+                <option value="BLOCKED">BLOCKED</option>
+              </Select>
+            </FormWrapper>
           </HStack>
 
           <Button
@@ -237,7 +242,7 @@ const Users = () => {
             onClick={() => navigate("/admin/add-user")}
             width={"200px"}
           >
-            Add User
+            {t('common.add')} {t('common.users')}
           </Button>
         </Flex>
 
@@ -268,7 +273,7 @@ const Users = () => {
               ) : (
                 <Tr>
                   <Td colSpan={columns.length} textAlign="center" py="40px">
-                    <Text color={textColor}>No users found</Text>
+                    <Text color={textColor}>{t('common.noData')}</Text>
                   </Td>
                 </Tr>
               )}
@@ -286,7 +291,7 @@ const Users = () => {
                 onClick={() => setPage(page - 1)}
                 isDisabled={page === 1}
               >
-                Previous
+                {t('common.previous')}
               </Button>
               <Text color={textColor}>Page {page} of {totalPages}</Text>
               <Button
@@ -294,7 +299,7 @@ const Users = () => {
                 onClick={() => setPage(page + 1)}
                 isDisabled={page === totalPages}
               >
-                Next
+                {t('common.next')}
               </Button>
             </HStack>
           </Flex>

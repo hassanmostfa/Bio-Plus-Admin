@@ -43,6 +43,8 @@ import Pagination from "theme/components/Pagination";
 import * as XLSX from 'xlsx';
 import { useDownloadTemplateQuery } from "api/productSlice";
 import { useUploadProductsMutation } from "api/productSlice";
+import { useTranslation } from "react-i18next";
+import FormWrapper from "components/FormWrapper";
 
 const columnHelper = createColumnHelper();
 
@@ -57,6 +59,7 @@ const Products = () => {
   const [uploadProducts] = useUploadProductsMutation();
   const navigate = useNavigate();
   const toast = useToast();
+  const { t } = useTranslation();
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -240,29 +243,29 @@ const Products = () => {
   };
 
   const columns = [
-    columnHelper.accessor("name", {
+    columnHelper.accessor("nameEn", {
       id: "name",
-      header: () => <Text color="gray.400">Product Name</Text>,
+      header: () => <Text color="gray.400">{t('product.productName')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor("categoryName", {
       id: "category",
-      header: () => <Text color="gray.400">Category</Text>,
+      header: () => <Text color="gray.400">{t('product.category')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor("price", {
       id: "price",
-      header: () => <Text color="gray.400">Price</Text>,
+      header: () => <Text color="gray.400">{t('product.sellingPrice')}</Text>,
       cell: (info) => <Text color={textColor}> {info.getValue()} kwd</Text>,
     }),
     columnHelper.accessor("quantity", {
       id: "quantity",
-      header: () => <Text color="gray.400">Stock</Text>,
+      header: () => <Text color="gray.400">{t('product.stockLevel')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor("isActive", {
       id: "status",
-      header: () => <Text color="gray.400">Status</Text>,
+      header: () => <Text color="gray.400">{t('common.status')}</Text>,
       cell: (info) => (
         <Switch
           colorScheme="green"
@@ -274,7 +277,7 @@ const Products = () => {
     }),
     columnHelper.accessor("isPublished", {
       id: "publish",
-      header: () => <Text color="gray.400">Publish</Text>,
+      header: () => <Text color="gray.400">{t('product.published')}</Text>,
       cell: (info) => (
         <Switch
           colorScheme="blue"
@@ -286,7 +289,7 @@ const Products = () => {
     }),
     columnHelper.accessor("actions", {
       id: "actions",
-      header: () => <Text color="gray.400">Actions</Text>,
+      header: () => <Text color="gray.400">{t('common.actions')}</Text>,
       cell: (info) => (
         <Flex>
           <Icon
@@ -339,7 +342,7 @@ const Products = () => {
       <Card flexDirection="column" w="100%" pt={"20px"} px="0px" overflowX="auto">
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Products
+            {t('products.title')}
           </Text>
           <Flex>
             <Button
@@ -355,7 +358,7 @@ const Products = () => {
               mr={3}
             >
               <PlusSquareIcon me="10px" />
-              Add Product
+              {t('products.addProduct')}
             </Button>
             
             <Menu>
@@ -366,11 +369,11 @@ const Products = () => {
                 variant="outline"
                 colorScheme="blue"
               >
-                Export
+                {t('products.export')}
               </MenuButton>
               <MenuList>
                 <MenuItem icon={<FaDownload />} onClick={exportToExcel}>
-                  Export to Excel
+                  {t('products.exportToExcel')}
                 </MenuItem>
               </MenuList>
             </Menu>
@@ -384,7 +387,7 @@ const Products = () => {
                 htmlFor="file-import"
                 cursor="pointer"
               >
-                Import
+                {t('products.import')}
                 <input
                   type="file"
                   id="file-import"
@@ -422,7 +425,7 @@ const Products = () => {
                 isLoading={isTemplateLoading}
                 disabled={isTemplateLoading}
               >
-                Download Template
+                {t('products.downloadTemplate')}
               </Button>
             </Box>
           </Flex>
@@ -435,7 +438,7 @@ const Products = () => {
               <FaSearch color="gray.300" />
             </InputLeftElement>
             <Input
-              placeholder="Search products..."
+              placeholder={t('products.searchPlaceholder')}
               value={globalFilter ?? ''}
               onChange={(e) => setGlobalFilter(e.target.value)}
               borderRadius="20px"

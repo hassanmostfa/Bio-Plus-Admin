@@ -13,3 +13,136 @@
 .add-admin-card{
     border-radius: 15px;
 }
+
+/* Admin Components Styles */
+
+/* Center SweetAlert text */
+.swal2-popup {
+  text-align: center !important;
+}
+
+.swal2-title {
+  text-align: center !important;
+}
+
+.swal2-content,#swal2-html-container {
+  text-align: center !important;
+}
+
+.swal2-actions {
+  justify-content: center !important;
+}
+
+/* Form wrapper styles - Always LTR for better UX */
+.form-wrapper {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/* Input placeholder styles - Always LTR */
+input::placeholder {
+  text-align: left !important;
+}
+
+/* Menu button text alignment - Always LTR */
+.menu-button {
+  text-align: left !important;
+}
+
+/* Ensure proper text direction for form elements - Always LTR */
+.form-wrapper input,
+.form-wrapper select,
+.form-wrapper textarea {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/* Role dropdown styling - Always LTR */
+.role-dropdown {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/* Search input styling - Always LTR */
+.search-input {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/* Button text alignment */
+.admin-button {
+  text-align: center !important;
+}
+
+/* Table styles - RTL for Arabic, LTR for English */
+.admin-table {
+  direction: ltr; /* Default LTR */
+}
+
+/* RTL support for Arabic */
+.admin-table[dir="rtl"] {
+  direction: rtl;
+}
+
+.admin-table[dir="rtl"] th,
+.admin-table[dir="rtl"] td {
+  /* text-align: right !important; */
+}
+
+.admin-table[dir="rtl"] .flex {
+  flex-direction: row-reverse;
+}
+
+/* LTR for English */
+.admin-table[dir="ltr"] th,
+.admin-table[dir="ltr"] td {
+  /* text-align: left !important; */
+}
+
+/* Container RTL support */
+.container[dir="rtl"] .admin-table th,
+.container[dir="rtl"] .admin-table td {
+  /* text-align: right !important; */
+}
+
+.container[dir="rtl"] .admin-table .flex {
+  flex-direction: row-reverse;
+}
+
+.container[dir="ltr"] .admin-table th,
+.container[dir="ltr"] .admin-table td {
+  /* text-align: left !important; */
+}
+
+/* Ensure proper alignment for table headers and cells */
+.admin-table .chakra-table__thead th {
+  /* text-align: left; */
+}
+
+.admin-table[dir="rtl"] .chakra-table__thead th {
+  /* text-align: right !important; */
+}
+
+.admin-table .chakra-table__tbody td {
+  /* text-align: left; */
+}
+
+.admin-table[dir="rtl"] .chakra-table__tbody td {
+  /* text-align: right !important; */
+}
+
+/* RTL specific styling for table content */
+[dir="rtl"] .admin-table th,
+[dir="rtl"] .admin-table td {
+  /* text-align: right !important; */
+}
+
+[dir="rtl"] .admin-table .flex {
+  flex-direction: row-reverse;
+}
+
+/* LTR specific styling for table content */
+[dir="ltr"] .admin-table th,
+[dir="ltr"] .admin-table td {
+  /* text-align: left !important; */
+}

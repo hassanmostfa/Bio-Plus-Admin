@@ -21,8 +21,10 @@ import { useEffect } from "react";
 import { AiOutlineProduct } from "react-icons/ai";
 import { LuShoppingBasket, LuLayers3 } from "react-icons/lu";
 import { useGetStatsQuery } from "../../../api/statsSlice";
+import { useTranslation } from 'react-i18next';
 
 export default function UserReports() {
+  const { t } = useTranslation();
   const brandColor = useColorModeValue("brand.500", "white");
   const boxBg = useColorModeValue("secondaryGray.300", "whiteAlpha.100");
 
@@ -34,18 +36,18 @@ export default function UserReports() {
   }, [refetch , isLoading]);
 
   const cardData = [
-    { name: "Total Admins", value: stats?.totalAdmins || 0, icon: MdOutlineGroup },
-    { name: "Total Pharmacy", value: stats?.totalPharmacies || 0, icon: MdOutlineLocalPharmacy },
-    { name: "Total Doctors", value: stats?.totalDoctors || 0, icon: MdOutlineMedicalServices },
-    { name: "Total Clinics", value: stats?.totalClinics || 0, icon: MdOutlineStore },
-    { name: "Total Orders", value: stats?.totalOrders || 0, icon: MdOutlineShoppingCart },
-    { name: "Total Appointments", value: stats?.totalAppointments || 0, icon: MdOutlineEventNote },
-    { name: "Total Users", value: stats?.totalUsers || 0, icon: MdOutlinePerson },
-    { name: "Total Brands", value: stats?.totalBrands || 0, icon: MdOutlineBrandingWatermark },
-    { name: "Total Products", value: stats?.totalProducts || 0, icon: LuShoppingBasket },
-    { name: "Total Product Types", value: stats?.totalProductTypes || 0, icon: AiOutlineProduct },
-    { name: "Total Categories", value: stats?.totalCategories || 0, icon: LuLayers3 },
-    { name: "Total Family Accounts", value: stats?.totalFamilyMembers || 0, icon: MdFamilyRestroom },
+    { name: t('dashboard.totalAdmins'), value: stats?.totalAdmins || 0, icon: MdOutlineGroup },
+    { name: t('dashboard.totalPharmacies'), value: stats?.totalPharmacies || 0, icon: MdOutlineLocalPharmacy },
+    { name: t('dashboard.totalDoctors'), value: stats?.totalDoctors || 0, icon: MdOutlineMedicalServices },
+    { name: t('dashboard.totalClinics'), value: stats?.totalClinics || 0, icon: MdOutlineStore },
+    { name: t('dashboard.totalOrders'), value: stats?.totalOrders || 0, icon: MdOutlineShoppingCart },
+    { name: t('dashboard.totalAppointments'), value: stats?.totalAppointments || 0, icon: MdOutlineEventNote },
+    { name: t('dashboard.totalUsers'), value: stats?.totalUsers || 0, icon: MdOutlinePerson },
+    { name: t('dashboard.totalBrands'), value: stats?.totalBrands || 0, icon: MdOutlineBrandingWatermark },
+    { name: t('dashboard.totalProducts'), value: stats?.totalProducts || 0, icon: LuShoppingBasket },
+    { name: t('dashboard.totalProductTypes'), value: stats?.totalProductTypes || 0, icon: AiOutlineProduct },
+    { name: t('dashboard.totalCategories'), value: stats?.totalCategories || 0, icon: LuLayers3 },
+    { name: t('dashboard.totalFamilyAccounts'), value: stats?.totalFamilyMembers || 0, icon: MdFamilyRestroom },
   ];
 
   return (

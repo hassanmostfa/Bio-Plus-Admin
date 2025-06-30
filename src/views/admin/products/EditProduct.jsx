@@ -505,7 +505,7 @@ const EditProduct = () => {
             Back
           </Button>
         </div>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} dir="rtl">
           {/* Basic Information */}
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
             <Box>
