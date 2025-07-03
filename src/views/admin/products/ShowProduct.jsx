@@ -33,11 +33,15 @@ import {
 } from '@chakra-ui/react';
 import { FiArrowLeft } from 'react-icons/fi';
 import Swal from 'sweetalert2';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 const ShowProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: productResponse, isLoading ,refetch} = useGetProductQuery(id);
+  const { t } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   useEffect(() => {
     refetch();
   }, []);
@@ -56,21 +60,23 @@ const ShowProduct = () => {
   const handleBack = () => navigate(-1);
 
   return (
-    <Box p={4} maxW="1400px" mx="auto">
+    <Box p={4} maxW="1400px" mx="auto" dir={isRTL ? 'rtl' : 'ltr'}>
       <Button 
         leftIcon={<Icon as={FiArrowLeft} />} 
         variant="ghost" 
         mb={4}
         onClick={handleBack}
+        ml={isRTL ? 2 : 0}
+        mr={!isRTL ? 2 : 0}
       >
-        Back to Products
+        {t('productForm.backToProducts')}
       </Button>
 
       <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap={8}>
         {/* Product Images */}
         <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
           <CardHeader>
-            <Heading size="md">Product Images</Heading>
+            <Heading size="md">{t('productForm.productImages')}</Heading>
           </CardHeader>
           <CardBody>
             <Flex direction="column" gap={4}>
@@ -118,10 +124,10 @@ const ShowProduct = () => {
               <Heading size="md">{product.name}</Heading>
               <Flex gap={2}>
                 <Badge colorScheme={product.isActive ? 'green' : 'red'}>
-                  {product.isActive ? 'Active' : 'Inactive'}
+                  {product.isActive ? t('productForm.statusActive') : t('productForm.statusInactive')}
                 </Badge>
                 <Badge colorScheme={product.isPublished ? 'blue' : 'yellow'}>
-                  {product.isPublished ? 'Published' : 'Draft'}
+                  {product.isPublished ? t('productForm.statusPublished') : t('productForm.statusDraft')}
                 </Badge>
               </Flex>
             </Flex>
@@ -129,23 +135,23 @@ const ShowProduct = () => {
           <CardBody>
             <Stack spacing={4}>
               <Flex justify="space-between">
-                <Text fontWeight="bold">Brand:</Text>
+                <Text fontWeight="bold">{t('productForm.brand')}:</Text>
                 <Text>{product.brandName}</Text>
               </Flex>
               
               <Flex justify="space-between">
-                <Text fontWeight="bold">Pharmacy:</Text>
+                <Text fontWeight="bold">{t('productForm.pharmacy')}:</Text>
                 <Text>{product.pharmacyName}</Text>
               </Flex>
               
               <Flex justify="space-between">
-                <Text fontWeight="bold">Price:</Text>
-                <Text>{product.price}</Text>
+                <Text fontWeight="bold">{t('productForm.price')}:</Text>
+                <Text>${product.price}</Text>
               </Flex>
               
               {product.offerPercentage && (
                 <Flex justify="space-between">
-                  <Text fontWeight="bold">Offer:</Text>
+                  <Text fontWeight="bold">{t('productForm.offer')}:</Text>
                   <Text color="green.500">
                     {product.offerPercentage}% ({product.offerType.replace('_', ' ')})
                   </Text>
@@ -153,25 +159,25 @@ const ShowProduct = () => {
               )}
               
               <Flex justify="space-between">
-                <Text fontWeight="bold">Cost:</Text>
-                <Text>{product.cost}</Text>
+                <Text fontWeight="bold">{t('productForm.cost')}:</Text>
+                <Text>${product.cost}</Text>
               </Flex>
               
               <Flex justify="space-between">
-                <Text fontWeight="bold">Quantity in Stock:</Text>
+                <Text fontWeight="bold">{t('productForm.quantityInStock')}:</Text>
                 <Text>{product.quantity}</Text>
               </Flex>
               
               <Divider />
               
               <Box>
-                <Text fontWeight="bold" mb={2}>Description:</Text>
+                <Text fontWeight="bold" mb={2}>{t('productForm.description')}:</Text>
                 <Text>{product.description}</Text>
               </Box>
               
               {arabicTranslation && (
                 <Box>
-                  <Text fontWeight="bold" mb={2}>Arabic Description:</Text>
+                  <Text fontWeight="bold" mb={2}>{t('productForm.arabicDescription')}:</Text>
                   <Text dir="rtl" textAlign="right">{arabicTranslation.description}</Text>
                 </Box>
               )}
@@ -183,8 +189,8 @@ const ShowProduct = () => {
       {/* Variants and Additional Info */}
       <Tabs mt={8} variant="enclosed" colorScheme="blue">
         <TabList>
-          <Tab>Variants</Tab>
-          <Tab>Additional Information</Tab>
+          <Tab>{t('productForm.variants')}</Tab>
+          <Tab>{t('productForm.additionalInformation')}</Tab>
         </TabList>
         <TabPanels>
           <TabPanel p={0} pt={4}>
@@ -194,12 +200,12 @@ const ShowProduct = () => {
                   <Table variant="simple">
                     <Thead>
                       <Tr>
-                        <Th>Variant</Th>
-                        <Th>Value</Th>
-                        <Th isNumeric>Price</Th>
-                        <Th isNumeric>Cost</Th>
-                        <Th isNumeric>Stock</Th>
-                        <Th>Status</Th>
+                        <Th>{t('productForm.variant')}</Th>
+                        <Th>{t('productForm.value')}</Th>
+                        <Th isNumeric>{t('productForm.price')}</Th>
+                        <Th isNumeric>{t('productForm.cost')}</Th>
+                        <Th isNumeric>{t('productForm.stock')}</Th>
+                        <Th>{t('productForm.status')}</Th>
                       </Tr>
                     </Thead>
                     <Tbody>
@@ -219,8 +225,8 @@ const ShowProduct = () => {
                               <Text>{variant.attributeValue}</Text>
                             </Flex>
                           </Td>
-                          <Td isNumeric>{variant.price}</Td>
-                          <Td isNumeric>{variant.cost}</Td>
+                          <Td isNumeric>${variant.price}</Td>
+                          <Td isNumeric>${variant.cost}</Td>
                           <Td isNumeric>{variant.quantity}</Td>
                           <Td>
                             <Tag 
@@ -228,7 +234,7 @@ const ShowProduct = () => {
                               colorScheme={variant.isActive ? 'green' : 'red'}
                             >
                               <TagLabel>
-                                {variant.isActive ? 'Active' : 'Inactive'}
+                                {variant.isActive ? t('productForm.statusActive') : t('productForm.statusInactive')}
                               </TagLabel>
                             </Tag>
                           </Td>
@@ -239,7 +245,7 @@ const ShowProduct = () => {
                 </CardBody>
               </Card>
             ) : (
-              <Text>This product has no variants</Text>
+              <Text>{t('productForm.noVariants')}</Text>
             )}
           </TabPanel>
           
@@ -247,160 +253,68 @@ const ShowProduct = () => {
             <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={4}>
               <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
                 <CardHeader>
-                  <Heading size="sm">Details</Heading>
+                  <Heading size="sm">{t('productForm.creationDetails')}</Heading>
                 </CardHeader>
                 <CardBody>
                   <Stack spacing={2}>
                     <Flex justify="space-between">
-                      <Text fontWeight="bold">SKU:</Text>
-                      <Text>{product.sku || 'N/A'}</Text>
-                    </Flex>
-                    <Flex justify="space-between">
-                      <Text fontWeight="bold">Lot Number:</Text>
-                      <Text>{product.lotNumber || 'N/A'}</Text>
-                    </Flex>
-                    <Flex justify="space-between">
-                      <Text fontWeight="bold">Expiry Date:</Text>
-                      <Text>{product.expiryDate ? new Date(product.expiryDate).toLocaleDateString() : 'N/A'}</Text>
-                    </Flex>
-                    <Flex justify="space-between">
-                      <Text fontWeight="bold">Product Type:</Text>
-                      <Text>{product.productType?.name || 'N/A'}</Text>
-                    </Flex>
-                    <Flex justify="space-between">
-                      <Text fontWeight="bold">Discount:</Text>
-                      <Text>{product.discount != null ? `${product.discount}${product.discountType === 'PERCENTAGE' ? '%' : ''}` : 'N/A'}</Text>
-                    </Flex>
-                  </Stack>
-                </CardBody>
-              </Card>
-
-               <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
-                <CardHeader>
-                  <Heading size="sm">Creation Details</Heading>
-                </CardHeader>
-                <CardBody>
-                  <Stack spacing={2}>
-                    <Flex justify="space-between">
-                      <Text fontWeight="bold">Created At:</Text>
+                      <Text fontWeight="bold">{t('productForm.createdAt')}:</Text>
                       <Text>{new Date(product.createdAt).toLocaleString()}</Text>
                     </Flex>
                     <Flex justify="space-between">
-                      <Text fontWeight="bold">Last Updated:</Text>
+                      <Text fontWeight="bold">{t('productForm.lastUpdated')}:</Text>
                       <Text>{new Date(product.updatedAt).toLocaleString()}</Text>
                     </Flex>
                   </Stack>
                 </CardBody>
               </Card>
-            </Grid>
-
-            {/* Descriptive Fields */}
-            <Box mt={4}>
+              
               <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
                 <CardHeader>
-                  <Heading size="sm">Descriptive Information</Heading>
-                </CardHeader>
-                <CardBody>
-                  <Stack spacing={4}>
-                    <Box>
-                      <Text fontWeight="bold" mb={1}>Guide Line (English):</Text>
-                      <Text>{product.translations?.find(t => t.languageId === 'en')?.guideLine || product.guideLine || 'N/A'}</Text>
-                    </Box>
-                    {arabicTranslation?.guideLine && (
-                       <Box>
-                        <Text fontWeight="bold" mb={1}>Guide Line (Arabic):</Text>
-                        <Text dir="rtl" textAlign="right">{arabicTranslation.guideLine}</Text>
-                       </Box>
-                    )}
-
-                    <Divider />
-
-                    <Box>
-                      <Text fontWeight="bold" mb={1}>How To Use (English):</Text>
-                      <Text>{product.translations?.find(t => t.languageId === 'en')?.howToUse || product.howToUse || 'N/A'}</Text>
-                    </Box>
-                    {arabicTranslation?.howToUse && (
-                      <Box>
-                        <Text fontWeight="bold" mb={1}>How To Use (Arabic):</Text>
-                        <Text dir="rtl" textAlign="right">{arabicTranslation.howToUse}</Text>
-                      </Box>
-                    )}
-
-                    <Divider />
-
-                    <Box>
-                      <Text fontWeight="bold" mb={1}>Treatment (English):</Text>
-                      <Text>{product.translations?.find(t => t.languageId === 'en')?.treatment || product.treatment || 'N/A'}</Text>
-                    </Box>
-                    {arabicTranslation?.treatment && (
-                       <Box>
-                        <Text fontWeight="bold" mb={1}>Treatment (Arabic):</Text>
-                        <Text dir="rtl" textAlign="right">{arabicTranslation.treatment}</Text>
-                       </Box>
-                    )}
-
-                     <Divider />
-
-                    <Box>
-                      <Text fontWeight="bold" mb={1}>Ingredients (English):</Text>
-                      <Text>{product.translations?.find(t => t.languageId === 'en')?.ingredients || product.ingredients || 'N/A'}</Text>
-                    </Box>
-                    {arabicTranslation?.ingredients && (
-                       <Box>
-                        <Text fontWeight="bold" mb={1}>Ingredients (Arabic):</Text>
-                        <Text dir="rtl" textAlign="right">{arabicTranslation.ingredients}</Text>
-                       </Box>
-                    )}
-
-                  </Stack>
-                </CardBody>
-              </Card>
-            </Box>
-
-            {/* Actions */}
-            <Box mt={4}>
-              <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
-                <CardHeader>
-                  <Heading size="sm">Actions</Heading>
+                  <Heading size="sm">{t('productForm.actions')}</Heading>
                 </CardHeader>
                 <CardBody>
                   <Flex gap={4} wrap="wrap">
                     <Button 
                       colorScheme="blue" 
                       onClick={() => navigate(`/admin/edit-product/${product.id}`)}
+                      ml={isRTL ? 2 : 0}
+                      mr={!isRTL ? 2 : 0}
                     >
-                      Edit Product
+                      {t('productForm.editProduct')}
                     </Button>
                     <Button 
                       colorScheme="red" 
                       variant="outline"
                       onClick={() => {
                         Swal.fire({
-                          title: 'Are you sure?',
-                          text: "You won't be able to revert this!",
+                          title: t('product.areYouSure'),
+                          text: t('product.irreversible'),
                           icon: 'warning',
                           showCancelButton: true,
                           confirmButtonColor: '#3085d6',
                           cancelButtonColor: '#d33',
-                          confirmButtonText: 'Yes, delete it!'
+                          confirmButtonText: t('product.yesDelete')
                         }).then((result) => {
                           if (result.isConfirmed) {
                             // Add delete logic here
                             Swal.fire(
-                              'Deleted!',
-                              'Product has been deleted.',
+                              t('products.deleted'),
+                              t('products.deletedMsg'),
                               'success'
                             );
                           }
                         });
                       }}
+                      ml={isRTL ? 2 : 0}
+                      mr={!isRTL ? 2 : 0}
                     >
-                      Delete Product
+                      {t('productForm.deleteProduct')}
                     </Button>
                   </Flex>
                 </CardBody>
               </Card>
-            </Box>
+            </Grid>
           </TabPanel>
         </TabPanels>
       </Tabs>

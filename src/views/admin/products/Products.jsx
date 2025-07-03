@@ -87,18 +87,18 @@ const Products = () => {
         data: { isActive: !currentStatus }
       }).unwrap();
       toast({
-        title: "Success",
-        description: "Product status updated successfully",
-        status: "success",
+        title: t('product.statusUpdateSuccess'),
+        description: '',
+        status: 'success',
         duration: 3000,
         isClosable: true,
       });
       refetch();
     } catch (err) {
       toast({
-        title: "Error",
-        description: err.data?.message || "Failed to update product status",
-        status: "error",
+        title: t('product.statusUpdateError'),
+        description: err.data?.message || t('product.statusUpdateError'),
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -112,18 +112,18 @@ const Products = () => {
         data: { isPublished: !currentPublished }
       }).unwrap();
       toast({
-        title: "Success",
-        description: "Product publish status updated successfully",
-        status: "success",
+        title: t('product.publishUpdateSuccess'),
+        description: '',
+        status: 'success',
         duration: 3000,
         isClosable: true,
       });
       refetch();
     } catch (err) {
       toast({
-        title: "Error",
-        description: err.data?.message || "Failed to update product publish status",
-        status: "error",
+        title: t('product.publishUpdateError'),
+        description: err.data?.message || t('product.publishUpdateError'),
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -132,13 +132,13 @@ const Products = () => {
 
   const handleDelete = async (productId) => {
     const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
+      title: t('product.deleteConfirmTitle'),
+      text: t('product.deleteConfirmText'),
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!"
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: t('product.deleteConfirmButton')
     });
 
     if (result.isConfirmed) {
@@ -146,17 +146,17 @@ const Products = () => {
         await deleteProduct(productId).unwrap();
         refetch();
         toast({
-          title: "Deleted!",
-          description: "Product has been deleted.",
-          status: "success",
+          title: t('product.deleteSuccessTitle'),
+          description: t('product.deleteSuccessText'),
+          status: 'success',
           duration: 3000,
           isClosable: true,
         });
       } catch (err) {
         toast({
-          title: "Error",
-          description: err.data?.message || "Failed to delete product",
-          status: "error",
+          title: t('product.deleteError'),
+          description: err.data?.message || t('product.deleteError'),
+          status: 'error',
           duration: 5000,
           isClosable: true,
         });
@@ -168,8 +168,7 @@ const Products = () => {
   const exportToExcel = () => {
     const data = products.map(product => ({
       'Product ID': product.id,
-      'Name (English)': product.nameEn,
-      'Name (Arabic)': product.nameAr,
+      'Name (English)': product.name,
       'Description (English)': product.descriptionEn,
       'Description (Arabic)': product.descriptionAr,
       'Category': product.categoryName,
@@ -202,9 +201,9 @@ const Products = () => {
     XLSX.writeFile(workbook, "Products.xlsx");
     
     toast({
-      title: "Export Successful",
-      description: "Products data has been exported to Excel",
-      status: "success",
+      title: t('product.exportSuccessTitle'),
+      description: t('product.exportSuccessText'),
+      status: 'success',
       duration: 3000,
       isClosable: true,
     });
@@ -222,9 +221,9 @@ const Products = () => {
       const result = await uploadProducts(formData).unwrap();
       
       toast({
-        title: "Import Successful",
-        description: "Products have been imported successfully",
-        status: "success",
+        title: t('product.importSuccessTitle'),
+        description: t('product.importSuccessText'),
+        status: 'success',
         duration: 3000,
         isClosable: true,
       });
@@ -233,9 +232,9 @@ const Products = () => {
       refetch();
     } catch (err) {
       toast({
-        title: "Import Failed",
-        description: err.data?.message || "Failed to import products",
-        status: "error",
+        title: t('product.importErrorTitle'),
+        description: err.data?.message || t('product.importErrorText'),
+        status: 'error',
         duration: 5000,
         isClosable: true,
       });
@@ -243,7 +242,7 @@ const Products = () => {
   };
 
   const columns = [
-    columnHelper.accessor("nameEn", {
+    columnHelper.accessor("name", {
       id: "name",
       header: () => <Text color="gray.400">{t('product.productName')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
@@ -342,7 +341,7 @@ const Products = () => {
       <Card flexDirection="column" w="100%" pt={"20px"} px="0px" overflowX="auto">
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            {t('products.title')}
+            {t('product.title')}
           </Text>
           <Flex>
             <Button
@@ -358,7 +357,7 @@ const Products = () => {
               mr={3}
             >
               <PlusSquareIcon me="10px" />
-              {t('products.addProduct')}
+              {t('product.addProduct')}
             </Button>
             
             <Menu>
@@ -369,11 +368,11 @@ const Products = () => {
                 variant="outline"
                 colorScheme="blue"
               >
-                {t('products.export')}
+                {t('product.export')}
               </MenuButton>
               <MenuList>
                 <MenuItem icon={<FaDownload />} onClick={exportToExcel}>
-                  {t('products.exportToExcel')}
+                  {t('product.exportToExcel')}
                 </MenuItem>
               </MenuList>
             </Menu>
@@ -387,7 +386,7 @@ const Products = () => {
                 htmlFor="file-import"
                 cursor="pointer"
               >
-                {t('products.import')}
+                {t('product.import')}
                 <input
                   type="file"
                   id="file-import"
@@ -414,9 +413,9 @@ const Products = () => {
                     document.body.removeChild(a);
                     
                     toast({
-                      title: "Download Started",
-                      description: "Product template is being downloaded",
-                      status: "success",
+                      title: t('product.downloadStartedTitle'),
+                      description: t('product.downloadStartedText'),
+                      status: 'success',
                       duration: 3000,
                       isClosable: true,
                     });
@@ -425,7 +424,7 @@ const Products = () => {
                 isLoading={isTemplateLoading}
                 disabled={isTemplateLoading}
               >
-                {t('products.downloadTemplate')}
+                {t('product.downloadTemplate')}
               </Button>
             </Box>
           </Flex>
@@ -438,7 +437,7 @@ const Products = () => {
               <FaSearch color="gray.300" />
             </InputLeftElement>
             <Input
-              placeholder={t('products.searchPlaceholder')}
+              placeholder={t('product.searchPlaceholder')}
               value={globalFilter ?? ''}
               onChange={(e) => setGlobalFilter(e.target.value)}
               borderRadius="20px"
@@ -487,6 +486,12 @@ const Products = () => {
                     currentPage={pagination.page}
                     totalPages={pagination.totalPages}
                     onPageChange={(newPage) => setPage(newPage)}
+                    limit={limit}
+                    onLimitChange={setLimit}
+                    labelRowsPerPage={t('table.rowsPerPage')}
+                    labelPrevious={t('table.previous')}
+                    labelNext={t('table.next')}
+                    labelPageOf={t('table.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
                   />
                 </Flex>
               )}

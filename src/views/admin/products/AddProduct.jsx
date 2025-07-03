@@ -37,6 +37,7 @@ import { useAddFileMutation } from 'api/filesSlice';
 import { useGetTypesQuery } from 'api/typeSlice';
 import { useTranslation } from 'react-i18next';
 import FormWrapper from 'components/FormWrapper';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AddProduct = () => {
   const [nameEn, setNameEn] = useState('');
@@ -81,6 +82,7 @@ const AddProduct = () => {
   const toast = useToast();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   // Fetch data
   const { data: categoriesResponse } = useGetCategoriesQuery({
@@ -116,8 +118,8 @@ const AddProduct = () => {
         .map((file) => {
           if (!file.type.startsWith('image/')) {
             toast({
-              title: 'Error',
-              description: 'Please upload only image files',
+              title: t('common.error'),
+              description: t('forms.imageOnlyError'),
               status: 'error',
               duration: 5000,
               isClosable: true,
@@ -248,7 +250,7 @@ const AddProduct = () => {
   
       // Prepare product data
       if (!price) {
-        throw new Error('Price is required for the product.');
+        throw new Error(t('forms.priceRequired'));
       }
   
       const productData = {
@@ -293,8 +295,8 @@ const AddProduct = () => {
       const response = await addProduct(productData).unwrap();
   
       toast({
-        title: 'Success',
-        description: 'Product created successfully',
+        title: t('common.success'),
+        description: t('product.productCreatedSuccess'),
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -303,9 +305,9 @@ const AddProduct = () => {
       navigate('/admin/products');
     } catch (err) {
       toast({
-        title: 'Error',
+        title: t('common.error'),
         description:
-          err.data?.message || err.message || 'Failed to create product',
+          err.data?.message || err.message || t('forms.failedToCreateProduct'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -315,13 +317,13 @@ const AddProduct = () => {
 
   const handleCancel = () => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'You will lose all unsaved changes',
+      title: t('common.areYouSure'),
+      text: t('forms.loseUnsavedChanges'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, discard changes',
+      confirmButtonText: t('common.yesDiscardChanges'),
     }).then((result) => {
       if (result.isConfirmed) {
         navigate('/admin/products');
@@ -385,9 +387,9 @@ const AddProduct = () => {
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>Description (English)</FormLabel>
+                  <FormLabel>{t('product.descriptionEn')}</FormLabel>
                   <Textarea
-                    placeholder="Enter Product Description"
+                    placeholder={t('forms.enterDescription')}
                     value={descriptionEn}
                     onChange={(e) => setDescriptionEn(e.target.value)}
                     color={textColor}
@@ -396,9 +398,9 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>Description (Arabic)</FormLabel>
+                  <FormLabel>{t('product.descriptionAr')}</FormLabel>
                   <Textarea
-                    placeholder="أدخل وصف المنتج"
+                    placeholder={t('forms.enterDescriptionAr')}
                     value={descriptionAr}
                     onChange={(e) => setDescriptionAr(e.target.value)}
                     dir="rtl"
@@ -433,9 +435,9 @@ const AddProduct = () => {
               {/* How To Use */}
               <Box>
                 <FormControl>
-                  <FormLabel>How To Use (English)</FormLabel>
+                  <FormLabel>{t('product.howToUseEn')}</FormLabel>
                   <Textarea
-                    placeholder="Enter How To Use"
+                    placeholder={t('forms.enterHowToUse')}
                     value={howToUseEn}
                     onChange={(e) => setHowToUseEn(e.target.value)}
                     color={textColor}
@@ -444,9 +446,9 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>How To Use (Arabic)</FormLabel>
+                  <FormLabel>{t('product.howToUseAr')}</FormLabel>
                   <Textarea
-                    placeholder="أدخل طريقة الاستخدام"
+                    placeholder={t('forms.enterHowToUseAr')}
                     value={howToUseAr}
                     onChange={(e) => setHowToUseAr(e.target.value)}
                     dir="rtl"
@@ -458,9 +460,9 @@ const AddProduct = () => {
               {/* Treatment */}
               <Box>
                 <FormControl>
-                  <FormLabel>Treatment (English)</FormLabel>
+                  <FormLabel>{t('product.treatmentEn')}</FormLabel>
                   <Textarea
-                    placeholder="Enter Treatment Information"
+                    placeholder={t('forms.enterTreatmentInformation')}
                     value={treatmentEn}
                     onChange={(e) => setTreatmentEn(e.target.value)}
                     color={textColor}
@@ -469,9 +471,9 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>Treatment (Arabic)</FormLabel>
+                  <FormLabel>{t('product.treatmentAr')}</FormLabel>
                   <Textarea
-                    placeholder="أدخل معلومات العلاج"
+                    placeholder={t('forms.enterTreatmentAr')}
                     value={treatmentAr}
                     onChange={(e) => setTreatmentAr(e.target.value)}
                     dir="rtl"
@@ -483,9 +485,9 @@ const AddProduct = () => {
               {/* Ingredients */}
               <Box>
                 <FormControl>
-                  <FormLabel>Ingredients (English)</FormLabel>
+                  <FormLabel>{t('product.ingredientsEn')}</FormLabel>
                   <Textarea
-                    placeholder="Enter Ingredients"
+                    placeholder={t('forms.enterIngredients')}
                     value={ingredientsEn}
                     onChange={(e) => setIngredientsEn(e.target.value)}
                     color={textColor}
@@ -494,9 +496,9 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>Ingredients (Arabic)</FormLabel>
+                  <FormLabel>{t('product.ingredientsAr')}</FormLabel>
                   <Textarea
-                    placeholder="أدخل المكونات"
+                    placeholder={t('forms.enterIngredientsAr')}
                     value={ingredientsAr}
                     onChange={(e) => setIngredientsAr(e.target.value)}
                     dir="rtl"
@@ -511,10 +513,10 @@ const AddProduct = () => {
               <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
                 <Box>
                   <FormControl>
-                    <FormLabel>SKU</FormLabel>
+                    <FormLabel>{t('product.sku')}</FormLabel>
                     <Input
                       type="text"
-                      placeholder="Enter SKU"
+                      placeholder={t('forms.enterSku')}
                       value={sku}
                       onChange={(e) => setSku(e.target.value)}
                       color={textColor}
@@ -523,10 +525,10 @@ const AddProduct = () => {
                 </Box>
                 <Box>
                   <FormControl>
-                    <FormLabel>Lot Number</FormLabel>
+                    <FormLabel>{t('product.lotNumber')}</FormLabel>
                     <Input
                       type="text"
-                      placeholder="Enter Lot Number"
+                      placeholder={t('forms.enterLotNumber')}
                       value={lotNumber}
                       onChange={(e) => setLotNumber(e.target.value)}
                       color={textColor}
@@ -535,7 +537,7 @@ const AddProduct = () => {
                 </Box>
                 <Box>
                   <FormControl>
-                    <FormLabel>Expiry Date</FormLabel>
+                    <FormLabel>{t('product.expiryDate')}</FormLabel>
                     <Input
                       type="date"
                       value={expiryDate}
@@ -551,12 +553,13 @@ const AddProduct = () => {
             <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>{t('product.category')}</FormLabel>
                   <Select
-                    placeholder="Select Category"
+                    placeholder={t('forms.selectCategory')}
                     value={categoryId}
                     onChange={(e) => setCategoryId(e.target.value)}
                     color={textColor}
+                    style={{ direction: 'ltr' }}
                   >
                     {categories?.map((cat) => (
                       <option key={cat.id} value={cat.id}>
@@ -569,12 +572,13 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>Brand</FormLabel>
+                  <FormLabel>{t('product.brand')}</FormLabel>
                   <Select
-                    placeholder="Select Brand"
+                    placeholder={t('forms.selectBrand')}
                     value={brandId}
                     onChange={(e) => setBrandId(e.target.value)}
                     color={textColor}
+                    style={{ direction: 'ltr' }}
                   >
                     {brands.map((brand) => (
                       <option key={brand.id} value={brand.id}>
@@ -586,12 +590,13 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>Pharmacy</FormLabel>
+                  <FormLabel>{t('product.pharmacy')}</FormLabel>
                   <Select
-                    placeholder="Select Pharmacy"
+                    placeholder={t('forms.selectPharmacy')}
                     value={pharmacyId}
                     onChange={(e) => setPharmacyId(e.target.value)}
                     color={textColor}
+                    style={{ direction: 'ltr' }}
                   >
                     {pharmacies?.map((pharmacy) => (
                       <option key={pharmacy.id} value={pharmacy.id}>
@@ -603,12 +608,13 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>Product Type</FormLabel>
+                  <FormLabel>{t('product.productType')}</FormLabel>
                   <Select
-                    placeholder="Select Product Type"
+                    placeholder={t('forms.selectProductType')}
                     value={productTypeId}
                     onChange={(e) => setProductTypeId(e.target.value)}
                     color={textColor}
+                    style={{ direction: 'ltr' }}
                   >
                     {productTypes.map((type) => (
                       <option key={type.id} value={type.id}>
@@ -623,10 +629,10 @@ const AddProduct = () => {
             <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>Cost</FormLabel>
+                  <FormLabel>{t('product.cost')}</FormLabel>
                   <Input
                     type="number"
-                    placeholder="0.00"
+                    placeholder={t('forms.enterCost')}
                     value={cost}
                     onChange={(e) => setCost(e.target.value)}
                     color={textColor}
@@ -635,10 +641,10 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>Price</FormLabel>
+                  <FormLabel>{t('product.price')}</FormLabel>
                   <Input
                     type="number"
-                    placeholder="0.00"
+                    placeholder={t('forms.enterPrice')}
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     color={textColor}
@@ -647,10 +653,10 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>Quantity</FormLabel>
+                  <FormLabel>{t('product.quantity')}</FormLabel>
                   <Input
                     type="number"
-                    placeholder="0"
+                    placeholder={t('forms.enterQuantity')}
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
                     color={textColor}
@@ -662,21 +668,21 @@ const AddProduct = () => {
 
             {/* Offer Type */}
             <Box mb={4}>
-              <FormLabel>Offer Type</FormLabel>
+              <FormLabel>{t('product.offerType')}</FormLabel>
               <RadioGroup value={offerType} onChange={setOfferType}>
                 <Stack direction="row">
-                  <Radio value="MONTHLY_OFFER">Monthly Offer</Radio>
-                  <Radio value="NEW_ARRIVAL">New Arrival</Radio>
-                  <Radio value="NONE">None</Radio>
+                  <Radio value="MONTHLY_OFFER">{t('forms.monthlyOffer')}</Radio>
+                  <Radio value="NEW_ARRIVAL">{t('forms.newArrival')}</Radio>
+                  <Radio value="NONE">{t('forms.none')}</Radio>
                 </Stack>
               </RadioGroup>
               {offerType === 'MONTHLY_OFFER' && (
                 <Box mt={2}>
                   <FormControl>
-                    <FormLabel>Offer Percentage</FormLabel>
+                    <FormLabel>{t('forms.offerPercentage')}</FormLabel>
                     <Input
                       type="number"
-                      placeholder="0.0"
+                      placeholder={t('forms.enterOfferPercentage')}
                       value={offerPercentage}
                       onChange={(e) => setOfferPercentage(e.target.value)}
                       color={textColor}
@@ -691,10 +697,10 @@ const AddProduct = () => {
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
                 <Box>
                   <FormControl>
-                    <FormLabel>Discount</FormLabel>
+                    <FormLabel>{t('product.discount')}</FormLabel>
                     <Input
                       type="number"
-                      placeholder="Enter discount value"
+                      placeholder={t('forms.enterDiscountValue')}
                       value={discount != null ? discount : ''}
                       onChange={(e) => setDiscount(e.target.value)}
                       color={textColor}
@@ -703,15 +709,16 @@ const AddProduct = () => {
                 </Box>
                 <Box>
                   <FormControl>
-                    <FormLabel>Discount Type</FormLabel>
+                    <FormLabel>{t('product.discountType')}</FormLabel>
                     <Select
-                      placeholder="Select discount type"
+                      placeholder={t('forms.selectDiscountType')}
                       value={discountType || ''}
                       onChange={(e) => setDiscountType(e.target.value)}
                       color={textColor}
+                      style={{ direction: 'ltr' }}
                     >
-                      <option value="PERCENTAGE">Percentage</option>
-                      <option value="FIXED">Fixed</option>
+                      <option value="PERCENTAGE">{t('forms.percentage')}</option>
+                      <option value="FIXED">{t('forms.fixed')}</option>
                     </Select>
                   </FormControl>
                 </Box>
@@ -721,26 +728,29 @@ const AddProduct = () => {
             {/* Status Switches */}
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
             <FormControl display="flex" alignItems="center">
-                <FormLabel mb="0">Published</FormLabel>
+                <FormLabel mb="0">{t('product.isPublished')}</FormLabel>
                 <Switch
                   isChecked={isPublished}
                   onChange={() => setIsPublished(!isPublished)}
+                  style={{ direction: 'ltr' }}
                 />
               </FormControl>
 
               <FormControl display="flex" alignItems="center">
-                <FormLabel mb="0">Active</FormLabel>
+                <FormLabel mb="0">{t('product.isActive')}</FormLabel>
                 <Switch
                   isChecked={isActive}
                   onChange={() => setIsActive(!isActive)}
+                  style={{ direction: 'ltr' }}
                 />
               </FormControl>
               
               <FormControl display="flex" alignItems="center">
-                <FormLabel mb="0">Has Variants</FormLabel>
+                <FormLabel mb="0">{t('product.hasVariants')}</FormLabel>
                 <Switch
                   isChecked={hasVariants}
                   onChange={() => setHasVariants(!hasVariants)}
+                  style={{ direction: 'ltr' }}
                 />
               </FormControl>
             </SimpleGrid>
@@ -749,11 +759,12 @@ const AddProduct = () => {
             {hasVariants && (
               <Box mb={4}>
                 <FormControl mb={4}>
-                  <FormLabel>Select Variant</FormLabel>
+                  <FormLabel>{t('product.selectVariant')}</FormLabel>
                   <Select
-                    placeholder="Select Variant"
+                    placeholder={t('forms.selectVariant')}
                     onChange={handleVariantSelect}
                     color={textColor}
+                    style={{ direction: 'ltr' }}
                   >
                     {variants.map((variant) => (
                       <option key={variant.id} value={variant.id}>
@@ -774,7 +785,7 @@ const AddProduct = () => {
                             </Text>
                             <IconButton
                               icon={<FaTrash />}
-                              aria-label="Delete variant"
+                              aria-label={t('common.deleteVariant')}
                               size="sm"
                               colorScheme="red"
                               onClick={() => handleDeleteAttribute(index)}
@@ -784,7 +795,7 @@ const AddProduct = () => {
                         <CardBody>
                           <SimpleGrid columns={2} spacing={2}>
                             <FormControl isRequired>
-                              <FormLabel>Cost</FormLabel>
+                              <FormLabel>{t('product.cost')}</FormLabel>
                               <Input
                                 type="number"
                                 value={attr.cost}
@@ -799,7 +810,7 @@ const AddProduct = () => {
                               />
                             </FormControl>
                             <FormControl isRequired>
-                              <FormLabel>Price</FormLabel>
+                              <FormLabel>{t('product.price')}</FormLabel>
                               <Input
                                 type="number"
                                 value={attr.price}
@@ -814,7 +825,7 @@ const AddProduct = () => {
                               />
                             </FormControl>
                             <FormControl isRequired>
-                              <FormLabel>Quantity</FormLabel>
+                              <FormLabel>{t('product.quantity')}</FormLabel>
                               <Input
                                 type="number"
                                 value={attr.quantity}
@@ -829,7 +840,7 @@ const AddProduct = () => {
                               />
                             </FormControl>
                             <FormControl>
-                              <FormLabel>Variant Image</FormLabel>
+                              <FormLabel>{t('product.variantImage')}</FormLabel>
                               <Input
                                 type="file"
                                 accept="image/*"
@@ -839,9 +850,8 @@ const AddProduct = () => {
                                       !e.target.files[0].type.startsWith('image/')
                                     ) {
                                       toast({
-                                        title: 'Error',
-                                        description:
-                                          'Please upload only image files',
+                                        title: t('common.error'),
+                                        description: t('forms.imageOnlyError'),
                                         status: 'error',
                                         duration: 5000,
                                         isClosable: true,
@@ -860,7 +870,7 @@ const AddProduct = () => {
                               {attr.image && (
                                 <Image
                                   src={URL.createObjectURL(attr.image)}
-                                  alt="Variant preview"
+                                  alt={t('product.variantPreview')}
                                   mt={2}
                                   maxH="100px"
                                 />
@@ -869,10 +879,10 @@ const AddProduct = () => {
 
                             {/* Variant Lot Number and Expiry Date */}
                             <FormControl>
-                              <FormLabel>Lot Number</FormLabel>
+                              <FormLabel>{t('product.lotNumber')}</FormLabel>
                               <Input
                                 type="text"
-                                placeholder="Enter Lot Number"
+                                placeholder={t('forms.enterLotNumber')}
                                 value={attr.lotNumber}
                                 onChange={(e) =>
                                   handleAttributeChange(
@@ -885,7 +895,7 @@ const AddProduct = () => {
                               />
                             </FormControl>
                             <FormControl>
-                              <FormLabel>Expiry Date</FormLabel>
+                              <FormLabel>{t('product.expiryDate')}</FormLabel>
                               <Input
                                 type="date"
                                 value={attr.expiryDate}
@@ -902,10 +912,10 @@ const AddProduct = () => {
 
                             {/* Variant Discount Fields */}
                             <FormControl>
-                              <FormLabel>Discount</FormLabel>
+                              <FormLabel>{t('product.discount')}</FormLabel>
                               <Input
                                 type="number"
-                                placeholder="Enter discount value"
+                                placeholder={t('forms.enterDiscountValue')}
                                 value={attr.discount != null ? attr.discount : ''}
                                 onChange={(e) =>
                                   handleAttributeChange(index, 'discount', e.target.value)
@@ -914,17 +924,18 @@ const AddProduct = () => {
                               />
                             </FormControl>
                             <FormControl>
-                              <FormLabel>Discount Type</FormLabel>
+                              <FormLabel>{t('product.discountType')}</FormLabel>
                               <Select
-                                placeholder="Select discount type"
+                                placeholder={t('forms.selectDiscountType')}
                                 value={attr.discountType || ''}
                                 onChange={(e) =>
                                   handleAttributeChange(index, 'discountType', e.target.value)
                                 }
                                 color={textColor}
+                                style={{ direction: 'ltr' }}
                               >
-                                <option value="PERCENTAGE">Percentage</option>
-                                <option value="FIXED">Fixed</option>
+                                <option value="PERCENTAGE">{t('forms.percentage')}</option>
+                                <option value="FIXED">{t('forms.fixed')}</option>
                               </Select>
                             </FormControl>
                           </SimpleGrid>
@@ -940,7 +951,7 @@ const AddProduct = () => {
             <Box mb={4}>
               <FormControl isRequired={images.length === 0}>
                 <FormLabel>
-                  Product Images{' '}
+                  {t('product.productImages')}
                   {images.length === 0 && <span style={{ color: 'red' }}>*</span>}
                 </FormLabel>
                 <Box
@@ -962,7 +973,7 @@ const AddProduct = () => {
                         <Box key={index} position="relative" display="flex" flexDirection="column" alignItems="center">
                           <Image
                             src={img.preview}
-                            alt={`Product image ${index + 1}`}
+                            alt={t('product.productImage', { index: index + 1 })}
                             borderRadius="md"
                             maxH="150px"
                             border={mainImageIndex === index ? '2px solid' : '1px solid'}
@@ -972,12 +983,12 @@ const AddProduct = () => {
                           />
                           {mainImageIndex === index && (
                             <Badge position="absolute" top={2} left={2} colorScheme="brand">
-                              Main
+                              {t('product.main')}
                             </Badge>
                           )}
                           <IconButton
                             icon={<FaTrash />}
-                            aria-label="Remove image"
+                            aria-label={t('common.removeImage')}
                             size="sm"
                             colorScheme="red"
                             position="absolute"
@@ -992,10 +1003,10 @@ const AddProduct = () => {
                     <>
                       <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
                       <Text color="gray.500" mb={2}>
-                        Drag & Drop Image Here
+                        {t('forms.dragDropImageHere')}
                       </Text>
                       <Text color="gray.500" mb={2}>
-                        or
+                        {t('forms.or')}
                       </Text>
                       <Button
                         variant="outline"
@@ -1003,7 +1014,7 @@ const AddProduct = () => {
                         border="none"
                         onClick={() => document.getElementById('file-upload').click()}
                       >
-                        Upload Image
+                        {t('forms.uploadImage')}
                         <input
                           type="file"
                           id="file-upload"
@@ -1021,10 +1032,10 @@ const AddProduct = () => {
             {/* Submit Buttons */}
             <Flex justify="flex-end" gap={4}>
               <Button variant="outline" colorScheme="red" onClick={handleCancel}>
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" colorScheme="blue" isLoading={isLoading}>
-                Save Product
+                {t('common.saveProduct')}
               </Button>
             </Flex>
           </form>
