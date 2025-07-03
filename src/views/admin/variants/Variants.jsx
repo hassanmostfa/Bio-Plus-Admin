@@ -27,6 +27,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGetVarientsQuery } from 'api/varientSlice';
 import Swal from 'sweetalert2';
 import { useDeleteVarientMutation } from 'api/varientSlice';
+import { useTranslation } from 'react-i18next';
 
 const columnHelper = createColumnHelper();
 
@@ -35,6 +36,7 @@ const Variants = () => {
   const { data: variantsResponse, isLoading, isError, refetch } = useGetVarientsQuery();
   const [deleteVariant, { isLoading: isDeleting }] = useDeleteVarientMutation(); // Delete mutation
   const [sorting, setSorting] = React.useState([]);
+  const { t } = useTranslation();
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
@@ -55,23 +57,24 @@ const Variants = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('variantTable.deleteConfirmationTitle'),
+        text: t('variantTable.deleteConfirmationText'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('variantTable.yesDelete'),
+        cancelButtonText: t('common.cancel'),
       });
 
       if (result.isConfirmed) {
         await deleteVariant(id).unwrap(); // Delete the variant
         refetch(); // Refetch the data
-        Swal.fire('Deleted!', 'The variant has been deleted.', 'success');
+        Swal.fire('Deleted!', t('variantTable.deleteSuccess'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete variant:', error);
-      Swal.fire('Error!', 'Failed to delete the variant.', 'error');
+      Swal.fire('Error!', t('variantTable.deleteError'), 'error');
     }
   };
 
@@ -85,7 +88,7 @@ const Variants = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          ID
+          {t('variantTable.id')}
         </Text>
       ),
       cell: (info) => (
@@ -103,7 +106,7 @@ const Variants = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Variant Name
+          {t('variantTable.variantName')}
         </Text>
       ),
       cell: (info) => (
@@ -121,7 +124,7 @@ const Variants = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Number of Attributes
+          {t('variantTable.numberOfAttributes')}
         </Text>
       ),
       cell: (info) => (
@@ -139,7 +142,7 @@ const Variants = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Actions
+          {t('variantTable.actions')}
         </Text>
       ),
       cell: (info) => (
@@ -188,8 +191,8 @@ const Variants = () => {
     debugTable: true,
   });
 
-  if (isLoading) return <Text>Loading...</Text>;
-  if (isError) return <Text>Error loading variants.</Text>;
+  if (isLoading) return <Text>{t('variantTable.loading')}</Text>;
+  if (isError) return <Text>{t('variantTable.errorLoading')}</Text>;
 
   return (
     <div className="container">
@@ -206,7 +209,7 @@ const Variants = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            All Variants
+            {t('variantTable.allVariants')}
           </Text>
           <Button
             variant="darkBrand"
@@ -220,7 +223,7 @@ const Variants = () => {
             width={'230px'}
           >
             <PlusSquareIcon me="10px" />
-            Create New Variant
+            {t('variantTable.createNewVariant')}
           </Button>
         </Flex>
         <Box>
