@@ -53,7 +53,7 @@ const Users = () => {
 
   const { data: usersData, isLoading, refetch } = useGetUsersQuery({
     page:1,
-    limit:10000000000000,
+    limit:10000000000,
     search: debouncedSearchTerm,
     status: statusFilter,
   });
@@ -128,7 +128,7 @@ const Users = () => {
     }),
     columnHelper.accessor("gender", {
       id: "gender",
-      header: () => <Text color="gray.400">Gender</Text>,
+      header: () => <Text color="gray.400">{t('user.gender')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor("phoneNumber", {
@@ -176,10 +176,10 @@ const Users = () => {
               {t('common.edit')} {t('common.status')}
             </MenuButton>
             <MenuList>
-              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'PENDING')}>PENDING</MenuItem>
-              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'ACTIVE')}>ACTIVE</MenuItem>
-              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'SUSPENDED')}>SUSPENDED</MenuItem>
-              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'BLOCKED')}>BLOCKED</MenuItem>
+              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'PENDING')}>{t('common.pending')}</MenuItem>
+              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'ACTIVE')}>{t('common.active')}</MenuItem>
+              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'SUSPENDED')}>{t('common.suspended')}</MenuItem>
+              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'BLOCKED')}>{t('common.blocked')}</MenuItem>
             </MenuList>
           </Menu>
         </Flex>
@@ -199,36 +199,37 @@ const Users = () => {
       <Card flexDirection="column" w="100%" px="0px" overflowX="auto">
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700">{t('common.users')}</Text>
-          <HStack spacing={4}>
-            <FormWrapper>
-              <Box width="300px">
-                <InputGroup>
-                  <InputLeftElement pointerEvents="none">
-                    <Icon as={FaSearch} color="gray.400" />
-                  </InputLeftElement>
-                  <Input
-                    type="text"
-                    placeholder={t('common.search') + ' ' + t('common.users').toLowerCase() + '...'}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    bg={useColorModeValue("white", "gray.700")}
-                    borderRadius="10px"
-                  />
-                </InputGroup>
-              </Box>
+          <HStack spacing={4} align="center">
+            <Box width="300px">
+              <InputGroup>
+                <InputLeftElement pointerEvents="none">
+                  <Icon as={FaSearch} color="gray.400" />
+                </InputLeftElement>
+                <Input
+                  type="text"
+                  placeholder={t('common.search') + ' ' + t('common.users').toLowerCase() + '...'}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  bg={useColorModeValue("white", "gray.700")}
+                  borderRadius="10px"
+                  dir={t('direction.ltr')}
+                />
+              </InputGroup>
+            </Box>
+            <Box width="200px">
               <Select
                 placeholder={t('common.search') + ' ' + t('common.status').toLowerCase()}
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                width="200px"
+                dir={t('direction.ltr')}
               >
-                <option value="">All {t('common.status')}</option>
-                <option value="PENDING">PENDING</option>
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="SUSPENDED">SUSPENDED</option>
-                <option value="BLOCKED">BLOCKED</option>
+                <option value="">{t('common.all')} {t('common.status')}</option>
+                <option value="PENDING">{t('common.pending')}</option>
+                <option value="ACTIVE">{t('common.active')}</option>
+                <option value="SUSPENDED">{t('common.suspended')}</option>
+                <option value="BLOCKED">{t('common.blocked')}</option>
               </Select>
-            </FormWrapper>
+            </Box>
           </HStack>
 
           <Button

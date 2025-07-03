@@ -76,7 +76,19 @@
     "delivered": "تم التسليم",
     "returned": "مُرجع",
     "refunded": "مُسترد",
-    "or": "أو"
+    "or": "أو",
+    "all": "الكل",
+    "saveChanges": "حفظ التغييرات",
+    "saving": "جاري الحفظ...",
+    "searchByName": "البحث بالاسم",
+    "rowsPerPage": "عدد الصفوف في الصفحة:",
+    "pageOf": "الصفحة {{page}} من {{totalPages}}",
+    "sortAsc": "تصاعدي",
+    "sortDesc": "تنازلي",
+    "id": "الرقم",
+    "dragDropImage": "اسحب وأفلت الصورة هنا",
+    "uploadImage": "رفع صورة",
+    "activeStatus": "الحالة النشطة"
   },
   "auth": {
     "signIn": "تسجيل الدخول",
@@ -134,7 +146,13 @@
     "offerPercentage": "نسبة العرض",
     "published": "منشور",
     "active": "نشط",
-    "hasVariants": "له متغيرات"
+    "hasVariants": "له متغيرات",
+    "enterName": "أدخل الاسم",
+    "enterEmail": "أدخل البريد الإلكتروني",
+    "enterPhone": "أدخل رقم الهاتف (مثال: +1234567890)",
+    "enterPassword": "أدخل كلمة المرور",
+    "enterEnName": "أدخل الاسم بالإنجليزية",
+    "enterArName": "أدخل الاسم بالعربية"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -164,7 +182,15 @@
     "userType": "نوع المستخدم",
     "customer": "عميل",
     "admin": "مدير",
-    "moderator": "مشرف"
+    "moderator": "مشرف",
+    "addedSuccess": "تمت إضافة المستخدم بنجاح.",
+    "addFailed": "فشل في إضافة المستخدم.",
+    "updatedSuccess": "تم تحديث المستخدم بنجاح.",
+    "updateFailed": "فشل في تحديث المستخدم.",
+    "notFound": "المستخدم غير موجود.",
+    "familyAccounts": "حسابات العائلة",
+    "age": "العمر",
+    "relationship": "العلاقة"
   },
   "product": {
     "productName": "اسم المنتج",
@@ -758,5 +784,27 @@
     "failedToCreateSpecialization": "فشل في إنشاء التخصص.",
     "failedToUpdateSpecialization": "فشل في تحديث التخصص.",
     "addSpecialization": "إضافة تخصص"
+  },
+  "direction": {
+    "form": "rtl",
+    "ltr": "ltr"
+  },
+  "category": {
+    "allCategories": "كل الفئات",
+    "enName": "الاسم بالإنجليزية",
+    "arName": "الاسم بالعربية",
+    "image": "الصورة",
+    "deleteConfirmTitle": "هل أنت متأكد؟",
+    "deleteConfirmText": "لن تتمكن من التراجع عن هذا!",
+    "deleteConfirmButton": "نعم، احذفها!",
+    "deleteSuccessTitle": "تم الحذف!",
+    "deleteSuccessText": "تم حذف الفئة.",
+    "deleteError": "فشل في حذف الفئة.",
+    "notAvailable": "غير متوفر",
+    "searchPlaceholder": "ابحث في الفئات...",
+    "addButton": "إضافة فئة جديدة",
+    "type": "نوع الفئة",
+    "addCategory": "إضافة فئة",
+    "editCategory": "تعديل الفئة"
   }
 } 

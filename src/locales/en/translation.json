@@ -77,7 +77,18 @@
     "returned": "Returned",
     "refunded": "Refunded",
     "ok": "OK",
-    "or": "or"
+    "or": "or",
+    "all": "All",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "searchByName": "Search by name",
+    "rowsPerPage": "Rows per page:",
+    "pageOf": "Page {{page}} of {{totalPages}}",
+    "sortAsc": "Ascending",
+    "sortDesc": "Descending",
+    "dragDropImage": "Drag & Drop Image Here",
+    "uploadImage": "Upload Image",
+    "activeStatus": "Active Status"
   },
   "auth": {
     "signIn": "Sign In",
@@ -135,7 +146,13 @@
     "offerPercentage": "Offer Percentage",
     "published": "Published",
     "active": "Active",
-    "hasVariants": "Has Variants"
+    "hasVariants": "Has Variants",
+    "enterName": "Enter Name",
+    "enterEmail": "Enter Email",
+    "enterPhone": "Enter Phone Number (e.g., +1234567890)",
+    "enterPassword": "Enter Password",
+    "enterEnName": "Enter English Name",
+    "enterArName": "Enter Arabic Name"
   },
   "navigation": {
     "home": "Home",
@@ -165,7 +182,15 @@
     "userType": "User Type",
     "customer": "Customer",
     "admin": "Admin",
-    "moderator": "Moderator"
+    "moderator": "Moderator",
+    "addedSuccess": "User added successfully.",
+    "addFailed": "Failed to add user.",
+    "updatedSuccess": "User updated successfully.",
+    "updateFailed": "Failed to update user.",
+    "notFound": "User not found.",
+    "familyAccounts": "Family Accounts",
+    "age": "Age",
+    "relationship": "Relationship"
   },
   "product": {
     "productName": "Product Name",
@@ -396,7 +421,6 @@
   "updateRoleError": "Failed to update role",
   "addNewRole": "Add New Role",
   "enterRoleName": "Enter role name",
-  "activeStatus": "Active Status",
   "errorFetchingModules": "Error fetching modules.",
   "errorFetchingData": "Error fetching data.",
   "roleAddedSuccessfully": "Role added successfully",
@@ -747,5 +771,33 @@
     "failedToCreateSpecialization": "Failed to create specialization.",
     "failedToUpdateSpecialization": "Failed to update specialization.",
     "addSpecialization": "Add Specialization"
+  },
+  "direction": {
+    "form": "rtl",
+    "ltr": "ltr"
+  },
+  "category": {
+    "allCategories": "All Categories",
+    "addCategory": "Add Category",
+    "editCategory": "Edit Category",
+    "enName": "English Name",
+    "arName": "Arabic Name",
+    "image": "Image",
+    "category": "Category",
+    "addedSuccess": "Category added successfully.",
+    "addFailed": "Failed to add category.",
+    "updatedSuccess": "Category updated successfully.",
+    "updateFailed": "Failed to update category.",
+    "selectCategoryType": "Select Category Type",
+    "deleteConfirmTitle": "Are you sure?",
+    "deleteConfirmText": "You won't be able to revert this!",
+    "deleteConfirmButton": "Yes, delete it!",
+    "deleteSuccessTitle": "Deleted!",
+    "deleteSuccessText": "The category has been deleted.",
+    "deleteError": "Failed to delete the category.",
+    "notAvailable": "N/A",
+    "searchPlaceholder": "Search categories...",
+    "addButton": "Add New Category",
+    "type": "Category Type"
   }
 } 
