@@ -22,8 +22,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useGetPromocodesQuery, useUpdatePromocodeMutation } from 'api/promocodeSlice';
 import Swal from 'sweetalert2';
 import { IoMdArrowBack } from 'react-icons/io';
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "contexts/LanguageContext";
 
 const EditPromoCode = () => {
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
@@ -60,7 +64,7 @@ const EditPromoCode = () => {
           isActive: foundPromo.isActive,
         });
       } else {
-        Swal.fire('Error!', 'Promo code not found.', 'error');
+        Swal.fire(t('common.error'), t('promoCodes.notFound'), 'error');
         navigate('/admin/promo-codes');
       }
     }
@@ -103,13 +107,13 @@ const EditPromoCode = () => {
         }
       }).unwrap();
 
-      Swal.fire('Success!', 'Promo code updated successfully.', 'success');
+      Swal.fire(t('common.success'), t('promoCodes.updatedSuccess'), 'success');
       navigate('/admin/promo-codes');
     } catch (error) {
       console.error('Failed to update promo code:', error);
       Swal.fire(
-        'Error!',
-        error.data?.message || 'Failed to update promo code.',
+        t('common.error'),
+        error.data?.message || t('promoCodes.updateError'),
         'error'
       );
     }
@@ -128,11 +132,11 @@ const EditPromoCode = () => {
   }
 
   return (
-    <Box className="container add-promo-container w-100">
+    <Box className="container add-promo-container w-100" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-promo-card shadow p-4 w-100" borderRadius="15px">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Edit Promo Code: {promoCode.code}
+            {t('promoCodes.editPromoCode')}: {promoCode.code}
           </Text>
           <Button
             type="button"
@@ -141,7 +145,7 @@ const EditPromoCode = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('common.back')}
           </Button>
         </div>
 
@@ -150,7 +154,7 @@ const EditPromoCode = () => {
             {/* Promo Code Field */}
             <FormControl>
               <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                Promo Code
+                {t('promoCodes.promoCode')}
                 <span className="text-danger mx-1">*</span>
               </FormLabel>
               <Input
@@ -162,13 +166,14 @@ const EditPromoCode = () => {
                 mt={'8px'}
                 color={textColor}
                 bg={inputBg}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             {/* Amount Field */}
             <FormControl>
               <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                Amount
+                {t('promoCodes.amount')}
                 <span className="text-danger mx-1">*</span>
               </FormLabel>
               <Input
@@ -180,13 +185,14 @@ const EditPromoCode = () => {
                 mt={'8px'}
                 color={textColor}
                 bg={inputBg}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             {/* Type Dropdown */}
             <FormControl>
               <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                Type
+                {t('promoCodes.type')}
                 <span className="text-danger mx-1">*</span>
               </FormLabel>
               <Menu>
@@ -200,21 +206,22 @@ const EditPromoCode = () => {
                   _hover={{ bg: 'gray.200' }}
                   textAlign="left"
                   mt={'8px'}
+                  dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
                 >
-                  {formData.type === 'FIXED' ? 'Fixed Amount' : 'Percentage'}
+                  {formData.type === 'FIXED' ? t('promoCodes.fixedAmount') : t('promoCodes.percentage')}
                 </MenuButton>
                 <MenuList width="100%">
                   <MenuItem
                     onClick={() => handleSelectType('FIXED')}
                     bg={formData.type === 'FIXED' ? 'blue.100' : inputBg}
                   >
-                    Fixed Amount
+                    {t('promoCodes.fixedAmount')}
                   </MenuItem>
                   <MenuItem
                     onClick={() => handleSelectType('PERCENTAGE')}
                     bg={formData.type === 'PERCENTAGE' ? 'blue.100' : inputBg}
                   >
-                    Percentage
+                    {t('promoCodes.percentage')}
                   </MenuItem>
                 </MenuList>
               </Menu>
@@ -243,7 +250,7 @@ const EditPromoCode = () => {
             {/* End Date Field */}
             <FormControl>
               <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                End Date
+                {t('promoCodes.endDate')}
                 <span className="text-danger mx-1">*</span>
               </FormLabel>
               <Input
@@ -256,13 +263,14 @@ const EditPromoCode = () => {
                 min={new Date().toISOString().split('T')[0]}
                 color={textColor}
                 bg={inputBg}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             {/* Max Usage Field */}
             <FormControl>
               <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                Max Usage
+                {t('promoCodes.maxUsage')}
                 <span className="text-danger mx-1">*</span>
               </FormLabel>
               <Input
@@ -275,11 +283,12 @@ const EditPromoCode = () => {
                 min="1"
                 color={textColor}
                 bg={inputBg}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
             <FormControl>
               <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                Status
+                {t('promoCodes.status')}
                 <span className="text-danger mx-1">*</span>
               </FormLabel>
               <Menu>
@@ -293,21 +302,22 @@ const EditPromoCode = () => {
                   _hover={{ bg: 'gray.200' }}
                   textAlign="left"
                   mt={'8px'}
+                  dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
                 >
-                  {formData.isActive == true ? 'Active' : 'InActive'}
+                  {formData.isActive == true ? t('common.active') : t('common.inactive')}
                 </MenuButton>
                 <MenuList width="100%">
                   <MenuItem
                     onClick={() => handleSelectStatus(true)}
                     bg={formData.isActive == 'false' ? 'blue.100' : inputBg}
                   >
-                    Active
+                    {t('common.active')}
                   </MenuItem>
                   <MenuItem
                     onClick={() => handleSelectStatus(false)}
                     bg={formData.isActive == 'true' ? 'blue.100' : inputBg}
                   >
-                    InActive
+                    {t('common.inactive')}
                   </MenuItem>
                 </MenuList>
               </Menu>
@@ -316,32 +326,8 @@ const EditPromoCode = () => {
 
           {/* Action Buttons */}
           <Flex justify="center" mt={8} gap={4}>
-            <Button
-              variant="outline"
-              colorScheme="red"
-              onClick={() => navigate(-1)}
-              width="120px"
-              color={textColor}
-              bg={inputBg}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="darkBrand"
-              fontSize="sm"
-              fontWeight="500"
-              borderRadius="70px"
-              px="24px"
-              py="5px"
-              type="submit"
-              isLoading={isUpdating}
-              loadingText="Saving..."
-              width="120px"
-              color={textColor}
-              bg={inputBg}
-            >
-              Save Changes
-            </Button>
+           
+           
           </Flex>
         </form>
       </Box>

@@ -35,10 +35,14 @@ import { useGetPromocodesQuery } from "api/promocodeSlice";
 import Swal from "sweetalert2";
 import { FaSearch } from "react-icons/fa";
 import { useDeletePromocodeMutation } from "api/promocodeSlice";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "contexts/LanguageContext";
 
 const columnHelper = createColumnHelper();
 
 const PromoCodes = () => {
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -86,12 +90,12 @@ const PromoCodes = () => {
   const columns = [
     columnHelper.accessor("code", {
       id: "code",
-      header: () => <Text color="gray.400">Code</Text>,
+      header: () => <Text color="gray.400">{t('promoCodes.code')}</Text>,
       cell: (info) => <Text color={textColor} fontWeight="600">{info.getValue()}</Text>,
     }),
     columnHelper.accessor("type", {
       id: "type",
-      header: () => <Text color="gray.400">Type</Text>,
+      header: () => <Text color="gray.400">{t('promoCodes.type')}</Text>,
       cell: (info) => (
         <Badge
           colorScheme={info.getValue() === "FIXED" ? "blue" : "purple"}
@@ -106,7 +110,7 @@ const PromoCodes = () => {
     }),
     columnHelper.accessor("amount", {
       id: "amount",
-      header: () => <Text color="gray.400">Amount</Text>,
+      header: () => <Text color="gray.400">{t('promoCodes.amount')}</Text>,
       cell: (info) => (
         <Text color={textColor}>
           {info.row.original.type === "FIXED" ? `kwd ${info.getValue()}` : `${info.getValue()}%`}
@@ -115,7 +119,7 @@ const PromoCodes = () => {
     }),
     columnHelper.accessor("endDate", {
       id: "endDate",
-      header: () => <Text color="gray.400">End Date</Text>,
+      header: () => <Text color="gray.400">{t('promoCodes.endDate')}</Text>,
       cell: (info) => (
         <Text color={textColor}>
           {new Date(info.getValue()).toLocaleDateString()}
@@ -124,12 +128,12 @@ const PromoCodes = () => {
     }),
     columnHelper.accessor("maxUsage", {
       id: "maxUsage",
-      header: () => <Text color="gray.400">Max Usage</Text>,
+      header: () => <Text color="gray.400">{t('promoCodes.maxUsage')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor("countUsage", {
       id: "countUsage",
-      header: () => <Text color="gray.400">Used</Text>,
+      header: () => <Text color="gray.400">{t('promoCodes.used')}</Text>,
       cell: (info) => (
         <Text color={textColor}>
           {info.getValue()}/{info.row.original.maxUsage}
@@ -138,7 +142,7 @@ const PromoCodes = () => {
     }),
     columnHelper.accessor("isActive", {
       id: "status",
-      header: () => <Text color="gray.400">Status</Text>,
+      header: () => <Text color="gray.400">{t('promoCodes.status')}</Text>,
       cell: (info) => (
         <Switch
           colorScheme="green"
@@ -149,7 +153,7 @@ const PromoCodes = () => {
     }),
     columnHelper.accessor("id", {
       id: "actions",
-      header: () => <Text color="gray.400">Actions</Text>,
+      header: () => <Text color="gray.400">{t('common.actions')}</Text>,
       cell: (info) => (
         <Flex>
           <Icon 
@@ -195,23 +199,23 @@ const PromoCodes = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('common.areYouSure'),
+        text: t('common.cannotRevert'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('common.yesDelete'),
       });
 
       if (result.isConfirmed) {
         await deletePromoCode(id).unwrap();
         refetch();
-        Swal.fire('Deleted!', 'The promo code has been deleted.', 'success');
+        Swal.fire(t('common.deleted'), t('promoCodes.deletedSuccess'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete promo code:', error);
-      Swal.fire('Error!', 'Failed to delete the promo code.', 'error');
+      Swal.fire(t('common.error'), t('promoCodes.deleteError'), 'error');
     }
   };
 
@@ -238,7 +242,7 @@ const PromoCodes = () => {
       <Card flexDirection="column" w="100%" px="0px" overflowX={{ sm: 'scroll', lg: 'hidden' }}>
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
-            Promo Codes
+            {t('promoCodes.title')}
           </Text>
           
           <Flex align="center" gap={4}>
@@ -260,7 +264,7 @@ const PromoCodes = () => {
                 fontWeight="500"
                 _placeholder={{ color: 'gray.400', fontSize: '14px' }}
                 borderRadius="30px"
-                placeholder="Search..."
+                placeholder={t('common.search')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -277,7 +281,7 @@ const PromoCodes = () => {
               onClick={() => navigate('/admin/add-promo-code')}
               leftIcon={<PlusSquareIcon />}
             >
-              Add Promo Code
+              {t('promoCodes.addPromoCode')}
             </Button>
           </Flex>
         </Flex>
@@ -313,7 +317,7 @@ const PromoCodes = () => {
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
-              Rows per page:
+              {t('common.rowsPerPage')}:
             </Text>
             <Select
               value={limit}
@@ -328,7 +332,7 @@ const PromoCodes = () => {
           </Flex>
           
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages}
+            {t('common.page')} {pagination.page} {t('common.of')} {pagination.totalPages}
           </Text>
           
           <Flex>
@@ -340,7 +344,7 @@ const PromoCodes = () => {
               mr="10px"
               leftIcon={<ChevronLeftIcon />}
             >
-              Previous
+              {t('common.previous')}
             </Button>
             <Button
               onClick={handleNextPage}
@@ -349,7 +353,7 @@ const PromoCodes = () => {
               size="sm"
               rightIcon={<ChevronRightIcon />}
             >
-              Next
+              {t('common.next')}
             </Button>
           </Flex>
         </Flex>

@@ -33,6 +33,8 @@ import { useDownloadBackupMutation } from 'api/backupSlice';
 import { useCreateBackupMutation } from 'api/backupSlice';
 import { useRestoreBackupMutation } from 'api/backupSlice';
 import { useCreateCustomBackupMutation } from 'api/backupSlice';
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "contexts/LanguageContext";
 
 const STATIC_MODULES = [
   "USER_MANAGEMENT",
@@ -47,6 +49,8 @@ const STATIC_MODULES = [
 ];
 
 const BackupAndRestore = () => {
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const [activeTab, setActiveTab] = React.useState(0);
   const [selectedModules, setSelectedModules] = React.useState([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
@@ -85,8 +89,8 @@ const BackupAndRestore = () => {
     
     if (!isFullBackup && modulesToBackup.length === 0) {
       toast({
-        title: 'No modules selected',
-        description: 'Please select at least one module to backup',
+        title: t('backup.noModulesSelected'),
+        description: t('backup.selectAtLeastOneModule'),
         status: 'warning',
         duration: 3000,
         isClosable: true,
@@ -110,8 +114,8 @@ const BackupAndRestore = () => {
       }
 
       toast({
-        title: 'Backup created',
-        description: 'Starting download...',
+        title: t('backup.backupCreated'),
+        description: t('backup.startingDownload'),
         status: 'info',
         duration: 3000,
         isClosable: true,
@@ -132,16 +136,16 @@ const BackupAndRestore = () => {
       document.body.removeChild(a);
 
       toast({
-        title: 'Backup completed',
-        description: 'Your backup file has been downloaded',
+        title: t('backup.backupCompleted'),
+        description: t('backup.backupFileDownloaded'),
         status: 'success',
         duration: 5000,
         isClosable: true,
       });
     } catch (error) {
       toast({
-        title: 'Backup failed',
-        description: error.message || 'An error occurred during backup',
+        title: t('backup.backupFailed'),
+        description: error.message || t('backup.errorDuringBackup'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -157,8 +161,8 @@ const BackupAndRestore = () => {
     
     if (!isFullRestore && modulesToRestore.length === 0) {
       toast({
-        title: 'No modules selected',
-        description: 'Please select at least one module to restore',
+        title: t('backup.noModulesSelected'),
+        description: t('backup.selectAtLeastOneModuleRestore'),
         status: 'warning',
         duration: 3000,
         isClosable: true,
@@ -177,14 +181,17 @@ const BackupAndRestore = () => {
 
       try {
         const result = await Swal.fire({
-          title: 'Confirm Restore',
-          text: `You are about to restore ${isFullRestore ? 'all' : 'selected'} modules from ${file.name}. This will overwrite existing data.`,
+          title: t('backup.confirmRestore'),
+          text: t('backup.restoreConfirmationText', { 
+            type: isFullRestore ? t('backup.all') : t('backup.selected'),
+            fileName: file.name 
+          }),
           icon: 'warning',
           showCancelButton: true,
           confirmButtonColor: '#3085d6',
           cancelButtonColor: '#d33',
-          confirmButtonText: 'Proceed',
-          cancelButtonText: 'Cancel',
+          confirmButtonText: t('backup.proceed'),
+          cancelButtonText: t('common.cancel'),
         });
 
         if (result.isConfirmed) {
@@ -193,8 +200,8 @@ const BackupAndRestore = () => {
           formData.append('backupFile', file);
 
           toast({
-            title: 'Restore initiated',
-            description: `Restoring data for ${modulesToRestore.length} modules`,
+            title: t('backup.restoreInitiated'),
+            description: t('backup.restoringDataForModules', { count: modulesToRestore.length }),
             status: 'info',
             duration: 3000,
             isClosable: true,
@@ -204,8 +211,8 @@ const BackupAndRestore = () => {
           await restoreBackup(formData).unwrap();
 
           toast({
-            title: 'Restore completed',
-            description: `Data has been successfully restored`,
+            title: t('backup.restoreCompleted'),
+            description: t('backup.dataSuccessfullyRestored'),
             status: 'success',
             duration: 5000,
             isClosable: true,
@@ -213,8 +220,8 @@ const BackupAndRestore = () => {
         }
       } catch (error) {
         toast({
-          title: 'Restore failed',
-          description: error.message || 'An error occurred during restore',
+          title: t('backup.restoreFailed'),
+          description: error.message || t('backup.errorDuringRestore'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -240,14 +247,14 @@ const BackupAndRestore = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            Backup & Restore
+            {t('backup.title')}
           </Text>
         </Flex>
 
         <Tabs variant="soft-rounded" my="20px" colorScheme="brand" onChange={(index) => setActiveTab(index)}>
           <TabList px="25px">
-            <Tab>Full Backup</Tab>
-            <Tab>Customized Backup</Tab>
+            <Tab>{t('backup.fullBackup')}</Tab>
+            <Tab>{t('backup.customizedBackup')}</Tab>
           </TabList>
 
           <Flex px="25px" my="20px" justifyContent="space-between" align="center">
@@ -257,7 +264,7 @@ const BackupAndRestore = () => {
               </InputLeftElement>
               <Input
                 borderRadius={"20px"}
-                placeholder="Search modules..."
+                placeholder={t('backup.searchModules')}
                 value={globalFilter}
                 onChange={(e) => setGlobalFilter(e.target.value)}
               />
@@ -270,14 +277,14 @@ const BackupAndRestore = () => {
                   colorScheme="blue"
                   onClick={() => handleBackup(true)}
                 >
-                  Backup All
+                  {t('backup.backupAll')}
                 </Button>
                 <Button 
                   leftIcon={<UploadIcon />} 
                   colorScheme="green"
                   onClick={() => handleRestore(true)}
                 >
-                  Restore All
+                  {t('backup.restoreAll')}
                 </Button>
               </Flex>
             ) : (
@@ -287,14 +294,14 @@ const BackupAndRestore = () => {
                   colorScheme="blue"
                   onClick={() => handleBackup(false)}
                 >
-                  Backup Selected
+                  {t('backup.backupSelected')}
                 </Button>
                 <Button 
                   leftIcon={<UploadIcon />} 
                   colorScheme="green"
                   onClick={() => handleRestore(false)}
                 >
-                  Restore Selected
+                  {t('backup.restoreSelected')}
                 </Button>
               </Flex>
             )}
@@ -308,7 +315,7 @@ const BackupAndRestore = () => {
                   <Tr>
                     <Th borderColor={borderColor}>
                       <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-                        Module Name
+                        {t('backup.moduleName')}
                       </Text>
                     </Th>
                   </Tr>
@@ -334,12 +341,12 @@ const BackupAndRestore = () => {
                   <Tr>
                     <Th borderColor={borderColor} width="50px">
                       <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-                        Select
+                        {t('backup.select')}
                       </Text>
                     </Th>
                     <Th borderColor={borderColor}>
                       <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-                        Module Name
+                        {t('backup.moduleName')}
                       </Text>
                     </Th>
                   </Tr>
