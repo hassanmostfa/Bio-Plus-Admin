@@ -26,6 +26,8 @@ import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { useGetTypesQuery, useDeleteTypeMutation } from 'api/typeSlice';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
@@ -34,6 +36,8 @@ const AllTypes = () => {
   const { data: typesResponse, isLoading, isError, refetch } = useGetTypesQuery();
   const [deleteType, { isLoading: isDeleting }] = useDeleteTypeMutation(); // Delete mutation
   const [sorting, setSorting] = React.useState([]);
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
    // Trigger refetch when component mounts (navigates to)
    React.useEffect(() => {
@@ -62,23 +66,23 @@ const AllTypes = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('productTypeTable.deleteConfirmationTitle'),
+        text: t('productTypeTable.deleteConfirmationText'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('productTypeTable.deleteConfirmationButton'),
       });
 
       if (result.isConfirmed) {
         await deleteType(id).unwrap(); // Delete the type
         refetch(); // Refetch the data
-        Swal.fire('Deleted!', 'The product type has been deleted.', 'success');
+        Swal.fire('Deleted!', t('productTypeTable.deleteSuccessMessage'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete product type:', error);
-      Swal.fire('Error!', 'Failed to delete the product type.', 'error');
+      Swal.fire('Error!', t('productTypeTable.deleteErrorMessage'), 'error');
     }
   };
 
@@ -92,7 +96,7 @@ const AllTypes = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          ID
+          {t('productTypeTable.idHeader')}
         </Text>
       ),
       cell: (info) => (
@@ -110,7 +114,7 @@ const AllTypes = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Product En-Type
+          {t('productTypeTable.productEnTypeHeader')}
         </Text>
       ),
       cell: (info) => (
@@ -128,7 +132,7 @@ const AllTypes = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Product Ar-Type
+          {t('productTypeTable.productArTypeHeader')}
         </Text>
       ),
       cell: (info) => (
@@ -146,7 +150,7 @@ const AllTypes = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Actions
+          {t('productTypeTable.actionsHeader')}
         </Text>
       ),
       cell: (info) => (
@@ -195,8 +199,8 @@ const AllTypes = () => {
     debugTable: true,
   });
 
-  if (isLoading) return <Text>Loading...</Text>;
-  if (isError) return <Text>Error loading product types.</Text>;
+  if (isLoading) return <Text>{t('productTypeTable.loadingText')}</Text>;
+  if (isError) return <Text>{t('productTypeTable.errorLoadingProductTypes')}</Text>;
 
   return (
     <div className="container">
@@ -213,7 +217,7 @@ const AllTypes = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            Product Types
+            {t('productTypeTable.productTypes')}
           </Text>
           <Button
             variant="darkBrand"
@@ -227,7 +231,7 @@ const AllTypes = () => {
             width={'230px'}
           >
             <PlusSquareIcon me="10px" />
-            Create New Product Type
+            {t('productTypeTable.createNewProductType')}
           </Button>
         </Flex>
         <Box>

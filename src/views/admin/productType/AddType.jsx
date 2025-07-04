@@ -11,6 +11,8 @@ import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { useAddTypeMutation } from "api/typeSlice";
 import Swal from "sweetalert2";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AddType = () => {
   const [enName, setEnName] = useState(""); // State for English name
@@ -20,11 +22,13 @@ const AddType = () => {
   const navigate = useNavigate();
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   // Handle form submission
   const handleSend = async () => {
     if (!enName || !arName) {
-      Swal.fire("Error!", "Please fill all required fields.", "error");
+      Swal.fire(t('addProductType.errorRequiredFields'));
       return;
     }
 
@@ -38,16 +42,16 @@ const AddType = () => {
 
     try {
       const response = await addType(payload).unwrap(); // Send data to the API
-      Swal.fire("Success!", "Product type added successfully.", "success");
+      Swal.fire(t('addProductType.successAdd'));
       navigate("/admin/product-types"); // Redirect to the product types page
     } catch (error) {
       console.error("Failed to add product type:", error);
-      Swal.fire("Error!", "Failed to add product type.", "error");
+      Swal.fire(t('addProductType.errorAdd'));
     }
   };
 
   return (
-    <Box className="container add-admin-container w-100">
+    <Box className="container add-admin-container w-100" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
@@ -57,7 +61,7 @@ const AddType = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Product Type
+            {t('addProductType.addNewProductType')}
           </Text>
           <Button
             type="button"
@@ -66,45 +70,47 @@ const AddType = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('addProductType.back')}
           </Button>
         </div>
         <form>
           {/* English Name Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Product En-Type
+              {t('addProductType.productEnType')}
               <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="text"
               id="en_name"
-              placeholder="Enter Product En-Type"
+              placeholder={t('addProductType.enterProductEnType')}
               value={enName}
               onChange={(e) => setEnName(e.target.value)}
               required
               mt={"8px"}
               color={textColor}
               bg={inputBg}
+              dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
 
           {/* Arabic Name Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Product Ar-Type
+              {t('addProductType.productArType')}
               <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="text"
               id="ar_name"
-              placeholder="Enter Product Ar-Type"
+              placeholder={t('addProductType.enterProductArType')}
               value={arName}
               onChange={(e) => setArName(e.target.value)}
               required
               mt={"8px"}
               color={textColor}
               bg={inputBg}
+              dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
 
@@ -121,7 +127,7 @@ const AddType = () => {
               onClick={handleSend}
               isLoading={isLoading}
             >
-              Save
+              {t('addProductType.save')}
             </Button>
           </Flex>
         </form>

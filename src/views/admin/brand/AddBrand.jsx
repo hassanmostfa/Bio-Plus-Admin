@@ -20,6 +20,8 @@ import { useNavigate } from "react-router-dom";
 import { useAddBrandMutation } from "api/brandSlice";
 import Swal from "sweetalert2";
 import { useAddFileMutation } from "api/filesSlice";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AddBrand = () => {
   const [enName, setEnName] = useState("");
@@ -31,6 +33,8 @@ const AddBrand = () => {
   const toast = useToast();
   const navigate = useNavigate();
   const [addFile] = useAddFileMutation();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const cardBg = useColorModeValue('white', 'navy.700');
@@ -46,8 +50,8 @@ const AddBrand = () => {
       // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
-          title: 'Invalid file type',
-          description: 'Please upload an image file',
+          title: t('addBrand.invalidFileType'),
+          description: t('addBrand.fileTooLarge'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -58,8 +62,8 @@ const AddBrand = () => {
       // Validate file size (e.g., 5MB max)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: 'File too large',
-          description: 'Maximum file size is 5MB',
+          title: t('addBrand.fileTooLarge'),
+          description: t('addBrand.maximumFileSizeIs5MB'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -110,13 +114,13 @@ const AddBrand = () => {
 
   const handleCancel = () => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'You will lose all unsaved changes',
+      title: t('addBrand.areYouSure'),
+      text: t('addBrand.youWillLoseAllUnsavedChanges'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, discard changes',
+      confirmButtonText: t('addBrand.yesDiscardChanges'),
     }).then((result) => {
       if (result.isConfirmed) {
         handleRemoveImage();
@@ -129,7 +133,7 @@ const AddBrand = () => {
 
   const handleSend = async () => {
     if (!enName || !arName || !image) {
-      Swal.fire("Error!", "Please fill all required fields.", "error");
+      Swal.fire("Error!", t('addBrand.pleaseFillAllRequiredFields'), "error");
       return;
     }
 
@@ -159,8 +163,8 @@ const AddBrand = () => {
       const response = await addBrand(payload).unwrap();
 
       toast({
-        title: "Success",
-        description: "Brand added successfully",
+        title: t('addBrand.success'),
+        description: t('addBrand.brandAddedSuccessfully'),
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -170,8 +174,8 @@ const AddBrand = () => {
     } catch (error) {
       console.error("Failed to add brand:", error);
       toast({
-        title: "Error",
-        description: error.data?.message || "Failed to add brand",
+        title: t('addBrand.error'),
+        description: error.data?.message || t('addBrand.failedToAddBrand'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -180,7 +184,7 @@ const AddBrand = () => {
   };
 
   return (
-    <Box className="container add-admin-container w-100">
+    <Box className="container add-admin-container w-100" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
@@ -190,7 +194,7 @@ const AddBrand = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Brand
+            {t('addBrand.addNewBrand')}
           </Text>
           <Button
             type="button"
@@ -199,20 +203,21 @@ const AddBrand = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('addBrand.back')}
           </Button>
         </div>
         <form>
           {/* English Name Field */}
           <Box mb={4}>
             <FormControl isRequired>
-              <FormLabel>Brand Name (English)</FormLabel>
+              <FormLabel>{t('addBrand.brandNameEnglish')}</FormLabel>
               <Input
-                placeholder="Enter Brand Name in English"
+                placeholder={t('addBrand.enterBrandNameInEnglish')}
                 value={enName}
                 onChange={(e) => setEnName(e.target.value)}
                 color={textColor}
                 bg={inputBg}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
           </Box>
@@ -220,12 +225,12 @@ const AddBrand = () => {
           {/* Arabic Name Field */}
           <Box mb={4}>
             <FormControl isRequired>
-              <FormLabel>Brand Name (Arabic)</FormLabel>
+              <FormLabel>{t('addBrand.brandNameArabic')}</FormLabel>
               <Input
-                placeholder="أدخل اسم العلامة التجارية"
+                placeholder={t('addBrand.enterBrandNameInArabic')}
                 value={arName}
                 onChange={(e) => setArName(e.target.value)}
-                dir="rtl"
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
                 color={textColor}
                 bg={inputBg}
               />
@@ -235,7 +240,7 @@ const AddBrand = () => {
           {/* Image Upload Section */}
           <Box mb={4}>
             <FormControl isRequired>
-              <FormLabel>Brand Logo</FormLabel>
+              <FormLabel>{t('addBrand.brandLogo')}</FormLabel>
               <Box
                 border="1px dashed"
                 borderColor={isDragging ? 'brand.500' : borderColorDefault}
@@ -249,13 +254,13 @@ const AddBrand = () => {
                 bg={isDragging ? bgDrag : inputBg}
               >
                 <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
-                <Text color={textColor}>Drag & drop logo here or</Text>
+                <Text color={textColor}>{t('addBrand.dragDropLogoHereOr')}</Text>
                 <Button
                   variant="link"
                   color="blue.500"
                   onClick={() => document.getElementById("fileInput").click()}
                 >
-                  Browse Files
+                  {t('addBrand.browseFiles')}
                 </Button>
                 <Input
                   id="fileInput"
@@ -271,14 +276,14 @@ const AddBrand = () => {
               <Box mt={4} position="relative" display="inline-block">
                 <Image
                   src={imagePreview}
-                  alt="Brand logo preview"
+                  alt={t('addBrand.brandLogoPreview')}
                   borderRadius="md"
                   boxSize="150px"
                   objectFit="contain"
                 />
                 <IconButton
                   icon={<FaTrash />}
-                  aria-label="Remove image"
+                  aria-label={t('addBrand.removeImage')}
                   size="sm"
                   colorScheme="red"
                   position="absolute"
@@ -298,15 +303,16 @@ const AddBrand = () => {
               onClick={handleCancel}
               mr={4}
             >
-              Cancel
+              {t('addBrand.cancel')}
             </Button>
             <Button
               colorScheme="blue"
               onClick={handleSend}
               isLoading={isLoading}
-              loadingText="Saving..."
+              loadingText={t('addBrand.saving')}
+              mx={2}
             >
-              Save Brand
+              {t('addBrand.saveBrand')}
             </Button>
           </Flex>
         </form>

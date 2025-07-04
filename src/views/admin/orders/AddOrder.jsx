@@ -30,6 +30,8 @@ import { useGetUsersQuery } from 'api/clientSlice';
 import { useGetPharmaciesQuery } from 'api/pharmacySlice';
 import { useGetProductsQuery } from 'api/productSlice';
 import { useGetPromocodesQuery } from 'api/promocodeSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AddOrder = () => {
   const [userId, setUserId] = useState('');
@@ -64,6 +66,8 @@ const AddOrder = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const [createOrder, { isLoading: isCreatingOrder }] = useCreateOrderMutation();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
@@ -88,8 +92,8 @@ const AddOrder = () => {
   const handleSubmit = async () => {
     if (!userId || !pharmacyId || !paymentMethod || !orderDate || orderItems.some(item => !item.productId || item.quantity === '' || parseInt(item.quantity) <= 0)) {
       toast({
-        title: 'Error!',
-        description: 'Please fill all required fields for the order and ensure product quantities are valid.',
+        title: t('addOrder.error'),
+        description: t('addOrder.fillAllFields'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -116,8 +120,8 @@ const AddOrder = () => {
       await createOrder(orderData).unwrap();
 
       toast({
-        title: 'Success!',
-        description: 'Order added successfully.',
+        title: t('addOrder.success'),
+        description: t('addOrder.orderAddedSuccessfully'),
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -125,8 +129,8 @@ const AddOrder = () => {
       navigate('/admin/orders');
     } catch (err) {
       toast({
-        title: 'Error creating order.',
-        description: err.data?.message || 'An error occurred while creating the order.',
+        title: t('addOrder.errorCreatingOrder'),
+        description: err.data?.message || t('addOrder.errorOccurred'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -191,7 +195,7 @@ const AddOrder = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Order
+            {t('addOrder.addNewOrder')}
           </Text>
           <Button
             type="button"
@@ -200,14 +204,14 @@ const AddOrder = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('addOrder.back')}
           </Button>
         </div>
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
           {/* Date */}
           <div className="mb-3">
             <FormControl isRequired>
-              <FormLabel color={textColor} fontSize="sm" fontWeight="700">Date</FormLabel>
+              <FormLabel color={textColor} fontSize="sm" fontWeight="700">{t('addOrder.date')}</FormLabel>
               <Input
                 type="date"
                 value={orderDate}
@@ -223,7 +227,7 @@ const AddOrder = () => {
           {/* Customer - Using fake clients data */}
           <div className="mb-3">
             <FormControl isRequired>
-              <FormLabel color={textColor} fontSize="sm" fontWeight="700">Customer</FormLabel>
+              <FormLabel color={textColor} fontSize="sm" fontWeight="700">{t('addOrder.customer')}</FormLabel>
               <Menu>
                 <MenuButton
                   as={Button}
@@ -237,12 +241,12 @@ const AddOrder = () => {
                   fontSize="sm"
                   name="userId"
                 >
-                  {selectedUser ? selectedUser.name : 'Select Customer'}
+                  {selectedUser ? selectedUser.name : t('addOrder.selectCustomer')}
                 </MenuButton>
                 <MenuList maxH="300px" overflowY="auto">
                   <Box px={3} py={2}>
                     <Input
-                      placeholder="Search customers..."
+                      placeholder={t('addOrder.searchCustomers')}
                       value={customerSearchTerm}
                       onChange={(e) => setCustomerSearchTerm(e.target.value)}
                       size="sm"
@@ -273,7 +277,7 @@ const AddOrder = () => {
           {/* Pharmacy */}
           <div className="mb-3">
             <FormControl isRequired>
-              <FormLabel color={textColor} fontSize="sm" fontWeight="700">Pharmacy</FormLabel>
+              <FormLabel color={textColor} fontSize="sm" fontWeight="700">{t('addOrder.pharmacy')}</FormLabel>
               <Menu>
                 <MenuButton
                   as={Button}
@@ -287,12 +291,12 @@ const AddOrder = () => {
                   fontSize="sm"
                   name="pharmacyId"
                 >
-                  {selectedPharmacy ? selectedPharmacy.name : 'Select Pharmacy'}
+                  {selectedPharmacy ? selectedPharmacy.name : t('addOrder.selectPharmacy')}
                 </MenuButton>
                 <MenuList maxH="300px" overflowY="auto">
                   <Box px={3} py={2}>
                     <Input
-                      placeholder="Search pharmacies..."
+                      placeholder={t('addOrder.searchPharmacies')}
                       value={pharmacySearchTerm}
                       onChange={(e) => setPharmacySearchTerm(e.target.value)}
                       size="sm"
@@ -325,7 +329,7 @@ const AddOrder = () => {
           {/* Payment */}
           <div className="mb-3">
             <FormControl isRequired>
-              <FormLabel color={textColor} fontSize="sm" fontWeight="700">Payment Method</FormLabel>
+              <FormLabel color={textColor} fontSize="sm" fontWeight="700">{t('addOrder.paymentMethod')}</FormLabel>
               <Menu>
                 <MenuButton
                   as={Button}
@@ -339,12 +343,12 @@ const AddOrder = () => {
                   fontSize="sm"
                   name="paymentMethod"
                 >
-                  {paymentMethod || 'Select Payment Method'}
+                  {paymentMethod || t('addOrder.selectPaymentMethod')}
                 </MenuButton>
                 <MenuList>
-                  <MenuItem onClick={() => setPaymentMethod('CASH_ON_DELIVERY')}>Cash on Delivery</MenuItem>
-                  <MenuItem onClick={() => setPaymentMethod('CARD')}>Card</MenuItem>
-                  <MenuItem onClick={() => setPaymentMethod('ONLINE')}>Online Payment</MenuItem>
+                  <MenuItem onClick={() => setPaymentMethod('CASH_ON_DELIVERY')}>{t('addOrder.cashOnDelivery')}</MenuItem>
+                  <MenuItem onClick={() => setPaymentMethod('CARD')}>{t('addOrder.card')}</MenuItem>
+                  <MenuItem onClick={() => setPaymentMethod('ONLINE')}>{t('addOrder.onlinePayment')}</MenuItem>
                 </MenuList>
               </Menu>
             </FormControl>
@@ -353,7 +357,7 @@ const AddOrder = () => {
           {/* Promo Code */}
           <div className="mb-3">
             <FormControl>
-              <FormLabel color={textColor} fontSize="sm" fontWeight="700">Promo Code (Optional)</FormLabel>
+              <FormLabel color={textColor} fontSize="sm" fontWeight="700">{t('addOrder.promoCode')}</FormLabel>
               <Menu>
                 <MenuButton
                   as={Button}
@@ -366,15 +370,15 @@ const AddOrder = () => {
                   textAlign="left"
                   fontSize="sm"
                 >
-                  {selectedPromoCode ? selectedPromoCode.code : 'Select Promo Code'}
+                  {selectedPromoCode ? selectedPromoCode.code : t('addOrder.selectPromoCode')}
                 </MenuButton>
                 <MenuList maxH="300px" overflowY="auto">
                   <MenuItem onClick={() => { setPromoCodeId(''); setSelectedPromoCode(null); }}>
-                    None
+                    {t('addOrder.none')}
                   </MenuItem>
                   <Box px={3} py={2}>
                     <Input
-                      placeholder="Search promo codes..."
+                      placeholder={t('addOrder.searchPromoCodes')}
                       value={promocodeSearchTerm}
                       onChange={(e) => setPromocodeSearchTerm(e.target.value)}
                       size="sm"
@@ -403,7 +407,7 @@ const AddOrder = () => {
           {/* Calculated Total */}
           <div className="mb-3">
             <FormControl>
-              <FormLabel color={textColor} fontSize="sm" fontWeight="700">Calculated Total</FormLabel>
+              <FormLabel color={textColor} fontSize="sm" fontWeight="700">{t('addOrder.calculatedTotal')}</FormLabel>
               <Input
                 type="text"
                 value={calculatedTotal}
@@ -416,14 +420,14 @@ const AddOrder = () => {
 
           {/* Order Items Table */}
           <Box mb={4}>
-            <Text color={textColor} fontSize="md" fontWeight="700" mb={2}>Order Items <span className="text-danger mx-1">*</span></Text>
+            <Text color={textColor} fontSize="md" fontWeight="700" mb={2}>{t('addOrder.orderItems')} <span className="text-danger mx-1">*</span></Text>
             <Table variant="simple">
               <Thead>
                 <Tr>
-                  <Th color="gray.400">Product</Th>
-                  <Th color="gray.400">Quantity</Th>
-                  <Th color="gray.400">Discount (%) (Optional)</Th>
-                  <Th color="gray.400">Actions</Th>
+                  <Th color="gray.400">{t('addOrder.product')}</Th>
+                  <Th color="gray.400">{t('addOrder.quantity')}</Th>
+                  <Th color="gray.400">{t('addOrder.discount')}</Th>
+                  <Th color="gray.400">{t('addOrder.actions')}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -444,12 +448,12 @@ const AddOrder = () => {
                             fontSize="sm"
                             name="productId"
                           >
-                            {products.find(p => p.id === item.productId)?.name || 'Select Product'}
+                            {products.find(p => p.id === item.productId)?.name || t('addOrder.selectProduct')}
                           </MenuButton>
                           <MenuList maxH="300px" overflowY="auto">
                             <Box px={3} py={2}>
                               <Input
-                                placeholder="Search products..."
+                                placeholder={t('addOrder.searchProducts')}
                                 value={item.searchTerm}
                                 onChange={(e) => handleItemChange(index, 'searchTerm', e.target.value)}
                                 size="sm"
@@ -502,7 +506,7 @@ const AddOrder = () => {
                     <Td>
                       <IconButton
                         icon={<IoIosRemove />}
-                        aria-label="Remove item"
+                        aria-label={t('addOrder.removeItem')}
                         colorScheme="red"
                         onClick={() => handleRemoveItem(index)}
                         isDisabled={orderItems.length === 1}
@@ -518,7 +522,7 @@ const AddOrder = () => {
               size="sm"
               variant={"darkBrand"}
             >
-              Add Item
+              {t('addOrder.addItem')}
             </Button>
           </Box>
 
@@ -530,7 +534,7 @@ const AddOrder = () => {
               onClick={handleCancel}
               mr={2}
             >
-              Reset
+              {t('addOrder.reset')}
             </Button>
             <Button
               type="submit"
@@ -538,7 +542,7 @@ const AddOrder = () => {
               isLoading={isCreatingOrder}
               disabled={isCreatingOrder}
             >
-              Create Order
+              {t('addOrder.createOrder')}
             </Button>
           </Flex>
         </form>

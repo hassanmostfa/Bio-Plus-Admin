@@ -9,7 +9,7 @@ import { useState } from 'react';
 import getRoutes from './routes'; // Import your routes function
 import SignInCentered from './views/auth/signIn/index';
 import ProtectedRoute from 'components/protectedRoute/ProtectedRoute';
-import { LanguageProvider } from "./components/auth/LanguageContext";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import { useTranslation } from 'react-i18next';
 
 export default function Main() {

@@ -52,6 +52,8 @@ import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { skipToken } from '@reduxjs/toolkit/query/react';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 
 const columnHelper = createColumnHelper();
@@ -62,6 +64,8 @@ const Orders = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedOrders, setSelectedOrders] = useState([]);
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   
   // Pagination state
   const [pagination, setPagination] = useState({
@@ -126,8 +130,8 @@ const Orders = () => {
       const allOrders = allOrdersResponse?.data || [];
       if (allOrders.length === 0) {
         toast({
-          title: 'No data to export',
-          description: 'No orders found matching current filters/search for export.',
+          title: t('orders.noDataToExport'),
+          description: t('orders.noOrdersFoundForExport'),
           status: 'warning',
           duration: 3000,
           isClosable: true,
@@ -141,7 +145,7 @@ const Orders = () => {
       }
       setTriggerExportFetch(null); // Reset trigger state
     }
-  }, [triggerExportFetch, allOrdersResponse, toast]); // Depend on trigger state and fetched data
+  }, [triggerExportFetch, allOrdersResponse, toast, t]);
 
   // Format date for display
   const formatDate = (dateString) => {
@@ -207,8 +211,8 @@ const Orders = () => {
   const handlePrintSelectedOrders = () => {
     if (selectedOrders.length === 0) {
       toast({
-        title: 'No orders selected',
-        description: 'Please select at least one order to print',
+        title: t('orders.noOrdersSelected'),
+        description: t('orders.selectAtLeastOneOrder'),
         status: 'warning',
         duration: 3000,
         isClosable: true,
@@ -259,8 +263,8 @@ const Orders = () => {
   const handleExportToExcel = () => {
     if (orders.length === 0) {
        toast({
-         title: 'No data to export',
-         description: 'The current table is empty.',
+         title: t('orders.noDataToExport'),
+         description: t('orders.currentTableEmpty'),
          status: 'warning',
          duration: 3000,
          isClosable: true,
@@ -274,8 +278,8 @@ const Orders = () => {
   const handleExportToPdf = () => {
     if (orders.length === 0) {
       toast({
-        title: 'No data to export',
-        description: 'The current table is empty.',
+        title: t('orders.noDataToExport'),
+        description: t('orders.currentTableEmpty'),
         status: 'warning',
         duration: 3000,
         isClosable: true,
@@ -314,8 +318,8 @@ const Orders = () => {
     XLSX.writeFile(workbook, `Orders_${date}.xlsx`);
 
     toast({
-      title: 'Export Successful',
-      description: 'Orders data has been exported to Excel.',
+      title: t('orders.exportSuccessful'),
+      description: t('orders.ordersExportedToExcel'),
       status: 'success',
       duration: 3000,
       isClosable: true,
@@ -390,8 +394,8 @@ const Orders = () => {
            document.body.removeChild(tempDiv);
 
            toast({
-               title: 'Export Successful',
-               description: 'Orders details has been exported to PDF (one page per order).',
+               title: t('orders.exportSuccessful'),
+               description: t('orders.ordersExportedToPdf'),
                status: 'success',
                duration: 3000,
                isClosable: true,
@@ -401,8 +405,8 @@ const Orders = () => {
        // Start the async process
        processOrders().catch(err => {
            toast({
-               title: 'Error Exporting to PDF',
-               description: err.message || 'Failed to generate PDF.',
+               title: t('orders.errorExportingToPdf'),
+               description: err.message || t('orders.failedToGeneratePdf'),
                status: 'error',
                duration: 5000,
                isClosable: true,
@@ -430,29 +434,29 @@ const Orders = () => {
       ),
     }),
     columnHelper.accessor('orderNumber', {
-      header: 'Order #',
+      header: t('orders.orderNumber'),
       cell: (info) => <Text color={textColor} fontWeight="bold">{info.getValue()}</Text>,
     }),
     columnHelper.accessor('createdAt', {
-      header: 'Date',
+      header: t('orders.date'),
       cell: (info) => <Text color={textColor}>{formatDate(info.getValue())}</Text>,
       enableSorting: true, // Enable sorting for Date column
     }),
     columnHelper.accessor('user.name', {
-      header: 'Customer',
+      header: t('orders.customer'),
       cell: (info) => <Text color={textColor}>{info.getValue() || 'N/A'}</Text>,
       enableSorting: true, // Enable sorting for Customer column
     }),
     columnHelper.accessor('user.phoneNumber', {
-      header: 'Phone',
+      header: t('orders.phone'),
       cell: (info) => <Text color={textColor}>{info.getValue() || 'N/A'}</Text>,
     }),
     columnHelper.accessor('pharmacy.name', {
-      header: 'Pharmacy',
+      header: t('orders.pharmacy'),
       cell: (info) => <Text color={textColor}>{info.getValue() || 'N/A'}</Text>,
     }),
     columnHelper.accessor('status', {
-      header: 'Status',
+      header: t('orders.status'),
       cell: (info) => (
         <Badge
           colorScheme={
@@ -471,7 +475,7 @@ const Orders = () => {
       ),
     }),
     columnHelper.accessor('paymentStatus', {
-      header: 'Payment Status',
+      header: t('orders.paymentStatus'),
       cell: (info) => (
         <Badge
           colorScheme={
@@ -489,12 +493,12 @@ const Orders = () => {
       ),
     }),
     columnHelper.accessor('total', {
-      header: 'Total',
+      header: t('orders.total'),
       cell: (info) => <Text color={textColor} fontWeight="bold">{info.getValue()}</Text>,
       enableSorting: true, // Enable sorting for Total column
     }),
     columnHelper.accessor('actions', {
-      header: 'Actions',
+      header: t('orders.actions'),
       cell: (info) => (
         <Flex>
           <Icon
@@ -519,7 +523,7 @@ const Orders = () => {
               colorScheme="teal"
               isLoading={isUpdatingStatus} // Disable while updating
             >
-              Update Status
+              {t('orders.updateStatus')}
             </MenuButton>
             <MenuList>
               {/* Status options matching API payload expectations */}
@@ -541,8 +545,8 @@ const Orders = () => {
     try {
       await updateOrderStatus({ orderId, status }).unwrap();
       toast({ // Show success toast
-        title: 'Status Updated',
-        description: `Order status updated to ${status}.`,
+        title: t('orders.statusUpdated'),
+        description: t('orders.orderStatusUpdatedTo', { status }),
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -550,8 +554,8 @@ const Orders = () => {
       refetch(); // Refetch orders to show updated status
     } catch (err) {
       toast({ // Show error toast
-        title: 'Error Updating Status',
-        description: err.data?.message || 'Failed to update order status.',
+        title: t('orders.errorUpdatingStatus'),
+        description: err.data?.message || t('orders.failedToUpdateOrderStatus'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -575,7 +579,7 @@ const Orders = () => {
     <div className="container">
       <Card flexDirection="column" w="100%" px="0px" overflowX={{ sm: 'scroll', lg: 'hidden' }}>
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
-          <Text color={textColor} fontSize="22px" fontWeight="700">All Orders</Text>
+          <Text color={textColor} fontSize="22px" fontWeight="700">{t('orders.allOrders')}</Text>
           <Box display="flex" gap="10px">
 
             <Button
@@ -589,7 +593,7 @@ const Orders = () => {
             onClick={() => navigate('/admin/add-order')}
             width={'200px'}
           >
-            Add Order
+            {t('orders.addOrder')}
           </Button>
 
           <Button
@@ -604,7 +608,7 @@ const Orders = () => {
             onClick={handlePrintSelectedOrders}
             leftIcon={<IoMdPrint />}
           >
-            Print Selected
+            {t('orders.printSelected')}
           </Button>
 
           {/* Export Menu */}
@@ -622,12 +626,12 @@ const Orders = () => {
               py="5px"
               width={'200px'}
             >
-              Export
+              {t('orders.export')}
             </MenuButton>
             <MenuList>
-              <MenuItem onClick={handleExportToExcel}>Export to Excel</MenuItem>
+              <MenuItem onClick={handleExportToExcel}>{t('orders.exportToExcel')}</MenuItem>
               {/* Add onClick for PDF export if implemented */}
-              <MenuItem onClick={handleExportToPdf}>Export to PDF</MenuItem>
+              <MenuItem onClick={handleExportToPdf}>{t('orders.exportToPdf')}</MenuItem>
             </MenuList>
           </Menu>
           </Box>
@@ -640,7 +644,7 @@ const Orders = () => {
               <Icon as={FaSearch} color="gray.300" />
             </InputLeftElement>
             <Input
-              placeholder="Search orders..."
+              placeholder={t('orders.searchOrders')}
               value={searchTerm}
               onChange={(e) => handleFilterChange('search', e.target.value)} // Use handleFilterChange for search
               borderRadius="20px"
@@ -654,7 +658,7 @@ const Orders = () => {
           {/* Status Filter */}
           <Box>
             <Select
-              placeholder="Filter by Status"
+              placeholder={t('orders.filterByStatus')}
               value={filters.status}
               onChange={(e) => handleFilterChange('status', e.target.value)}
               size="sm"
@@ -663,19 +667,19 @@ const Orders = () => {
               bg={useColorModeValue('gray.100', 'gray.700')}
             >
               {/* Add status options */}
-              <option value="PENDING">Pending</option>
-              <option value="PROCESSING">Processing</option>
-              <option value="SHIPPED">Shipped</option>
-              <option value="DELIVERED">Delivered</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="CANCELLED">Cancelled</option>
+              <option value="PENDING">{t('orders.pending')}</option>
+              <option value="PROCESSING">{t('orders.processing')}</option>
+              <option value="SHIPPED">{t('orders.shipped')}</option>
+              <option value="DELIVERED">{t('orders.delivered')}</option>
+              <option value="COMPLETED">{t('orders.completed')}</option>
+              <option value="CANCELLED">{t('orders.cancelled')}</option>
             </Select>
           </Box>
 
           {/* Payment Method Filter */}
           <Box>
             <Select
-              placeholder="Filter by Payment Method"
+              placeholder={t('orders.filterByPaymentMethod')}
               value={filters.paymentMethod}
               onChange={(e) => handleFilterChange('paymentMethod', e.target.value)}
               size="sm"
@@ -684,16 +688,16 @@ const Orders = () => {
               bg={useColorModeValue('gray.100', 'gray.700')}
             >
               {/* Add payment method options */}
-              <option value="CASH_ON_DELIVERY">Cash on Delivery</option>
-              <option value="CARD">Card</option>
-              <option value="ONLINE">Online</option>
+              <option value="CASH_ON_DELIVERY">{t('orders.cashOnDelivery')}</option>
+              <option value="CARD">{t('orders.card')}</option>
+              <option value="ONLINE">{t('orders.online')}</option>
             </Select>
           </Box>
 
           {/* Payment Status Filter */}
           <Box>
             <Select
-              placeholder="Filter by Payment Status"
+              placeholder={t('orders.filterByPaymentStatus')}
               value={filters.paymentStatus}
               onChange={(e) => handleFilterChange('paymentStatus', e.target.value)}
               size="sm"
@@ -702,9 +706,9 @@ const Orders = () => {
               bg={useColorModeValue('gray.100', 'gray.700')}
             >
               {/* Add payment status options */}
-              <option value="PAID">Paid</option>
-              <option value="UNPAID">Unpaid</option>
-              <option value="REFUNDED">Refunded</option>
+              <option value="PAID">{t('orders.paid')}</option>
+              <option value="UNPAID">{t('orders.unpaid')}</option>
+              <option value="REFUNDED">{t('orders.refunded')}</option>
             </Select>
           </Box>
         </Flex>
@@ -713,7 +717,7 @@ const Orders = () => {
         <Flex mb="20px" mx="20px" wrap="wrap" justifyContent="space-around" alignItems="center" gap="10px">
           <Box>
             <Text color={textColor} mb="10px" fontWeight="bold" fontSize="sm">
-              From Date
+              {t('orders.fromDate')}
             </Text>
             <Input
               type="date"
@@ -728,7 +732,7 @@ const Orders = () => {
           </Box>
           <Box>
             <Text color={textColor} mb="10px" fontWeight="bold" fontSize="sm">
-              To Date
+              {t('orders.toDate')}
             </Text>
             <Input
               type="date"
@@ -752,7 +756,7 @@ const Orders = () => {
               px="24px"
               py="5px"
             >
-              Apply Filters
+              {t('orders.applyFilters')}
             </Button>
             <Button
               onClick={resetFilters}
@@ -764,7 +768,7 @@ const Orders = () => {
               px="24px"
               py="5px"
             >
-              Reset Filters
+              {t('orders.resetFilters')}
             </Button>
           </Flex>
         </Flex>
@@ -810,7 +814,7 @@ const Orders = () => {
               {isLoading ? (
                  <Tr>
                    <Td colSpan={columns.length} textAlign="center" py="40px">
-                     <Text color={textColor}>Loading Orders...</Text>
+                     <Text color={textColor}>{t('orders.loadingOrders')}</Text>
                    </Td>
                  </Tr>
                ) : table.getRowModel().rows.length > 0 ? (
@@ -826,7 +830,7 @@ const Orders = () => {
               ) : (
                 <Tr>
                   <Td colSpan={columns.length} textAlign="center" py="40px">
-                    <Text color={textColor}>No orders found</Text>
+                    <Text color={textColor}>{t('orders.noOrdersFound')}</Text>
                   </Td>
                 </Tr>
               )}
@@ -837,7 +841,7 @@ const Orders = () => {
         {/* Pagination */}
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Text color={textColor}>
-            Showing {orders.length} of {totalItems} orders
+            {t('orders.showing')} {orders.length} {t('orders.of')} {totalItems} {t('orders.orders')}
           </Text>
           <Flex gap="10px">
             <Button
@@ -846,10 +850,10 @@ const Orders = () => {
               variant="outline"
               size="sm"
             >
-              Previous
+              {t('orders.previous')}
             </Button>
             <Text color={textColor} px="10px" display="flex" alignItems="center">
-              Page {pagination.page} of {totalPages}
+              {t('orders.page')} {pagination.page} {t('orders.of')} {totalPages}
             </Text>
             <Button
               onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
@@ -857,7 +861,7 @@ const Orders = () => {
               variant="outline"
               size="sm"
             >
-              Next
+              {t('orders.next')}
             </Button>
           </Flex>
         </Flex>
@@ -867,22 +871,22 @@ const Orders = () => {
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Order Details</ModalHeader>
+          <ModalHeader>{t('orders.orderDetails')}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             {selectedOrder && (
               <Box>
                 <Flex justifyContent="space-between" mb="20px">
                   <Box>
-                    <Text fontSize="sm" color="gray.500">Order Number</Text>
+                    <Text fontSize="sm" color="gray.500">{t('orders.orderNumber')}</Text>
                     <Text fontWeight="bold">{selectedOrder.orderNumber}</Text>
                   </Box>
                   <Box>
-                    <Text fontSize="sm" color="gray.500">Date</Text>
+                    <Text fontSize="sm" color="gray.500">{t('orders.date')}</Text>
                     <Text>{formatDate(selectedOrder.createdAt)}</Text>
                   </Box>
                   <Box>
-                    <Text fontSize="sm" color="gray.500">Status</Text>
+                    <Text fontSize="sm" color="gray.500">{t('orders.status')}</Text>
                     <Badge
                       colorScheme={
                         selectedOrder.status === 'PENDING' ? 'yellow' :
@@ -899,16 +903,16 @@ const Orders = () => {
 
                 <Flex justifyContent="space-between" mb="20px">
                   <Box>
-                    <Text fontSize="sm" color="gray.500">Customer</Text>
+                    <Text fontSize="sm" color="gray.500">{t('orders.customer')}</Text>
                     <Text>{selectedOrder.user?.name || 'N/A'}</Text>
                     <Text>{selectedOrder.user?.phoneNumber || 'N/A'}</Text>
                   </Box>
                   <Box>
-                    <Text fontSize="sm" color="gray.500">Pharmacy</Text>
+                    <Text fontSize="sm" color="gray.500">{t('orders.pharmacy')}</Text>
                     <Text>{selectedOrder.pharmacy?.name || 'N/A'}</Text>
                   </Box>
                   <Box>
-                    <Text fontSize="sm" color="gray.500">Payment</Text>
+                    <Text fontSize="sm" color="gray.500">{t('orders.payment')}</Text>
                     <Text>{selectedOrder.paymentMethod}</Text>
                     <Badge
                       colorScheme={selectedOrder.paymentStatus === 'PAID' ? 'green' : 'orange'}
@@ -922,7 +926,7 @@ const Orders = () => {
                 </Flex>
 
                 <Box mb="20px">
-                  <Text fontSize="sm" color="gray.500">Address</Text>
+                  <Text fontSize="sm" color="gray.500">{t('orders.address')}</Text>
                   {selectedOrder.address ? (
                     <Text>
                       {selectedOrder.address.buildingNo} {selectedOrder.address.street}, 
@@ -934,7 +938,7 @@ const Orders = () => {
                 </Box>
 
                 <Box mb="20px">
-                  <Text fontSize="lg" fontWeight="bold" mb="10px">Items</Text>
+                  <Text fontSize="lg" fontWeight="bold" mb="10px">{t('orders.items')}</Text>
                   {selectedOrder.items?.map((item) => (
                     <Flex key={item.id} mb="10px" p="10px" borderBottom="1px solid" borderColor="gray.200">
                       <Image
@@ -946,11 +950,11 @@ const Orders = () => {
                       />
                       <Box flex="1">
                         <Text fontWeight="bold">{item.name}</Text>
-                        <Text>Qty: {item.quantity}</Text>
+                        <Text>{t('orders.qty')}: {item.quantity}</Text>
                       </Box>
                       <Box textAlign="right">
                         <Text>kwd {item.price}</Text>
-                        <Text>Subtotal: kwd {item.subtotal}</Text>
+                        <Text>{t('orders.subtotal')}: kwd {item.subtotal}</Text>
                       </Box>
                     </Flex>
                   ))}
@@ -958,16 +962,16 @@ const Orders = () => {
 
                 <Flex justifyContent="flex-end">
                   <Box textAlign="right">
-                    <Text>Subtotal: kwd {selectedOrder.subtotal}</Text>
-                    <Text>Delivery Fee: kwd {selectedOrder.deliveryFee}</Text>
-                    <Text fontWeight="bold" fontSize="lg">Total: kwd {selectedOrder.total}</Text>
+                    <Text>{t('orders.subtotal')}: kwd {selectedOrder.subtotal}</Text>
+                    <Text>{t('orders.deliveryFee')}: kwd {selectedOrder.deliveryFee}</Text>
+                    <Text fontWeight="bold" fontSize="lg">{t('orders.total')}: kwd {selectedOrder.total}</Text>
                   </Box>
                 </Flex>
               </Box>
             )}
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onClose}>Close</Button>
+            <Button onClick={onClose}>{t('orders.close')}</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
