@@ -12,12 +12,16 @@ import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useGetReturnQuery } from 'api/returnSlice';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const ShowReturn = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const cardBg = useColorModeValue('white', 'navy.700');
   const navigate = useNavigate();
   const { id } = useParams();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
 
   // API hook to fetch data
   const { data: returnData, isLoading: isFetching, error } = useGetReturnQuery(id);
@@ -25,28 +29,28 @@ const ShowReturn = () => {
   useEffect(() => {
     if (error) {
       Swal.fire({
-        title: 'Error!',
-        text: error.data?.message || 'Failed to load return policy',
+        title: t('returns.loadErrorTitle'),
+        text: error.data?.message || t('returns.loadErrorText'),
         icon: 'error',
-        confirmButtonText: 'OK'
+        confirmButtonText: t('returns.ok')
       });
     }
-  }, [error]);
+  }, [error, t]);
 
   if (isFetching) {
-    return <Box>Loading...</Box>;
+    return <Box>{t('returns.loading')}</Box>;
   }
 
   if (!returnData?.data) {
-    return <Box>No data found</Box>;
+    return <Box>{t('returns.noDataFound')}</Box>;
   }
 
   return (
-    <Box w="100%" className="container add-admin-container w-100">
+    <Box w="100%" className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            View Return Policy
+            {t('returns.viewReturnPolicy')}
           </Text>
           <Button
             type="button"
@@ -55,14 +59,14 @@ const ShowReturn = () => {
             size="sm"
             leftIcon={<Icon as={IoMdArrowBack} />}
           >
-            Back
+            {t('returns.back')}
           </Button>
         </div>
 
         {/* English Content */}
         <Box mt={4}>
           <Text color={textColor} fontSize="sm" fontWeight="700">
-            English Content
+            {t('returns.englishContent')}
           </Text>
           <Box 
             mt={2}
@@ -72,14 +76,14 @@ const ShowReturn = () => {
             bg="gray.50"
             color={textColor}
           >
-            {returnData.data.contentEn || 'No content available'}
+            {returnData.data.contentEn || t('returns.noContentAvailable')}
           </Box>
         </Box>
 
         {/* Arabic Content */}
         <Box mt={4}>
           <Text color={textColor} fontSize="sm" fontWeight="700">
-            Arabic Content
+            {t('returns.arabicContent')}
           </Text>
           <Box 
             mt={2}
@@ -90,7 +94,7 @@ const ShowReturn = () => {
             color={textColor}
             dir="rtl"
           >
-            {returnData.data.contentAr || 'لا يوجد محتوى متاح'}
+            {returnData.data.contentAr || t('returns.noContentAvailableAr')}
           </Box>
         </Box>
 
@@ -98,7 +102,7 @@ const ShowReturn = () => {
         {returnData.data.image && (
           <Box mt={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Image
+              {t('returns.image')}
             </Text>
             <Flex
               mt={2}
@@ -109,8 +113,8 @@ const ShowReturn = () => {
               justify="center"
             >
               <Image
-                src={`${process.env.REACT_APP_API_URL}/uploads/${returnData.data.image}`}
-                alt="Return policy"
+                src={`${returnData.data.image}`}
+                alt={t('returns.returnPolicy')}
                 maxH="300px"
                 objectFit="contain"
               />
@@ -125,7 +129,7 @@ const ShowReturn = () => {
             colorScheme="teal" 
             onClick={() => navigate(-1)}
           >
-            Back to List
+            {t('returns.backToList')}
           </Button>
         </Flex>
       </Box>

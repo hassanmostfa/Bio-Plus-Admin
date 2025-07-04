@@ -18,6 +18,8 @@ import { FaUpload } from 'react-icons/fa6';
 import { useAddReturnMutation } from 'api/returnSlice';
 import Swal from 'sweetalert2';
 import { useAddFileMutation } from 'api/filesSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 
 const AddReturn = () => {
@@ -36,6 +38,8 @@ const AddReturn = () => {
   const toast = useToast();
   const [error, setError] = useState(null);
   const [addFile] = useAddFileMutation();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
 
   // Mutation hook for creating return policy
   const [createReturnPolicy, { isLoading }] = useAddReturnMutation();
@@ -97,8 +101,8 @@ const AddReturn = () => {
 
       // Show success message
       Swal.fire({
-        title: 'Success',
-        description: 'Return policy created successfully',
+        title: t('returns.addSuccessTitle'),
+        description: t('returns.addSuccessText'),
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -110,8 +114,8 @@ const AddReturn = () => {
       setError(error.data);
       // Show error message
       Swal.fire({
-        title: 'Error',
-        description: error.data?.message || 'Failed to create return policy',
+        title: t('returns.addErrorTitle'),
+        description: error.data?.message || t('returns.addErrorText'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -120,11 +124,11 @@ const AddReturn = () => {
   };
 
   return (
-    <Box w={"100%"} className="container add-admin-container w-100">
+    <Box w={"100%"} className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Add Return Policy
+            {t('returns.addReturnPolicy')}
           </Text>
           <Button
             type="button"
@@ -133,13 +137,13 @@ const AddReturn = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('returns.back')}
           </Button>
         </div>
         <form>
           {error?.success === false && (
             <div className="alert alert-danger" role="alert">
-              <h4 className="alert-heading">Validation failed</h4>
+              <h4 className="alert-heading">{t('returns.validationFailed')}</h4>
               <ul>
                 {error.errors?.map((err) => (
                   <li key={err.field}>
@@ -153,7 +157,7 @@ const AddReturn = () => {
           {/* English Content */}
           <Box mt={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              English Content <span className="text-danger">*</span>
+              {t('returns.englishContent')} <span className="text-danger">*</span>
             </Text>
             <Textarea
               name="contentEn"
@@ -163,14 +167,14 @@ const AddReturn = () => {
               height="200px"
               bg={inputBg}
               color={textColor}
-              placeholder="Enter English content (Markdown supported)"
+              placeholder={t('returns.englishContentPlaceholder')}
             />
           </Box>
 
           {/* Arabic Content */}
           <Box mt={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Arabic Content <span className="text-danger">*</span>
+              {t('returns.arabicContent')} <span className="text-danger">*</span>
             </Text>
             <Textarea
               name="contentAr"
@@ -180,7 +184,7 @@ const AddReturn = () => {
               height="200px"
               bg={inputBg}
               color={textColor}
-              placeholder="أدخل المحتوى بالعربية (يدعم Markdown)"
+              placeholder={t('returns.arabicContentPlaceholder')}
               dir="rtl"
             />
           </Box>
@@ -202,10 +206,10 @@ const AddReturn = () => {
           >
             <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
             <Text color="gray.500" mb={2}>
-              Drag & Drop Image Here
+              {t('returns.dragDropImage')}
             </Text>
             <Text color="gray.500" mb={2}>
-              or
+              {t('returns.or')}
             </Text>
             <Button
               variant="outline"
@@ -213,7 +217,7 @@ const AddReturn = () => {
               border="none"
               onClick={() => document.getElementById('fileInput').click()}
             >
-              Upload Image
+              {t('returns.uploadImage')}
               <input
                 type="file"
                 id="fileInput"
@@ -246,7 +250,7 @@ const AddReturn = () => {
           {/* Save and Cancel Buttons */}
           <Flex justify="center" mt={6}>
             <Button variant="outline" colorScheme="red" mr={2} onClick={() => navigate(-1)}>
-              Cancel
+              {t('returns.cancel')}
             </Button>
             <Button
               variant="darkBrand"
@@ -259,7 +263,7 @@ const AddReturn = () => {
               onClick={handleSend}
               isLoading={isLoading}
             >
-              Save Policy
+              {t('returns.savePolicy')}
             </Button>
           </Flex>
         </form>

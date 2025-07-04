@@ -35,11 +35,15 @@ import { useNavigate } from 'react-router-dom';
 import { useGetReturnsQuery, useDeleteReturnMutation } from 'api/returnSlice';
 import Swal from 'sweetalert2';
 import { FaSearch } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
 const Returns = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,35 +74,35 @@ const Returns = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('returns.deleteConfirmTitle'),
+        text: t('returns.deleteConfirmText'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('returns.deleteConfirmButton'),
       });
 
       if (result.isConfirmed) {
         await deleteReturn(id).unwrap();
         refetch();
-        Swal.fire('Deleted!', 'The return policy has been deleted.', 'success');
+        Swal.fire(t('returns.deleteSuccessTitle'), t('returns.deleteSuccessText'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete return policy:', error);
-      Swal.fire('Error!', 'Failed to delete the return policy.', 'error');
+      Swal.fire(t('returns.deleteErrorTitle'), t('returns.deleteErrorText'), 'error');
     }
   };
 
   const columns = [
     columnHelper.accessor('id', {
       id: 'id',
-      header: () => <Text color="gray.400">ID</Text>,
+      header: () => <Text color="gray.400">{t('returns.id')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue().substring(0, 8)}...</Text>,
     }),
     columnHelper.accessor('contentEn', {
       id: 'contentEn',
-      header: () => <Text color="gray.400">English Content</Text>,
+      header: () => <Text color="gray.400">{t('returns.englishContent')}</Text>,
       cell: (info) => (
         <Text color={textColor} noOfLines={2}>
           {info.getValue().substring(0, 100)}...
@@ -107,20 +111,20 @@ const Returns = () => {
     }),
     columnHelper.accessor('contentAr', {
       id: 'contentAr',
-      header: () => <Text color="gray.400">Arabic Content</Text>,
+      header: () => <Text color="gray.400">{t('returns.arabicContent')}</Text>,
       cell: (info) => (
         <Text color={textColor} noOfLines={2} dir="rtl">
-          {info.getValue() ? info.getValue().substring(0, 100) + '...' : 'N/A'}
+          {info.getValue() ? info.getValue().substring(0, 100) + '...' : t('returns.notAvailable')}
         </Text>
       ),
     }),
     columnHelper.accessor('image', {
       id: 'image',
-      header: () => <Text color="gray.400">Icon</Text>,
+      header: () => <Text color="gray.400">{t('returns.icon')}</Text>,
       cell: (info) => (
         <Image
           src={info.getValue()}
-          alt="Return Policy"
+          alt={t('returns.returnPolicy')}
           boxSize="70px"
           objectFit="cover"
           borderRadius="md"
@@ -130,16 +134,16 @@ const Returns = () => {
     }),
     columnHelper.accessor('isActive', {
       id: 'status',
-      header: () => <Text color="gray.400">Status</Text>,
+      header: () => <Text color="gray.400">{t('returns.status')}</Text>,
       cell: (info) => (
         <Badge colorScheme={info.getValue() ? 'green' : 'red'}>
-          {info.getValue() ? 'Active' : 'Inactive'}
+          {info.getValue() ? t('returns.active') : t('returns.inactive')}
         </Badge>
       ),
     }),
     columnHelper.accessor('id', {
       id: 'actions',
-      header: () => <Text color="gray.400">Actions</Text>,
+      header: () => <Text color="gray.400">{t('returns.actions')}</Text>,
       cell: (info) => (
         <Flex>
           <Icon
@@ -208,11 +212,11 @@ const Returns = () => {
   }
 
   return (
-    <div className="container">
+    <div className="container" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Card flexDirection="column" w="100%" px="0px" overflowX={{ sm: 'scroll', lg: 'hidden' }}>
         <Flex px="25px" mb="8px" mt="20px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
-            Return Policies
+            {t('returns.returnPolicies')}
           </Text>
           
           <Flex align="center" gap={4}>
@@ -229,7 +233,7 @@ const Returns = () => {
               <Input
                 variant="search"
                 fontSize="sm"
-                placeholder="Search..."
+                placeholder={t('returns.search')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -246,7 +250,7 @@ const Returns = () => {
               onClick={() => navigate('/admin/cms/add-return')}
               leftIcon={<PlusSquareIcon />}
             >
-              Add Return Policy
+              {t('returns.addReturnPolicy')}
             </Button>
           </Flex>
         </Flex>
@@ -282,7 +286,7 @@ const Returns = () => {
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
-              Rows per page:
+              {t('returns.rowsPerPage')}:
             </Text>
             <Select
               value={limit}
@@ -297,7 +301,7 @@ const Returns = () => {
           </Flex>
           
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages}
+            {t('returns.page')} {pagination.page} {t('returns.of')} {pagination.totalPages}
           </Text>
           
           <Flex>
@@ -309,7 +313,7 @@ const Returns = () => {
               mr="10px"
               leftIcon={<ChevronLeftIcon />}
             >
-              Previous
+              {t('returns.previous')}
             </Button>
             <Button
               onClick={handleNextPage}
@@ -318,7 +322,7 @@ const Returns = () => {
               size="sm"
               rightIcon={<ChevronRightIcon />}
             >
-              Next
+              {t('returns.next')}
             </Button>
           </Flex>
         </Flex>

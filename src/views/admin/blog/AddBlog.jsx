@@ -26,7 +26,12 @@ import { useGetTagsQuery } from "api/tagSlice";
 import { useAddFileMutation } from "api/filesSlice";
 import Swal from "sweetalert2";
 
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
+
 const AddBlog = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -82,8 +87,8 @@ const AddBlog = () => {
       // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
-          title: 'Invalid file type',
-          description: 'Please upload an image file',
+          title: t('blogs.addImageErrorTitle'),
+          description: t('blogs.addImageErrorText'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -94,8 +99,8 @@ const AddBlog = () => {
       // Validate file size (e.g., 5MB max)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: 'File too large',
-          description: 'Maximum file size is 5MB',
+          title: t('blogs.fileTooLargeTitle'),
+          description: t('blogs.fileTooLargeText'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -163,13 +168,13 @@ const AddBlog = () => {
 
   const handleCancel = () => {
     Swal.fire({
-      title: "Are you sure?",
-      text: "You will lose all unsaved changes",
+      title: t('blogs.cancelConfirmTitle'),
+      text: t('blogs.cancelConfirmText'),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, discard changes",
+      confirmButtonText: t('blogs.cancelConfirmButton'),
     }).then((result) => {
       if (result.isConfirmed) {
         navigate("/admin/undefined/blogs");
@@ -187,8 +192,8 @@ const AddBlog = () => {
       !image
     ) {
       toast({
-        title: "Error",
-        description: "Please fill all required fields",
+        title: t('blogs.addErrorTitle'),
+        description: t('blogs.addErrorText'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -211,7 +216,7 @@ const AddBlog = () => {
           !uploadResponse.success ||
           !uploadResponse.data.uploadedFiles[0]?.url
         ) {
-          throw new Error("Failed to upload image");
+          throw new Error(t('blogs.uploadErrorText'));
         }
 
         imageUrl = uploadResponse.data.uploadedFiles[0].url;
@@ -237,8 +242,8 @@ const AddBlog = () => {
       const response = await addBlog(payload).unwrap();
 
       toast({
-        title: "Success",
-        description: "Blog created successfully",
+        title: t('blogs.addSuccessTitle'),
+        description: t('blogs.addSuccessText'),
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -248,8 +253,8 @@ const AddBlog = () => {
     } catch (error) {
       console.error("Failed to create blog:", error);
       toast({
-        title: "Error",
-        description: error.data?.message || "Failed to create blog",
+        title: t('blogs.addErrorTitle'),
+        description: error.data?.message || t('blogs.addErrorText'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -260,11 +265,11 @@ const AddBlog = () => {
   };
 
   return (
-    <Box w="100%" className="container add-admin-container">
+    <Box w="100%" className="container add-admin-container" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <Flex justify="space-between" align="center" mb={6}>
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Add New Blog
+            {t('blogs.addTitle')}
           </Text>
           <Button
             onClick={handleCancel}
@@ -272,7 +277,7 @@ const AddBlog = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('blogs.back')}
           </Button>
         </Flex>
 
@@ -280,21 +285,22 @@ const AddBlog = () => {
           {/* Title Section */}
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mb={4}>
             <FormControl isRequired>
-              <FormLabel>English Title</FormLabel>
+              <FormLabel>{t('blogs.englishTitle')}</FormLabel>
               <Input
                 name="title"
-                placeholder="Enter English Title"
+                placeholder={t('blogs.englishTitlePlaceholder')}
                 value={formData.title}
                 onChange={handleChange}
                 color={textColor}
                 bg={inputBg}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             <FormControl isRequired>
-              <FormLabel>Arabic Title</FormLabel>
+              <FormLabel>{t('blogs.arabicTitle')}</FormLabel>
               <Input
-                placeholder="ادخل العنوان"
+                placeholder={t('blogs.arabicTitlePlaceholder')}
                 value={formData.translations[0].title}
                 onChange={(e) =>
                   handleTranslationChange("ar", "title", e.target.value)
@@ -309,22 +315,23 @@ const AddBlog = () => {
           {/* Description Section */}
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mb={4}>
             <FormControl isRequired>
-              <FormLabel>English Description</FormLabel>
+              <FormLabel>{t('blogs.englishDescription')}</FormLabel>
               <Textarea
                 name="description"
-                placeholder="Enter English Description"
+                placeholder={t('blogs.englishDescriptionPlaceholder')}
                 value={formData.description}
                 onChange={handleChange}
                 minH="150px"
                 color={textColor}
                 bg={inputBg}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             <FormControl isRequired>
-              <FormLabel>Arabic Description</FormLabel>
+              <FormLabel>{t('blogs.arabicDescription')}</FormLabel>
               <Textarea
-                placeholder="ادخل الوصف"
+                placeholder={t('blogs.arabicDescriptionPlaceholder')}
                 value={formData.translations[0].description}
                 onChange={(e) =>
                   handleTranslationChange("ar", "description", e.target.value)
@@ -339,7 +346,7 @@ const AddBlog = () => {
 
           {/* Tags Selection */}
           <FormControl isRequired mb={4}>
-            <FormLabel>Tags</FormLabel>
+            <FormLabel>{t('blogs.tags')}</FormLabel>
             {isTagsLoading ? (
               <Spinner size="sm" />
             ) : (
@@ -347,7 +354,7 @@ const AddBlog = () => {
                 options={tagOptions}
                 isMulti
                 onChange={handleTagChange}
-                placeholder="Select tags..."
+                placeholder={t('blogs.selectTagsPlaceholder')}
                 className="basic-multi-select"
                 classNamePrefix="select"
               />
@@ -356,7 +363,7 @@ const AddBlog = () => {
 
           {/* Image Upload */}
           <FormControl isRequired>
-            <FormLabel>Featured Image</FormLabel>
+            <FormLabel>{t('blogs.featuredImage')}</FormLabel>
             <Box
               border="1px dashed"
               borderColor={isDragging ? "blue.500" : "gray.200"}
@@ -371,13 +378,13 @@ const AddBlog = () => {
               mb={4}
             >
               <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
-              <Text>Drag & drop image here or</Text>
+              <Text>{t('blogs.dragDropText')}</Text>
               <Button
                 variant="link"
                 color="blue.500"
                 onClick={() => document.getElementById("fileInput").click()}
               >
-                Browse Files
+                {t('blogs.browseFiles')}
               </Button>
               <Input
                 id="fileInput"
@@ -400,7 +407,7 @@ const AddBlog = () => {
               />
               <IconButton
                 icon={<FaTrash />}
-                aria-label="Remove image"
+                aria-label={t('blogs.removeImage')}
                 size="sm"
                 colorScheme="red"
                 position="absolute"
@@ -414,15 +421,15 @@ const AddBlog = () => {
           {/* Action Buttons */}
           <Flex justify="flex-end" mt={6} gap={4}>
             <Button variant="outline" colorScheme="red" onClick={handleCancel}>
-              Cancel
+              {t('blogs.cancel')}
             </Button>
             <Button
               colorScheme="blue"
               onClick={handleSubmit}
               isLoading={isLoading}
-              loadingText="Submitting..."
+              loadingText={t('blogs.submitting')}
             >
-              Create Blog
+              {t('blogs.createBlog')}
             </Button>
           </Flex>
         </form>

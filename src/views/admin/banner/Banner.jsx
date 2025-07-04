@@ -45,11 +45,15 @@ import { FaEye, FaTrash, FaSearch } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useGetBannersQuery, useDeleteBannerMutation } from 'api/bannerSlice';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 // import { format } from 'date-fns';
 
 const columnHelper = createColumnHelper();
 
 const Banner = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   // State management
   const [sorting, setSorting] = useState([]);
   const [pagination, setPagination] = useState({
@@ -109,22 +113,22 @@ const Banner = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('banners.deleteConfirmTitle'),
+        text: t('banners.deleteConfirmText'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonText: t('banners.deleteConfirmButton')
       });
 
       if (result.isConfirmed) {
         await deleteBanner(id).unwrap();
-        Swal.fire('Deleted!', 'The Banner has been deleted.', 'success');
+        Swal.fire(t('banners.deleteSuccessTitle'), t('banners.deleteSuccessText'), 'success');
         refetch();
       }
     } catch (error) {
-      Swal.fire('Error!', error.message || 'Failed to delete blog', 'error');
+      Swal.fire(t('banners.deleteErrorTitle'), error.message || t('banners.deleteErrorText'), 'error');
     }
   };
 
@@ -161,7 +165,7 @@ const Banner = () => {
       id: 'title',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Title
+          {t('banners.table.title')}
         </Text>
       ),
       cell: (info) => (
@@ -174,7 +178,7 @@ const Banner = () => {
       id: 'arTitle',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Arabic Title
+          {t('banners.table.arabicTitle')}
         </Text>
       ),
       cell: (info) => (
@@ -187,13 +191,13 @@ const Banner = () => {
       id: 'link',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Link
+          {t('banners.table.link')}
         </Text>
       ),
       cell: (info) => (
         <Tooltip label={info.getValue()}>
           <Text color={textColor} fontSize="sm" noOfLines={1}>
-            {info.getValue() || 'N/A'}
+            {info.getValue() || t('banners.table.na')}
           </Text>
         </Tooltip>
       ),
@@ -202,7 +206,7 @@ const Banner = () => {
       id: 'linkType',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Link Type
+          {t('banners.table.linkType')}
         </Text>
       ),
       cell: (info) => (
@@ -218,7 +222,7 @@ const Banner = () => {
       id: 'isActive',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Status
+          {t('banners.table.status')}
         </Text>
       ),
       cell: (info) => (
@@ -230,7 +234,7 @@ const Banner = () => {
           // leftIcon={info.getValue() ? <MdCheckCircle /> : <MdCancel />}
           // isLoading={isFetching}
         >
-          {info.getValue() ? 'Active' : 'Inactive'}
+          {info.getValue() ? t('banners.active') : t('banners.inactive')}
         </dev>
       ),
     }),
@@ -238,7 +242,7 @@ const Banner = () => {
       id: 'image',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Image
+          {t('banners.table.image')}
         </Text>
       ),
       cell: (info) => (
@@ -257,7 +261,7 @@ const Banner = () => {
       id: 'actions',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Actions
+          {t('banners.table.actions')}
         </Text>
       ),
       cell: (info) => (
@@ -300,7 +304,7 @@ const Banner = () => {
         </Flex>
       ),
     }),
-  ], [textColor, isFetching]);
+  ], [textColor, isFetching, t]);
 
   // Table instance
   const table = useReactTable({
@@ -335,14 +339,14 @@ const Banner = () => {
   if (error) {
     return (
       <Card p={4}>
-        <Text color="red.500">Error loading banners: {error.data?.message || error.message}</Text>
-        <Button mt={4} onClick={refetch}>Retry</Button>
+        <Text color="red.500">{t('banners.loadErrorText')}: {error.data?.message || error.message}</Text>
+        <Button mt={4} onClick={refetch}>{t('banners.retry')}</Button>
       </Card>
     );
   }
 
   return (
-    <Box className="container">
+    <Box className="container" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Card
         flexDirection="column"
         w="100%"
@@ -351,7 +355,7 @@ const Banner = () => {
       >
         <Flex px="25px" mb="8px" justify="space-between" align="center" wrap="wrap">
           <Text color={textColor} fontSize="22px" fontWeight="700" mb={{ base: 2, md: 0 }}>
-            Banners Management
+            {t('banners.title')}
           </Text>
           
           <Flex gap={4} wrap="wrap">
@@ -382,7 +386,7 @@ const Banner = () => {
               leftIcon={<PlusSquareIcon />}
               size="sm"
             >
-              Add Banner
+              {t('banners.addBanner')}
             </Button>
           </Flex>
         </Flex>
@@ -443,12 +447,12 @@ const Banner = () => {
           gap={4}
         >
           <Text fontSize="sm">
-            Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} to{' '}
+            {t('banners.showing')} {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} {t('banners.to')}{' '}
             {Math.min(
               (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
               bannersResponse?.totalCount || 0
             )}{' '}
-            of {bannersResponse?.totalCount || 0} entries
+            {t('banners.of')} {bannersResponse?.totalCount || 0} {t('banners.entries')}
           </Text>
           
           <Flex gap={2}>
@@ -458,7 +462,7 @@ const Banner = () => {
               disabled={!table.getCanPreviousPage()}
               isLoading={isFetching}
             >
-              Previous
+              {t('banners.previous')}
             </Button>
             <Button
               size="sm"
@@ -466,7 +470,7 @@ const Banner = () => {
               disabled={!table.getCanNextPage()}
               isLoading={isFetching}
             >
-              Next
+              {t('banners.next')}
             </Button>
           </Flex>
         </Flex>

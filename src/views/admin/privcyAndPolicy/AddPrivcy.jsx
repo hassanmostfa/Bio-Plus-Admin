@@ -10,12 +10,15 @@ import {
 } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
-
 import Swal from "sweetalert2";
 import { useGetPrivacyQuery } from "api/privacySlice";
 import { useAddPrivacyMutation } from "api/privacySlice";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AddPrivcy = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const { data: privacyData, isLoading: isFetching } = useGetPrivacyQuery();
   const [updatePrivacyPolicy, { isLoading: isUpdating }] = useAddPrivacyMutation();
   const navigate = useNavigate();
@@ -45,12 +48,12 @@ const AddPrivcy = () => {
         contentAr: formData.contentAr
       }).unwrap();
       
-      Swal.fire('Success!', 'Privacy Policy saved successfully.', 'success');
+      Swal.fire(t('privacy.success'), t('privacy.savedSuccessfully'), 'success');
     } catch (error) {
       console.error('Failed to save privacy policy:', error);
       Swal.fire(
-        'Error!',
-        error.data?.message || 'Failed to save privacy policy.',
+        t('privacy.error'),
+        error.data?.message || t('privacy.failedToSave'),
         'error'
       );
     }
@@ -73,7 +76,7 @@ const AddPrivcy = () => {
   }
 
   return (
-    <div className="container add-admin-container w-100">
+    <div className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="add-admin-card shadow p-4 bg-white w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
@@ -83,7 +86,7 @@ const AddPrivcy = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            {privacyData ? 'Edit' : 'Add'} Privacy & Policy
+            {privacyData ? t('privacy.editTitle') : t('privacy.addTitle')}
           </Text>
           <Button
             type="button"
@@ -92,7 +95,7 @@ const AddPrivcy = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('privacy.back')}
           </Button>
         </div>
         
@@ -101,12 +104,12 @@ const AddPrivcy = () => {
             {/* English Content */}
             <Box flex={1}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                English Content (contentEn)
+                {t('privacy.englishContent')}
                 <span className="text-danger mx-1">*</span>
               </Text>
               <Textarea
                 name="contentEn"
-                placeholder="Enter English privacy policy content..."
+                placeholder={t('privacy.enterEnglishContent')}
                 value={formData.contentEn}
                 onChange={handleInputChange}
                 required
@@ -114,18 +117,19 @@ const AddPrivcy = () => {
                 height="400px"
                 fontFamily="monospace"
                 whiteSpace="pre-wrap"
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </Box>
 
             {/* Arabic Content */}
             <Box flex={1}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Arabic Content (contentAr)
+                {t('privacy.arabicContent')}
                 <span className="text-danger mx-1">*</span>
               </Text>
               <Textarea
                 name="contentAr"
-                placeholder="أدخل محتوى سياسة الخصوصية بالعربية..."
+                placeholder={t('privacy.enterArabicContent')}
                 value={formData.contentAr}
                 onChange={handleInputChange}
                 required
@@ -146,7 +150,7 @@ const AddPrivcy = () => {
               onClick={() => navigate(-1)}
               width="120px"
             >
-              Cancel
+              {t('privacy.cancel')}
             </Button>
             <Button
               variant='darkBrand'
@@ -158,10 +162,10 @@ const AddPrivcy = () => {
               py='5px'
               type="submit"
               isLoading={isUpdating}
-              loadingText="Saving..."
+              loadingText={t('privacy.saving')}
               width="120px"
             >
-              {privacyData ? 'Update' : 'Save'}
+              {privacyData ? t('privacy.update') : t('privacy.save')}
             </Button>
           </Flex>
         </form>

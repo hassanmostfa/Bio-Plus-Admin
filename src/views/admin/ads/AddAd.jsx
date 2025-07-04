@@ -20,9 +20,13 @@ import { useNavigate } from "react-router-dom";
 import { useAddAdMutation } from "api/adsSlice";
 import { useAddFileMutation } from "api/filesSlice";
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 
 const AddAd = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [addAd] = useAddAdMutation();
   const [addFile] = useAddFileMutation();
   const [title, setTitle] = useState("");
@@ -47,8 +51,8 @@ const AddAd = () => {
         setImage(file);
       } else {
         toast({
-          title: "Invalid file type",
-          description: "Please upload an image file",
+          title: t('ads.add.invalidFileType'),
+          description: t('ads.add.uploadImageFile'),
           status: "error",
           duration: 5000,
           isClosable: true,
@@ -90,8 +94,8 @@ const AddAd = () => {
   const handleSubmit = async () => {
     if (!title || !link || !image) {
       toast({
-        title: "Missing required fields",
-        description: "Please fill all required fields and upload an image",
+        title: t('ads.add.missingFields'),
+        description: t('ads.add.fillRequiredFields'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -130,19 +134,19 @@ const AddAd = () => {
 
       if (response.success) {
         await Swal.fire({
-          title: 'Success!',
-          text: 'Ad created successfully',
+          title: t('ads.add.success'),
+          text: t('ads.add.createdSuccessfully'),
           icon: 'success',
-          confirmButtonText: 'OK'
+          confirmButtonText: t('ads.add.ok')
         });
         navigate('/admin/undefined/cms/ads');
       } else {
-        throw new Error(response.message || 'Failed to create ad');
+        throw new Error(response.message || t('ads.add.failedToCreate'));
       }
     } catch (error) {
       toast({
-        title: "Error creating ad",
-        description: error.message || "Something went wrong",
+        title: t('ads.add.error'),
+        description: error.message || t('ads.add.somethingWentWrong'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -153,7 +157,7 @@ const AddAd = () => {
   };
 
   return (
-    <Box className="container add-admin-container w-100">
+    <Box className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
@@ -163,7 +167,7 @@ const AddAd = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Ad
+            {t('ads.add.title')}
           </Text>
           <Button
             type="button"
@@ -172,52 +176,54 @@ const AddAd = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('ads.add.back')}
           </Button>
         </div>
         <form>
           {/* Title Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Title
+              {t('ads.add.title')}
               <span className="text-danger mx-1">*</span>
             </Text> 
             <Input
               type="text"
               id="title"
-              placeholder="Enter Ad Title"
+              placeholder={t('ads.add.enterTitle')}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
               mt="8px"
               color={textColor}
               bg={inputBg}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
 
           {/* Link Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Link
+              {t('ads.add.link')}
               <span className="text-danger mx-1">*</span>
             </Text> 
             <Input
               type="url"
               id="link"
-              placeholder="Enter Link URL"
+              placeholder={t('ads.add.enterLinkUrl')}
               value={link}
               onChange={(e) => setLink(e.target.value)}
               required
               mt="8px"
               color={textColor}
               bg={inputBg}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
 
           {/* Link Type Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Link Type
+              {t('ads.add.linkType')}
               <span className="text-danger mx-1">*</span>
             </Text>
             <Select
@@ -227,7 +233,7 @@ const AddAd = () => {
               color={textColor}
               bg={inputBg}
             >
-              <option value="EXTERNAL">External</option>
+              <option value="EXTERNAL">{t('ads.add.external')}</option>
               {/* <option value="PRODUCT">PRODUCT</option>
               <option value="PHARMACY">PHARMACY</option>
               <option value="DOCTOR">DOCTOR</option> */}
@@ -237,25 +243,26 @@ const AddAd = () => {
           {/* Order Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Order
+              {t('ads.add.order')}
             </Text>
             <Input
               type="number"
               id="order"
-              placeholder="Enter display order"
+              placeholder={t('ads.add.enterDisplayOrder')}
               value={order}
               onChange={(e) => setOrder(e.target.value)}
               min="1"
               mt="8px"
               color={textColor}
               bg={inputBg}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
 
           {/* Active Status */}
           <FormControl display="flex" alignItems="center" mb={4}>
             <FormLabel htmlFor="is-active" mb="0">
-              Active
+              {t('ads.add.active')}
             </FormLabel>
             <Switch
               id="is-active"
@@ -281,10 +288,10 @@ const AddAd = () => {
           >
             <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
             <Text color="gray.500" mb={2}>
-              Drag & Drop Image Here
+              {t('ads.add.dragDropImage')}
             </Text>
             <Text color="gray.500" mb={2}>
-              or
+              {t('ads.add.or')}
             </Text>
             <Button
               variant="outline"
@@ -292,7 +299,7 @@ const AddAd = () => {
               border="none"
               onClick={() => document.getElementById('fileInput').click()}
             >
-              Upload Image
+              {t('ads.add.uploadImage')}
               <input
                 type="file"
                 id="fileInput"
@@ -332,7 +339,7 @@ const AddAd = () => {
               mr={2}
               isDisabled={isSubmitting}
             >
-              Reset
+              {t('ads.add.reset')}
             </Button>
             <Button
               variant='darkBrand'
@@ -344,9 +351,9 @@ const AddAd = () => {
               py='5px'
               onClick={handleSubmit}
               isLoading={isSubmitting}
-              loadingText="Submitting..."
+              loadingText={t('ads.add.submitting')}
             >
-              Save Ad
+              {t('ads.add.saveAd')}
             </Button>
           </Flex>
         </form>

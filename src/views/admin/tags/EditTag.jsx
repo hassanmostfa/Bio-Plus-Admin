@@ -16,8 +16,12 @@ import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useUpdateTagMutation, useGetTagsQuery } from "api/tagSlice";
 import Swal from "sweetalert2";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const EditTag = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,11 +52,11 @@ const EditTag = () => {
         });
         setIsActive(tagToEdit.isActive);
       } else {
-        Swal.fire('Error!', 'Tag not found.', 'error');
+        Swal.fire(t('tags.notFoundTitle'), t('tags.notFoundText'), 'error');
         navigate('/admin/tags');
       }
     }
-  }, [tagsResponse, id, navigate]);
+  }, [tagsResponse, id, navigate, t]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,13 +74,13 @@ const EditTag = () => {
 
     try {
       await updateTag({ id, data: tagData }).unwrap();
-      Swal.fire('Success!', 'Tag updated successfully.', 'success');
+      Swal.fire(t('tags.updateSuccessTitle'), t('tags.updateSuccessText'), 'success');
       navigate('/admin/undefined/tags');
     } catch (error) {
       console.error('Failed to update tag:', error);
       Swal.fire(
-        'Error!',
-        error.data?.message || 'Failed to update tag.',
+        t('tags.updateErrorTitle'),
+        error.data?.message || t('tags.updateErrorText'),
         'error'
       );
     }
@@ -99,8 +103,8 @@ const EditTag = () => {
   }
 
   return (
-    <Box className="container add-admin-container w-100">
-      <Box className="add-admin-card shadow p-4 w-100" bg={cardBg} borderRadius="lg">
+    <Box className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      <Box className="add-admin-card shadow p-4 w-100" bg={cardBg} borderRadius="lg" dir={language === 'ar' ? 'rtl' : 'ltr'}>
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -109,7 +113,7 @@ const EditTag = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Edit Tag
+            {t('tags.editTitle')}
           </Text>
           <Button
             type="button"
@@ -118,7 +122,7 @@ const EditTag = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('tags.back')}
           </Button>
         </div>
         <form onSubmit={handleSubmit}>
@@ -126,32 +130,33 @@ const EditTag = () => {
             {/* English Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                English Name
+                {t('tags.englishName')}
                 <span className="text-danger mx-1">*</span>
               </Text>
               <Input
                 type="text"
                 name="name"
-                placeholder="Enter English Name"
+                placeholder={t('tags.englishNamePlaceholder')}
                 value={formData.name}
                 onChange={handleInputChange}
                 required
                 mt={"8px"}
                 bg={inputBg}
                 color={textColor}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </Box>
 
             {/* Arabic Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Arabic Name
+                {t('tags.arabicName')}
                 <span className="text-danger mx-1">*</span>
               </Text>
               <Input
                 type="text"
                 name="arabicName"
-                placeholder="ادخل الاسم بالعربية"
+                placeholder={t('tags.arabicNamePlaceholder')}
                 value={formData.arabicName}
                 onChange={handleInputChange}
                 required
@@ -166,7 +171,7 @@ const EditTag = () => {
             <Box>
               <FormControl display="flex" alignItems="center">
                 <FormLabel htmlFor="isActive" mb="0">
-                  Active Status
+                  {t('tags.activeStatus')}
                 </FormLabel>
                 <Switch
                   id="isActive"
@@ -187,7 +192,7 @@ const EditTag = () => {
               onClick={() => navigate('/admin/undefined/tags')}
               width="120px"
             >
-              Cancel
+              {t('tags.cancel')}
             </Button>
             <Button
               variant='darkBrand'
@@ -199,10 +204,10 @@ const EditTag = () => {
               py='5px'
               type="submit"
               isLoading={isUpdating}
-              loadingText="Saving..."
+              loadingText={t('tags.saving')}
               width="120px"
             >
-              Save Changes
+              {t('tags.saveChanges')}
             </Button>
           </Flex>
         </form>
