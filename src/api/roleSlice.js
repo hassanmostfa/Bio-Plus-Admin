@@ -23,7 +23,10 @@ export const roleApi = createApi({
 
   endpoints: (builder) => ({
     getRoles: builder.query({
-      query: () => '/admin/role',
+      query: ({ page = 1, limit = 10, search = '' }) => ({
+        url: '/admin/role',
+        params: { page, limit, search },
+      }),
     }),
     getModules: builder.query({
       query: () => '/admin/module',

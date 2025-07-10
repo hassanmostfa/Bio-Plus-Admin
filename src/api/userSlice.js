@@ -34,9 +34,9 @@ export const apiService = createApi({
       }),
     }),
     getAdmins: builder.query({
-      query: ({ page, limit }) => ({
+      query: ({ page = 1, limit = 10, search = '' }) => ({
         url: '/admin/admin-user',
-        params: { page, limit }, // Pass page and limit as query parameters
+        params: { page, limit, search }, // Pass page, limit, and search as query parameters
       }),
     }),
     getActivityLogs: builder.query({

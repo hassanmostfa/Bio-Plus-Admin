@@ -22,7 +22,7 @@ import { useGetVarientQuery, useUpdateVarientMutation } from "api/varientSlice";
 
 const EditVariant = () => {
   const { id } = useParams(); // Get the variant ID from the URL
-  const { data: response, isLoading: isFetching, error: fetchError } = useGetVarientQuery(id); // Fetch existing variant data
+  const { data: response, isLoading: isFetching, error: fetchError , refetch } = useGetVarientQuery(id); // Fetch existing variant data
   const [updateVariant, { isLoading: isUpdating, error: updateError }] = useUpdateVarientMutation(); // Update mutation
 
   const [variantAr, setVariantAr] = useState("");
@@ -38,6 +38,10 @@ const EditVariant = () => {
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
 
+  React.useEffect(() => {
+    refetch();
+  }, [refetch]);
+  
   // Populate form fields with existing data when variantData is fetched
   useEffect(() => {
     if (response?.data) {

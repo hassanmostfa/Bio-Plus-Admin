@@ -23,9 +23,9 @@ export const pharmacyApi = createApi({
 
   endpoints: (builder) => ({
     getPharmacies: builder.query({
-      query: ({ page, limit }) => ({
+      query: ({ page = 1, limit = 10, search = '' }) => ({
         url: '/admin/pharmacies',
-        params: { page, limit }, // Pass page and limit as query parameters
+        params: { page, limit, search }, // Pass page, limit, and search as query parameters
       }),
     }),
   

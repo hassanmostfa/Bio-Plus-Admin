@@ -22,7 +22,14 @@ export const clinicApi = createApi({
   }),
   endpoints: (builder) => ({
     getClinics: builder.query({
-      query: () => "/admin/clinics",
+      query: ({ page = 1, limit = 10, search = '' }) => ({
+        url: "/admin/clinics",
+        params: {
+          page,
+          limit,
+          search,
+        },
+      }),
     }),
     getClinic: builder.query({
       query: (id) => `/admin/clinics/${id}`,

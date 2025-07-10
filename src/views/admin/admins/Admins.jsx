@@ -38,10 +38,26 @@ const Admins = () => {
   const [page, setPage] = React.useState(1); // Current page
   const [limit, setLimit] = React.useState(10); // Items per page
   const [searchQuery, setSearchQuery] = React.useState(''); // Search query
-  const { data, refetch, isError, isLoading } = useGetAdminsQuery({ page, limit }); // Pass page and limit here
-  const [deleteUser, { isError: isDeleteError, isLoading: isDeleteLoading }] = useDeleteUserMutation();
+  const [debouncedSearch, setDebouncedSearch] = React.useState(''); // Debounced search
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
+
+  // Debounce search query
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1); // Reset to first page when searching
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const { data, refetch, isError, isLoading } = useGetAdminsQuery({ 
+    page, 
+    limit, 
+    search: debouncedSearch 
+  });
+  const [deleteUser, { isError: isDeleteError, isLoading: isDeleteLoading }] = useDeleteUserMutation();
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
@@ -50,20 +66,10 @@ const Admins = () => {
   const tableData = data?.data?.data || [];
   const pagination = data?.data?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
 
-  // Filter data based on search query (client-side)
-  const filteredData = React.useMemo(() => {
-    if (!searchQuery) return tableData; // Return all data if no search query
-    return tableData.filter((item) =>
-      Object.values(item).some((value) =>
-        String(value).toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [tableData, searchQuery]);
-
-  // Refetch data when page or limit changes
+  // Refetch data when page, limit, or search changes
   React.useEffect(() => {
     refetch();
-  }, [page, limit, refetch]);
+  }, [page, limit, debouncedSearch, refetch]);
 
   // Columns definition
   const columns = [
@@ -189,7 +195,7 @@ const Admins = () => {
 
   // Table instance
   const table = useReactTable({
-    data: filteredData, // Use filtered data
+    data: tableData, // Use server-side data directly
     columns,
     state: {
       sorting,
@@ -390,7 +396,7 @@ const Admins = () => {
             </Select>
           </Flex>
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages}
+            Page {pagination.page} of {pagination.totalPages} ({pagination.totalItems} total items)
           </Text>
           <Flex>
             <Button

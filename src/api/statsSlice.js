@@ -18,6 +18,17 @@ export const statsApi = createApi({
   endpoints: (builder) => ({
     getStats: builder.query({
       query: () => "/admin/stats", // Replace with the actual stats endpoint
+      async onQueryStarted(arg, { queryFulfilled }) {
+        try {
+          await queryFulfilled;
+        } catch (error) {
+          if (error.error?.status === 401) {
+            // Clear token and redirect to login
+            localStorage.removeItem("token");
+            window.location.href = "/admin/auth/sign-in";
+          }
+        }
+      },
     }),
   }),
 });

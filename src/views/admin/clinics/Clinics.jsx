@@ -37,10 +37,26 @@ const Clinics = () => {
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(10);
   const [searchQuery, setSearchQuery] = React.useState('');
-  const { data: clinicsResponse, refetch, isLoading } = useGetClinicsQuery({ page, limit });
-  const [deleteClinic, { isLoading: isDeleting }] = useDeleteClinicMutation();
+  const [debouncedSearch, setDebouncedSearch] = React.useState('');
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
+
+  // Debounce search query
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1); // Reset to first page when searching
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const { data: clinicsResponse, refetch, isLoading } = useGetClinicsQuery({ 
+    page, 
+    limit, 
+    search: debouncedSearch 
+  });
+  const [deleteClinic, { isLoading: isDeleting }] = useDeleteClinicMutation();
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
@@ -49,19 +65,9 @@ const Clinics = () => {
   const tableData = clinicsResponse?.data || [];
   const pagination = clinicsResponse?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
 
-  // Filter data based on search query
-  const filteredData = React.useMemo(() => {
-    if (!searchQuery) return tableData;
-    return tableData.filter((item) =>
-      Object.values(item).some((value) =>
-        String(value).toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [tableData, searchQuery]);
-
   React.useEffect(() => {
     refetch();
-  }, [page, limit, refetch]);
+  }, [page, limit, debouncedSearch, refetch]);
 
   // Handle delete clinic
   const handleDelete = async (id) => {
@@ -87,31 +93,12 @@ const Clinics = () => {
     }
   };
 
-
   // Handle view action
   const handleView = (id) => {
     navigate(`/admin/show-clinic/${id}`);
   };
 
   const columns = [
-    columnHelper.accessor('id', {
-      id: 'id',
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          ID
-        </Text>
-      ),
-      cell: (info) => (
-        <Flex align="center">
-          <Text color={textColor}>{info.getValue()}</Text>
-        </Flex>
-      ),
-    }),
     columnHelper.accessor('name', {
       id: 'name',
       header: () => (
@@ -140,7 +127,6 @@ const Clinics = () => {
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
-
     columnHelper.accessor('fromTime', {
       id: 'from',
       header: () => (
@@ -216,7 +202,7 @@ const Clinics = () => {
   ];
 
   const table = useReactTable({
-    data: filteredData,
+    data: tableData,
     columns,
     state: {
       sorting,
@@ -388,7 +374,7 @@ const Clinics = () => {
             </select>
           </Flex>
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages}
+            Page {pagination.page} of {pagination.totalPages} ({pagination.totalItems} total items)
           </Text>
           <Flex>
             <Button

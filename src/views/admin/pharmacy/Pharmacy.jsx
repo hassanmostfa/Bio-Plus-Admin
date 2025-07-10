@@ -41,25 +41,37 @@ const Pharmacy = () => {
   const [currentPage, setCurrentPage] = useState(1); // Current page
   const [limit, setLimit] = useState(10); // Items per page
   const [searchQuery, setSearchQuery] = useState(''); // Search query
+  const [debouncedSearch, setDebouncedSearch] = useState(''); // Debounced search
   const [page, setPage] = React.useState(1); // Current page
 
   const bg = useColorModeValue('secondaryGray.300', 'gray.700'); // Background color for light and dark mode
   const color = useColorModeValue('gray.700', 'white'); // Text color for light and dark mode
 
+  // Debounce search query
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1); // Reset to first page when searching
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   // Fetch data from API
   const { data: pharmacyData, refetch, isLoading, isError } = useGetPharmaciesQuery({
     page: currentPage,
-    limit, search: searchQuery
+    limit, 
+    search: debouncedSearch
   });
   const [deletePharmacy, { isError: isDeleteError, isLoading: isDeleteLoading }] = useDeletePharmacyMutation();
 
   React.useEffect(() => {
     refetch();
-  }, [page, limit, refetch]);
+  }, [currentPage, limit, debouncedSearch, refetch]);
 
   const deletePharmacyHandler = async (id) => {
     try {
-      Swal.fire({
+      const result = await Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
         icon: 'warning',
@@ -67,15 +79,24 @@ const Pharmacy = () => {
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, delete it!',
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          await deletePharmacy(id);
-          refetch();
-          Swal.fire('Deleted!', 'The pharmacy has been deleted.', 'success');
-        }
       });
+
+      if (result.isConfirmed) {
+        const response = await deletePharmacy(id).unwrap();
+        refetch();
+        Swal.fire({
+          title: 'Deleted!',
+          text: response.message || 'The pharmacy has been deleted.',
+          icon: 'success',
+        });
+      }
     } catch (error) {
-      Swal.fire('Error!', 'Failed to delete the pharmacy.' + error.data.message, 'error');
+      console.error('Failed to delete pharmacy:', error);
+      Swal.fire({
+        title: 'Error!',
+        text:'failed to delete the pharmacy has related products & orders.',
+        icon: 'error',
+      });
     }
   };
 
@@ -112,16 +133,6 @@ const Pharmacy = () => {
     hasNextPage: false,
     hasPreviousPage: false,
   };
-
-  // Filter data based on search query
-  const filteredData = React.useMemo(() => {
-    if (!searchQuery) return tableData; // Return all data if no search query
-    return tableData.filter((item) =>
-      Object.values(item).some((value) =>
-        String(value).toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [tableData, searchQuery]);
 
   const columns = [
     columnHelper.accessor('name', {
@@ -203,7 +214,7 @@ const Pharmacy = () => {
   ];
 
   const table = useReactTable({
-    data: filteredData,
+    data: tableData, // Use server-side data directly
     columns,
     state: {
       sorting,
@@ -265,7 +276,7 @@ const Pharmacy = () => {
               fontWeight="500"
               _placeholder={{ color: 'gray.400', fontSize: '14px' }}
               borderRadius="30px"
-              placeholder="Search..."
+              placeholder="Search pharmacies..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -369,7 +380,7 @@ const Pharmacy = () => {
             </Select>
           </Flex>
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages}
+            Page {pagination.page} of {pagination.totalPages} ({pagination.total} total items)
           </Text>
           <Flex>
             <Button
