@@ -10,12 +10,15 @@ import {
 } from "@chakra-ui/react";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
-
 import Swal from "sweetalert2";
 import { useGetAboutQuery } from "api/aboutSlice";
 import { useAddAboutMutation } from "api/aboutSlice";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AboutPage = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const { data: aboutData, isLoading: isFetching } = useGetAboutQuery();
   const [updateAbout, { isLoading: isUpdating }] = useAddAboutMutation();
   const navigate = useNavigate();
@@ -53,12 +56,12 @@ const AboutPage = () => {
     
     try {
       await updateAbout(formData).unwrap();
-      Swal.fire('Success!', 'About information saved successfully.', 'success');
+      Swal.fire(t('about.success'), t('about.savedSuccessfully'), 'success');
     } catch (error) {
       console.error('Failed to save about:', error);
       Swal.fire(
-        'Error!',
-        error.data?.message || 'Failed to save about information.',
+        t('about.error'),
+        error.data?.message || t('about.failedToSave'),
         'error'
       );
     }
@@ -73,7 +76,7 @@ const AboutPage = () => {
   }
 
   return (
-    <div className="container add-admin-container w-100">
+    <div className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="add-admin-card shadow p-4 bg-white w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
@@ -83,7 +86,7 @@ const AboutPage = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            {aboutData ? 'Edit About' : 'Add About'}
+            {aboutData ? t('about.editTitle') : t('about.addTitle')}
           </Text>
           
         </div>
@@ -92,51 +95,54 @@ const AboutPage = () => {
           {/* Phone Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Phone
+              {t('about.phone')}
               <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="text"
               name="phone"
-              placeholder="Enter phone number"
+              placeholder={t('about.enterPhone')}
               value={formData.phone}
               onChange={handleInputChange}
               required
               mt="8px"
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
 
           {/* Location Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Location
+              {t('about.location')}
               <span className="text-danger mx-1">*</span>
             </Text>
             <Textarea
               name="location"
-              placeholder="Enter location details"
+              placeholder={t('about.enterLocation')}
               value={formData.location}
               onChange={handleInputChange}
               required
               mt="8px"
               rows={3}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
 
           {/* Map URL Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Map URL
+              {t('about.mapUrl')}
               <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="text"
               name="mapUrl"
-              placeholder="Enter map URL"
+              placeholder={t('about.enterMapUrl')}
               value={formData.mapUrl}
               onChange={handleInputChange}
               required
               mt="8px"
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
 
@@ -152,10 +158,10 @@ const AboutPage = () => {
               py='5px'
               type="submit"
               isLoading={isUpdating}
-              loadingText="Saving..."
+              loadingText={t('about.saving')}
               mt='30px'
             >
-              {aboutData ? 'Update' : 'Save'}
+              {aboutData ? t('about.update') : t('about.save')}
             </Button>
           </Flex>
         </form>

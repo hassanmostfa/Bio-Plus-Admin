@@ -25,12 +25,15 @@ import {
 } from 'api/categorySlice';
 import Swal from 'sweetalert2';
 import { useAddFileMutation } from 'api/filesSlice';
+import { useTranslation } from 'react-i18next';
 
 const EditCategory = () => {
   const { id } = useParams(); // Get the category ID from the URL
   const { data: categoriesResponse } = useGetCategoriesQuery(id); // Fetch all categories
   const [updateCategory, { isLoading }] = useUpdateCategoryMutation(); // Mutation hook for updating a category
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   // State for form fields
   const [enName, setEnName] = useState('');
@@ -126,7 +129,7 @@ const EditCategory = () => {
   // Handle form submission
   const handleSend = async () => {
     if (!enName || !arName) {
-      Swal.fire('Error!', 'Please fill all required fields.', 'error');
+      Swal.fire(t('common.error'), t('forms.required'), 'error');
       return;
     }
 
@@ -162,15 +165,11 @@ const EditCategory = () => {
       // Call the update category API
       const response = await updateCategory({ id, category: payload }).unwrap();
 
-      Swal.fire('Success!', 'Category updated successfully.', 'success');
+      Swal.fire(t('common.success'), t('category.updatedSuccess'), 'success');
       navigate('/admin/categories');
     } catch (error) {
       console.error('Failed to update category:', error);
-      Swal.fire(
-        'Error!',
-        error.message || 'Failed to update category.',
-        'error',
-      );
+      Swal.fire(t('common.error'), error.message || t('category.updateFailed'), 'error');
     }
   };
   // Convert image file to base64
@@ -193,8 +192,9 @@ const EditCategory = () => {
             fontWeight="700"
             mb="20px !important"
             lineHeight="100%"
+            textAlign={isRTL ? 'right' : 'left'}
           >
-            Edit Category
+            {t('category.editCategory')}
           </Text>
           <Button
             type="button"
@@ -203,50 +203,44 @@ const EditCategory = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('common.back')}
           </Button>
         </div>
-        <form>
+        <form dir={isRTL ? 'rtl' : 'ltr'} style={{ textAlign: isRTL ? 'right' : 'left' }}>
           {/* English Name Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Category En-Name
-              <span className="text-danger mx-1">*</span>
+              {t('category.enName')} <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="text"
               id="en_name"
-              placeholder="Enter Category En-Name"
+              placeholder={t('forms.enterEnName')}
               value={enName}
               onChange={(e) => setEnName(e.target.value)}
-              required
-              mt={'8px'}
-              bg={inputBg}
+              dir={isRTL ? 'rtl' : 'ltr'}
             />
           </div>
 
           {/* Arabic Name Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Category Ar-Name
-              <span className="text-danger mx-1">*</span>
+              {t('category.arName')} <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="text"
               id="ar_name"
-              placeholder="Enter Category Ar-Name"
+              placeholder={t('forms.enterArName')}
               value={arName}
               onChange={(e) => setArName(e.target.value)}
-              required
-              mt={'8px'}
-              bg={inputBg}
+              dir={isRTL ? 'rtl' : 'ltr'}
             />
           </div>
 
           {/* Category Type Dropdown */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Category Image
+              {t('category.image')}
               <span className="text-danger mx-1">*</span>
             </Text>
           </div>
@@ -291,17 +285,17 @@ const EditCategory = () => {
                     }
                   }}
                 >
-                  Remove Image
+                  {t('common.remove')}
                 </Button>
               </Flex>
             ) : (
               <>
                 <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
                 <Text color="gray.500" mb={2}>
-                  Drag & Drop Image Here
+                  {t('common.dragDropImage')}
                 </Text>
                 <Text color="gray.500" mb={2}>
-                  or
+                  {t('common.or')}
                 </Text>
                 <Button
                   variant="outline"
@@ -309,7 +303,7 @@ const EditCategory = () => {
                   border="none"
                   onClick={() => document.getElementById('fileInput').click()}
                 >
-                  Upload Image
+                  {t('common.uploadImage')}
                   <input
                     type="file"
                     id="fileInput"
@@ -326,7 +320,7 @@ const EditCategory = () => {
           <Box mt="20px" mb="20px">
             <FormControl display="flex" alignItems="center">
               <FormLabel htmlFor="isActive" mb="0">
-                Active Status
+                {t('common.activeStatus')}
               </FormLabel>
               <Switch
                 id="isActive"
@@ -334,6 +328,7 @@ const EditCategory = () => {
                 onChange={() => setIsActive(!isActive)}
                 colorScheme="teal"
                 size="md"
+                dir='ltr'
               />
             </FormControl>
           </Box>
@@ -346,7 +341,7 @@ const EditCategory = () => {
               onClick={handleCancel}
               mr={2}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="darkBrand"
@@ -358,8 +353,9 @@ const EditCategory = () => {
               py="5px"
               onClick={handleSend}
               isLoading={isLoading}
+              mx={2}
             >
-              Save Changes
+              {t('common.saveChanges')}
             </Button>
           </Flex>
         </form>

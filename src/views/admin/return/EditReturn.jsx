@@ -21,6 +21,8 @@ import { useUpdateReturnMutation } from 'api/returnSlice';
 import { useGetReturnQuery } from 'api/returnSlice';
 import Swal from 'sweetalert2';
 import { useAddFileMutation } from 'api/filesSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const EditReturn = () => {
   const [formData, setFormData] = useState({
@@ -40,6 +42,8 @@ const EditReturn = () => {
   const toast = useToast();
   const [error, setError] = useState(null);
   const { id } = useParams();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
 
   // API hooks
   const [updateReturnPolicy, { isLoading }] = useUpdateReturnMutation();
@@ -141,34 +145,34 @@ useEffect(() => {
       }).unwrap();
   
       Swal.fire({
-        title: 'Success!',
-        text: 'Return policy updated successfully',
+        title: t('returns.updateSuccessTitle'),
+        text: t('returns.updateSuccessText'),
         icon: 'success',
-        confirmButtonText: 'OK'
+        confirmButtonText: t('returns.ok')
       }).then(() => {
         navigate('/admin/undefined/cms/returned');
       });
     } catch (error) {
       setError(error.data);
       Swal.fire({
-        title: 'Error!',
-        text: error.data?.message || 'Failed to update return policy',
+        title: t('returns.updateErrorTitle'),
+        text: error.data?.message || t('returns.updateErrorText'),
         icon: 'error',
-        confirmButtonText: 'OK'
+        confirmButtonText: t('returns.ok')
       });
     }
   };
 
   if (isFetching) {
-    return <Box>Loading...</Box>;
+    return <Box>{t('returns.loading')}</Box>;
   }
 
   return (
-    <Box w="100%" className="container add-admin-container w-100">
+    <Box w="100%" className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Edit Return Policy
+            {t('returns.editReturnPolicy')}
           </Text>
           <Button
             type="button"
@@ -177,13 +181,13 @@ useEffect(() => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('returns.back')}
           </Button>
         </div>
         <form>
           {error?.success === false && (
             <div className="alert alert-danger" role="alert">
-              <h4 className="alert-heading">Validation failed</h4>
+              <h4 className="alert-heading">{t('returns.validationFailed')}</h4>
               <ul>
                 {error.errors?.map((err) => (
                   <li key={err.field}>
@@ -197,7 +201,7 @@ useEffect(() => {
           {/* English Content */}
           <Box mt={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              English Content <span className="text-danger">*</span>
+              {t('returns.englishContent')} <span className="text-danger">*</span>
             </Text>
             <Textarea
               name="contentEn"
@@ -207,14 +211,14 @@ useEffect(() => {
               height="200px"
               bg={inputBg}
               color={textColor}
-              placeholder="Enter English content (Markdown supported)"
+              placeholder={t('returns.englishContentPlaceholder')}
             />
           </Box>
 
           {/* Arabic Content */}
           <Box mt={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Arabic Content <span className="text-danger">*</span>
+              {t('returns.arabicContent')} <span className="text-danger">*</span>
             </Text>
             <Textarea
               name="contentAr"
@@ -224,7 +228,7 @@ useEffect(() => {
               height="200px"
               bg={inputBg}
               color={textColor}
-              placeholder="أدخل المحتوى بالعربية (يدعم Markdown)"
+              placeholder={t('returns.arabicContentPlaceholder')}
               dir="rtl"
             />
           </Box>
@@ -233,7 +237,7 @@ useEffect(() => {
           <Box mt="20px" mb="20px">
             <FormControl display="flex" alignItems="center">
               <FormLabel htmlFor="isActive" mb="0">
-                Active Status
+                {t('returns.activeStatus')}
               </FormLabel>
               <Switch
                 id="isActive"
@@ -262,10 +266,10 @@ useEffect(() => {
           >
             <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
             <Text color="gray.500" mb={2}>
-              Drag & Drop Image Here
+              {t('returns.dragDropImage')}
             </Text>
             <Text color="gray.500" mb={2}>
-              or
+              {t('returns.or')}
             </Text>
             <Button
               variant="outline"
@@ -273,7 +277,7 @@ useEffect(() => {
               border="none"
               onClick={() => document.getElementById('fileInput').click()}
             >
-              Upload Image
+              {t('returns.uploadImage')}
               <input
                 type="file"
                 id="fileInput"
@@ -287,15 +291,15 @@ useEffect(() => {
             {(existingImage || image) && (
               <Box mt={4} position="relative">
                 <img
-                  src={image ? URL.createObjectURL(image) : existingImage.url}
+                  src={image ? URL.createObjectURL(image) : existingImage}
                   alt={image ? image.name : existingImage.name}
-                  width="100%"
+                  width="200px"
                   maxHeight="200px"
                   style={{ objectFit: 'contain', borderRadius: 'md' }}
                 />
                 <IconButton
                   icon={<FaTrash />}
-                  aria-label="Remove image"
+                  aria-label={t('returns.removeImage')}
                   position="absolute"
                   top={2}
                   right={2}
@@ -307,13 +311,13 @@ useEffect(() => {
                   {image ? image.name : existingImage.name}
                 </Text>
               </Box>
-            )}
+             )}
           </Box>
 
           {/* Save and Cancel Buttons */}
           <Flex justify="center" mt={6}>
             <Button variant="outline" colorScheme="red" mr={2} onClick={() => navigate(-1)}>
-              Cancel
+              {t('returns.cancel')}
             </Button>
             <Button
               variant="darkBrand"
@@ -327,7 +331,7 @@ useEffect(() => {
               isLoading={isLoading}
               disabled={isLoading}
             >
-              Update Policy
+              {t('returns.updatePolicy')}
             </Button>
           </Flex>
         </form>

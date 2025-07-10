@@ -22,9 +22,13 @@ import { useAddFileMutation } from "api/filesSlice";
 import Swal from 'sweetalert2';
 import { useGetAdsQuery } from "api/adsSlice";
 import { useUpdateAdMutation } from "api/adsSlice";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 
 const EditAd = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const { id } = useParams();
   const { data: adsResponse, isLoading: isAdLoading, refetch } = useGetAdsQuery({ page: 1, limit: 1000 });
 
@@ -78,8 +82,8 @@ const EditAd = () => {
         setCurrentImageUrl(URL.createObjectURL(file));
       } else {
         toast({
-          title: "Invalid file type",
-          description: "Please upload an image file",
+          title: t('ads.edit.invalidFileType'),
+          description: t('ads.edit.uploadImageFile'),
           status: "error",
           duration: 5000,
           isClosable: true,
@@ -125,8 +129,8 @@ const EditAd = () => {
   const handleSubmit = async () => {
     if (!title || !link) {
       toast({
-        title: "Missing required fields",
-        description: "Please fill all required fields",
+        title: t('ads.edit.missingFields'),
+        description: t('ads.edit.fillRequiredFields'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -168,19 +172,19 @@ const EditAd = () => {
 
       if (response.success) {
         await Swal.fire({
-          title: 'Success!',
-          text: 'Ad updated successfully',
+          title: t('ads.edit.success'),
+          text: t('ads.edit.updatedSuccessfully'),
           icon: 'success',
-          confirmButtonText: 'OK'
+          confirmButtonText: t('ads.edit.ok')
         });
         navigate('/admin/undefined/cms/ads');
       } else {
-        throw new Error(response.message || 'Failed to update ad');
+        throw new Error(response.message || t('ads.edit.failedToUpdate'));
       }
     } catch (error) {
       toast({
-        title: "Error updating ad",
-        description: error.message || "Something went wrong",
+        title: t('ads.edit.error'),
+        description: error.message || t('ads.edit.somethingWentWrong'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -191,11 +195,11 @@ const EditAd = () => {
   };
 
   if (isAdLoading) {
-    return <div>Loading ad data...</div>;
+    return <div>{t('ads.edit.loading')}</div>;
   }
 
   return (
-    <Box className="container add-admin-container w-100">
+    <Box className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
@@ -205,7 +209,7 @@ const EditAd = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Edit Ad
+            {t('ads.edit.title')}
           </Text>
           <Button
             type="button"
@@ -214,52 +218,54 @@ const EditAd = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('ads.edit.back')}
           </Button>
         </div>
         <form>
           {/* Title Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Title
+              {t('ads.edit.title')}
               <span className="text-danger mx-1">*</span>
             </Text> 
             <Input
               type="text"
               id="title"
-              placeholder="Enter Ad Title"
+              placeholder={t('ads.edit.enterTitle')}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
               mt="8px"
               color={textColor}
               bg={inputBg}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
 
           {/* Link Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Link
+              {t('ads.edit.link')}
               <span className="text-danger mx-1">*</span>
             </Text> 
             <Input
               type="url"
               id="link"
-              placeholder="Enter Link URL"
+              placeholder={t('ads.edit.enterLinkUrl')}
               value={link}
               onChange={(e) => setLink(e.target.value)}
               required
               mt="8px"
               color={textColor}
               bg={inputBg}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
 
           {/* Link Type Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Link Type
+              {t('ads.edit.linkType')}
               <span className="text-danger mx-1">*</span>
             </Text>
             <Select
@@ -269,33 +275,34 @@ const EditAd = () => {
               color={textColor}
               bg={inputBg}
             >
-              <option value="EXTERNAL">External</option>
-              <option value="INTERNAL">Internal</option>
+              <option value="EXTERNAL">{t('ads.edit.external')}</option>
+              <option value="INTERNAL">{t('ads.edit.internal')}</option>
             </Select>
           </div>
 
           {/* Order Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Order
+              {t('ads.edit.order')}
             </Text>
             <Input
               type="number"
               id="order"
-              placeholder="Enter display order"
+              placeholder={t('ads.edit.enterDisplayOrder')}
               value={order}
               onChange={(e) => setOrder(e.target.value)}
               min="1"
               mt="8px"
               color={textColor}
               bg={inputBg}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
 
           {/* Active Status */}
           <FormControl display="flex" alignItems="center" mb={4}>
             <FormLabel htmlFor="is-active" mb="0">
-              Active
+              {t('ads.edit.active')}
             </FormLabel>
             <Switch
               id="is-active"
@@ -321,10 +328,10 @@ const EditAd = () => {
           >
             <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
             <Text color="gray.500" mb={2}>
-              Drag & Drop Image Here
+              {t('ads.edit.dragDropImage')}
             </Text>
             <Text color="gray.500" mb={2}>
-              or
+              {t('ads.edit.or')}
             </Text>
             <Button
               variant="outline"
@@ -332,7 +339,7 @@ const EditAd = () => {
               border="none"
               onClick={() => document.getElementById('fileInput').click()}
             >
-              Upload Image
+              {t('ads.edit.uploadImage')}
               <input
                 type="file"
                 id="fileInput"
@@ -357,7 +364,7 @@ const EditAd = () => {
                   style={{ borderRadius: "md", maxHeight: "150px" }}
                 />
                 <Text mt={2} fontSize="sm">
-                  {image ? image.name : "Current ad image"}
+                  {image ? image.name : t('ads.edit.currentAdImage')}
                 </Text>
               </Box>
             )}
@@ -372,7 +379,7 @@ const EditAd = () => {
               mr={2}
               isDisabled={isSubmitting}
             >
-              Reset
+              {t('ads.edit.reset')}
             </Button>
             <Button
               variant='darkBrand'
@@ -384,9 +391,9 @@ const EditAd = () => {
               py='5px'
               onClick={handleSubmit}
               isLoading={isSubmitting}
-              loadingText="Submitting..."
+              loadingText={t('ads.edit.submitting')}
             >
-              Update Ad
+              {t('ads.edit.updateAd')}
             </Button>
           </Flex>
         </form>

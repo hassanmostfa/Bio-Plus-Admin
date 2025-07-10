@@ -15,6 +15,8 @@ import "./notification.css";
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { usePostNotificationMutation } from "api/notificationsSlice";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AddNotification = () => {
   const [englishTitle, setEnglishTitle] = useState("");
@@ -28,6 +30,8 @@ const AddNotification = () => {
   const inputBg = useColorModeValue('gray.100', 'gray.700');
   const navigate = useNavigate();
   const toast = useToast();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   
   const [postNotification] = usePostNotificationMutation();
 
@@ -43,8 +47,8 @@ const AddNotification = () => {
     // Validate required fields
     if (!englishTitle || !arabicTitle || !englishDescription || !arabicDescription) {
       toast({
-        title: "Validation Error",
-        description: "All fields are required",
+        title: t('addNotification.validationError'),
+        description: t('addNotification.allFieldsRequired'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -76,8 +80,8 @@ const AddNotification = () => {
       const response = await postNotification(notificationData).unwrap();
       
       toast({
-        title: "Success",
-        description: "Notification sent successfully",
+        title: t('addNotification.success'),
+        description: t('addNotification.notificationSentSuccessfully'),
         status: "success",
         position: "top-right",
         duration: 5000,
@@ -93,8 +97,8 @@ const AddNotification = () => {
     } catch (error) {
       console.error("Failed to send notification:", error);
       toast({
-        title: "Error",
-        description: error.data?.message || "Failed to send notification",
+        title: t('addNotification.error'),
+        description: error.data?.message || t('addNotification.failedToSendNotification'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -105,7 +109,7 @@ const AddNotification = () => {
   };
 
   return (
-    <Box className="container add-admin-container w-100">
+    <Box className="container add-admin-container w-100" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
             <Text
@@ -115,7 +119,7 @@ const AddNotification = () => {
             mb="20px !important"
             lineHeight="100%"
             >
-            Send Notification
+            {t('addNotification.sendNotification')}
             </Text>
             <Button
             type="button"
@@ -124,7 +128,7 @@ const AddNotification = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
             >
-            Back
+            {t('addNotification.back')}
             </Button>
         </div>
         <form>
@@ -132,30 +136,31 @@ const AddNotification = () => {
           <div className="row col-md-12">
             <div className="mb-3 col-md-6">
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                English Title
+                {t('addNotification.englishTitle')}
                 <span className="text-danger mx-1">*</span>
               </Text> 
               <Input
                 type="text"
                 id="englishTitle"
-                placeholder="Enter English Title"
+                placeholder={t('addNotification.enterEnglishTitle')}
                 value={englishTitle}
                 onChange={(e) => setEnglishTitle(e.target.value)}
                 required
                 mt={"8px"}
                 color={textColor}
                 bg={inputBg}
+                dir="ltr"
               />
             </div>
             <div className="mb-3 col-md-6 pr-0" style={{ paddingRight: "0 !important" }}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Arabic Title
+                {t('addNotification.arabicTitle')}
                 <span className="text-danger mx-1">*</span>
               </Text> 
               <Input
                 type="text"
                 id="arabicTitle"
-                placeholder="ادخل عنوان"
+                placeholder={t('addNotification.enterArabicTitle')}
                 value={arabicTitle}
                 onChange={(e) => setArabicTitle(e.target.value)}
                 dir="rtl"
@@ -171,12 +176,12 @@ const AddNotification = () => {
           <div className="row col-md-12">
             <div className="mb-3 col-md-12">
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                English Description
+                {t('addNotification.englishDescription')}
                 <span className="text-danger mx-1">*</span>
               </Text> 
               <Textarea
                 id="englishDescription"
-                placeholder="Enter English Description"
+                placeholder={t('addNotification.enterEnglishDescription')}
                 value={englishDescription}
                 onChange={(e) => setEnglishDescription(e.target.value)}
                 required
@@ -184,16 +189,17 @@ const AddNotification = () => {
                 mt={"8px"}
                 color={textColor}
                 bg={inputBg}
+                dir="ltr"
               />
             </div>
             <div className="mb-3 col-md-12 pr-0">
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Arabic Description
+                {t('addNotification.arabicDescription')}
                 <span className="text-danger mx-1">*</span>
               </Text> 
               <Textarea
                 id="arabicDescription"
-                placeholder="ادخل الوصف"
+                placeholder={t('addNotification.enterArabicDescription')}
                 value={arabicDescription}
                 onChange={(e) => setArabicDescription(e.target.value)}
                 dir="rtl"
@@ -209,7 +215,7 @@ const AddNotification = () => {
           {/* Image Upload (if needed) */}
           {/* <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Notification Image
+              {t('addNotification.notificationImage')}
             </Text>
             <Input
               type="file"
@@ -228,7 +234,7 @@ const AddNotification = () => {
               mr={2}
               disabled={isLoading}
             >
-              Cancel
+              {t('addNotification.cancel')}
             </Button>
             <Button 
               variant='darkBrand' 
@@ -240,9 +246,9 @@ const AddNotification = () => {
               py='5px' 
               onClick={handleSend}
               isLoading={isLoading}
-              loadingText="Sending..."
+              loadingText={t('addNotification.sending')}
             >
-              Send
+              {t('addNotification.send')}
             </Button>
           </Flex>
         </form>

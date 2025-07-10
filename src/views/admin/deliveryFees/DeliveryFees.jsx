@@ -13,8 +13,12 @@ import {
 } from "@chakra-ui/react";
 import Swal from "sweetalert2";
 import { useGetDeliveryFeesQuery, useUpdateDeliveryFeesMutation } from "../../../api/deliveryFeesSlice"; // Adjust import path if needed
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const DeliveryFees = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
@@ -60,7 +64,7 @@ const DeliveryFees = () => {
     if (formData.deliveryFeeType === "uniform") {
       const amount = parseFloat(formData.uniformDeliveryFee);
       if (isNaN(amount) || amount < 0) {
-        Swal.fire("Validation Error", "Please enter a valid, non-negative delivery fee amount.", "error");
+        Swal.fire(t('deliveryFees.validationErrorTitle'), t('deliveryFees.validationErrorText'), "error");
         return;
       }
     }
@@ -73,18 +77,18 @@ const DeliveryFees = () => {
           : 0,
       };
       await updateDeliveryFees(dataToSend).unwrap();
-      Swal.fire("Success!", "Delivery fees settings saved successfully.", "success");
+      Swal.fire(t('deliveryFees.successTitle'), t('deliveryFees.successText'), "success");
     } catch (err) {
       console.error("Error updating delivery fees:", err);
-      Swal.fire("Error", "Failed to save delivery fees settings.", "error");
+      Swal.fire(t('deliveryFees.errorTitle'), t('deliveryFees.errorText'), "error");
     }
   };
 
   if (isLoading) return <Spinner color="blue.500" size="xl" />;
-  if (error) return <Text color="red.500">Failed to load delivery fees. Please try again.</Text>;
+  if (error) return <Text color="red.500">{t('deliveryFees.loadErrorText')}</Text>;
 
   return (
-    <Box className="container add-admin-container w-100">
+    <Box className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
@@ -94,7 +98,7 @@ const DeliveryFees = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Delivery Fees Settings
+            {t('deliveryFees.title')}
           </Text>
         </div>
 
@@ -102,7 +106,7 @@ const DeliveryFees = () => {
           {/* Delivery Fee Type Selection */}
           <Box mb={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700" mb="8px">
-              Delivery Fee Type
+              {t('deliveryFees.feeTypeLabel')}
             </Text>
             <RadioGroup
               onChange={handleDeliveryFeeTypeChange}
@@ -110,8 +114,8 @@ const DeliveryFees = () => {
               name="deliveryFeeType"
             >
               <Stack direction="column">
-                <Radio value="uniform" color={textColor} bg={inputBg}>Uniform fee for all pharmacies</Radio>
-                <Radio value="perPharmacy" color={textColor} bg={inputBg}>Different fee per pharmacy</Radio>
+                <Radio value="uniform" color={textColor} bg={inputBg}>{t('deliveryFees.uniformOption')}</Radio>
+                <Radio value="perPharmacy" color={textColor} bg={inputBg}>{t('deliveryFees.perPharmacyOption')}</Radio>
               </Stack>
             </RadioGroup>
           </Box>
@@ -120,13 +124,13 @@ const DeliveryFees = () => {
           {formData.deliveryFeeType === "uniform" && (
             <Box mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Delivery Fee for All Pharmacies
+                {t('deliveryFees.uniformFeeLabel')}
                 <span className="text-danger mx-1">*</span>
               </Text>
               <Input
                 type="number"
                 name="uniformDeliveryFee"
-                placeholder="Enter delivery fee amount"
+                placeholder={t('deliveryFees.uniformFeePlaceholder')}
                 value={formData.uniformDeliveryFee}
                 onChange={handleInputChange}
                 required
@@ -134,6 +138,7 @@ const DeliveryFees = () => {
                 min="0"
                 color={textColor}
                 bg={inputBg}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </Box>
           )}
@@ -142,11 +147,10 @@ const DeliveryFees = () => {
           {formData.deliveryFeeType === "perPharmacy" && (
             <Box mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Note:
+                {t('deliveryFees.noteLabel')}:
               </Text>
               <Text color={textColor} fontSize="sm" mt="8px">
-                When "Different fee per pharmacy" is selected, you can set individual delivery fees
-                for each pharmacy in the pharmacy management section.
+                {t('deliveryFees.perPharmacyNote')}
               </Text>
             </Box>
           )}
@@ -164,8 +168,9 @@ const DeliveryFees = () => {
               type="submit"
               mt="30px"
               isLoading={isUpdating}
+              loadingText={t('deliveryFees.saving')}
             >
-              Save Settings
+              {t('deliveryFees.saveSettings')}
             </Button>
           </Flex>
         </form>

@@ -22,11 +22,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useGetBrandQuery, useUpdateBrandMutation } from "api/brandSlice";
 import Swal from "sweetalert2";
 import { useAddFileMutation } from "api/filesSlice";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const EditBrand = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   // API hooks
   const { data: brandResponse, isLoading: isFetching } = useGetBrandQuery(id);
@@ -75,8 +79,8 @@ const EditBrand = () => {
       // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
-          title: 'Invalid file type',
-          description: 'Please upload an image file',
+          title: t('editBrand.InvalidFileType'),
+          description: t('editBrand.PleaseUploadImageFile'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -87,8 +91,8 @@ const EditBrand = () => {
       // Validate file size (e.g., 5MB max)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: 'File too large',
-          description: 'Maximum file size is 5MB',
+          title: t('editBrand.FileTooLarge'),
+          description: t('editBrand.MaximumFileSizeIs5MB'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -130,13 +134,13 @@ const EditBrand = () => {
 
   const handleCancel = () => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'You will lose all unsaved changes',
+      title: t('editBrand.AreYouSure'),
+      text: t('editBrand.YouWillLoseAllUnsavedChanges'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, discard changes',
+      confirmButtonText: t('editBrand.YesDiscardChanges'),
     }).then((result) => {
       if (result.isConfirmed) {
         navigate("/admin/brands");
@@ -147,8 +151,8 @@ const EditBrand = () => {
   const handleSubmit = async () => {
     if (!enName || !arName) {
       toast({
-        title: "Error",
-        description: "Please fill all required fields",
+        title: t('editBrand.ErrorRequiredFields'),
+        description: t('editBrand.PleaseFillAllRequiredFields'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -193,8 +197,8 @@ const EditBrand = () => {
       const response = await updateBrand({ id, brand: payload }).unwrap();
 
       toast({
-        title: "Success",
-        description: "Brand updated successfully",
+        title: t('editBrand.SuccessUpdate'),
+        description: t('editBrand.BrandUpdatedSuccessfully'),
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -204,8 +208,8 @@ const EditBrand = () => {
     } catch (error) {
       console.error("Failed to update brand:", error);
       toast({
-        title: "Error",
-        description: error.data?.message || "Failed to update brand",
+        title: t('editBrand.ErrorUpdate'),
+        description: error.data?.message || t('editBrand.FailedToUpdateBrand'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -224,13 +228,13 @@ const EditBrand = () => {
   if (!brandResponse?.data) {
     return (
       <Flex justify="center" align="center" minH="100vh">
-        <Text>Brand not found</Text>
+        <Text>{t('editBrand.NotFound')}</Text>
       </Flex>
     );
   }
 
   return (
-    <Box className="container add-admin-container w-100">
+    <Box className="container add-admin-container w-100" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
@@ -240,7 +244,7 @@ const EditBrand = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Edit Brand
+            {t('editBrand.EditBrand')}
           </Text>
           <Button
             type="button"
@@ -249,16 +253,16 @@ const EditBrand = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('editBrand.Back')}
           </Button>
         </div>
         <form>
           {/* English Name Field */}
           <Box mb={4}>
             <FormControl isRequired>
-              <FormLabel>Brand Name (English)</FormLabel>
+              <FormLabel>{t('editBrand.BrandNameEnglish')}</FormLabel>
               <Input
-                placeholder="Enter Brand Name in English"
+                placeholder={t('editBrand.EnterBrandNameInEnglish')}
                 value={enName}
                 onChange={(e) => setEnName(e.target.value)}
                 color={textColor}
@@ -270,9 +274,9 @@ const EditBrand = () => {
           {/* Arabic Name Field */}
           <Box mb={4}>
             <FormControl isRequired>
-              <FormLabel>Brand Name (Arabic)</FormLabel>
+              <FormLabel>{t('editBrand.BrandNameArabic')}</FormLabel>
               <Input
-                placeholder="أدخل اسم العلامة التجارية"
+                placeholder={t('editBrand.EnterBrandNameInArabic')}
                 value={arName}
                 onChange={(e) => setArName(e.target.value)}
                 dir="rtl"
@@ -285,7 +289,7 @@ const EditBrand = () => {
           {/* Image Upload Section */}
           <Box mb={4}>
             <FormControl>
-              <FormLabel>Brand Logo</FormLabel>
+              <FormLabel>{t('editBrand.BrandLogo')}</FormLabel>
               <Box
                 border="1px dashed"
                 borderColor={isDragging ? 'brand.500' : borderColorDefault}
@@ -299,13 +303,13 @@ const EditBrand = () => {
                 bg={isDragging ? bgDrag : inputBg}
               >
                 <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
-                <Text color={textColor}>Drag & drop logo here or</Text>
+                <Text color={textColor}>{t('editBrand.DragDropLogoHereOr')}</Text>
                 <Button
                   variant="link"
                   color="blue.500"
                   onClick={() => document.getElementById("fileInput").click()}
                 >
-                  Browse Files
+                  {t('editBrand.BrowseFiles')}
                 </Button>
                 <Input
                   id="fileInput"
@@ -321,7 +325,7 @@ const EditBrand = () => {
               <Box mt={4} position="relative" display="inline-block">
                 <Image
                   src={imagePreview || existingImage}
-                  alt="Brand logo preview"
+                  alt={t('editBrand.BrandLogoPreview')}
                   borderRadius="md"
                   boxSize="150px"
                   objectFit="contain"
@@ -329,7 +333,7 @@ const EditBrand = () => {
                 {imagePreview && (
                   <IconButton
                     icon={<FaTrash />}
-                    aria-label="Remove image"
+                    aria-label={t('editBrand.RemoveImage')}
                     size="sm"
                     colorScheme="red"
                     position="absolute"
@@ -345,15 +349,14 @@ const EditBrand = () => {
           {/* Active Status Toggle */}
           <Box mb={4}>
             <FormControl display="flex" alignItems="center">
-              <FormLabel htmlFor="isActive" mb="0">
-                Active Status
-              </FormLabel>
+              <FormLabel htmlFor="isActive" mb="0">{t('editBrand.ActiveStatus')}</FormLabel>
               <Switch
                 id="isActive"
                 isChecked={isActive}
                 onChange={() => setIsActive(!isActive)}
                 colorScheme="teal"
                 size="md"
+                dir="ltr"
               />
             </FormControl>
           </Box>
@@ -366,15 +369,16 @@ const EditBrand = () => {
               onClick={handleCancel}
               mr={4}
             >
-              Cancel
+              {t('editBrand.Cancel')}
             </Button>
             <Button
               colorScheme="blue"
               onClick={handleSubmit}
               isLoading={isUpdating}
-              loadingText="Saving..."
+              loadingText={t('editBrand.Saving')}
+              mx={2}
             >
-              Save Changes
+              {t('editBrand.SaveChanges')}
             </Button>
           </Flex>
         </form>

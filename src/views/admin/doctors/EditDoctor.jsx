@@ -25,6 +25,8 @@ import { useGetSpecializationsQuery } from 'api/doctorSpecializationSlice';
 import { useGetClinicsQuery } from 'api/clinicSlice';
 import Swal from 'sweetalert2';
 import { useAddFileMutation } from 'api/filesSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const EditDoctor = () => {
   const { id } = useParams();
@@ -34,6 +36,8 @@ const EditDoctor = () => {
   const { data: specializationsResponse } = useGetSpecializationsQuery({});
   const toast = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   const clinics = clinicsResponse?.data || [];
   const specializations = specializationsResponse?.data || [];
@@ -299,8 +303,8 @@ const EditDoctor = () => {
 
       // Show success message
       toast({
-        title: 'Success',
-        description: 'Doctor updated successfully',
+        title: t('doctors.success'),
+        description: t('doctors.doctorUpdatedSuccessfully'),
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -310,8 +314,8 @@ const EditDoctor = () => {
       navigate('/admin/doctors');
     } catch (err) {
       toast({
-        title: 'Error',
-        description: err.data?.message || 'Failed to update doctor',
+        title: t('doctors.error'),
+        description: err.data?.message || t('doctors.failedToUpdateDoctor'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -321,13 +325,13 @@ const EditDoctor = () => {
 
   const handleCancel = () => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'You will lose all unsaved changes',
+      title: t('doctors.confirmCancel'),
+      text: t('doctors.unsavedChangesWarning'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, discard changes',
+      confirmButtonText: t('doctors.yesDiscardChanges'),
     }).then((result) => {
       if (result.isConfirmed) {
         navigate('/admin/doctors');
@@ -336,11 +340,11 @@ const EditDoctor = () => {
   };
 
   return (
-    <Flex justify="center" p="20px" mt="80px">
+    <Flex justify="center" p="20px" mt="80px" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <Box w="100%" p="6" boxShadow="md" borderRadius="lg" bg={cardBg}>
         <Flex justify="space-between" align="center" mb="20px">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Edit Doctor
+            {t('doctors.editDoctor')}
           </Text>
           <Button
             onClick={handleCancel}
@@ -348,7 +352,7 @@ const EditDoctor = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('doctors.back')}
           </Button>
         </Flex>
 
@@ -357,7 +361,7 @@ const EditDoctor = () => {
             {/* Basic Information */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                First Name<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
+                {t('doctors.firstName')}<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 name="firstName"
@@ -373,7 +377,7 @@ const EditDoctor = () => {
 
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Last Name<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
+                {t('doctors.lastName')}<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 name="lastName"
@@ -389,7 +393,7 @@ const EditDoctor = () => {
 
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Email<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
+                {t('doctors.email')}<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="email"
@@ -406,7 +410,7 @@ const EditDoctor = () => {
 
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Password
+                {t('doctors.password')}
               </Text>
               <Input
                 type="password"
@@ -423,7 +427,7 @@ const EditDoctor = () => {
             {/* Professional Information */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Gender<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
+                {t('doctors.gender')}<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Select
                 name="gender"
@@ -434,15 +438,16 @@ const EditDoctor = () => {
                 borderColor={inputBorder}
                 required
                 mt="8px"
+                dir='ltr'
               >
-                <option value="MALE">Male</option>
-                <option value="FEMALE">Female</option>
+                <option value="MALE">{t('doctors.male')}</option>
+                <option value="FEMALE">{t('doctors.female')}</option>
               </Select>
             </Box>
 
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Title<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
+                {t('doctors.title')}<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Select
                 name="title"
@@ -453,16 +458,17 @@ const EditDoctor = () => {
                 borderColor={inputBorder}
                 required
                 mt="8px"
+                dir='ltr'
               >
-                <option value="CONSULTANT">Consultant</option>
-                <option value="SPECIALIST">Specialist</option>
-                <option value="REGISTRAR">Registrar</option>
+                <option value="CONSULTANT">{t('doctors.consultant')}</option>
+                <option value="SPECIALIST">{t('doctors.specialist')}</option>
+                <option value="REGISTRAR">{t('doctors.registrar')}</option>
               </Select>
             </Box>
 
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Specialization<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
+                {t('doctors.specialization')}<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Select
                 name="specializationId"
@@ -473,8 +479,9 @@ const EditDoctor = () => {
                 borderColor={inputBorder}
                 required
                 mt="8px"
+                dir='ltr'
               >
-                <option value="">Select Specialization</option>
+                <option value="">{t('doctors.selectSpecialization')}</option>
                 {specializations.map((spec) => (
                   <option key={spec.id} value={spec.id}>
                     {spec.name}
@@ -486,7 +493,7 @@ const EditDoctor = () => {
             {/* Fees */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Clinic Fees<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
+                {t('doctors.clinicFees')}<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="number"
@@ -503,7 +510,7 @@ const EditDoctor = () => {
 
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Online Fees<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
+                {t('doctors.onlineFees')}<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="number"
@@ -521,7 +528,7 @@ const EditDoctor = () => {
             {/* About Sections */}
             <Box gridColumn="1 / -1">
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                About (English)<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
+                {t('doctors.aboutEnglish')}<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Textarea
                 name="aboutEn"
@@ -539,13 +546,14 @@ const EditDoctor = () => {
             <Box>
               <FormControl display="flex" alignItems="center" mt={4}>
                 <FormLabel htmlFor="isRecommended" mb="0" color={textColor}>
-                  Recommended Doctor
+                  {t('doctors.recommendedDoctor')}
                 </FormLabel>
                 <Switch
                   id="isRecommended"
                   isChecked={formData.isRecommended}
                   onChange={() => handleToggle('isRecommended')}
                   colorScheme="brand"
+                  dir='ltr'
                 />
               </FormControl>
             </Box>
@@ -553,13 +561,14 @@ const EditDoctor = () => {
             <Box>
               <FormControl display="flex" alignItems="center" mt={4}>
                 <FormLabel htmlFor="hasClinicConsult" mb="0" color={textColor}>
-                  Clinic Consultation
+                  {t('doctors.clinicConsultation')}
                 </FormLabel>
                 <Switch
                   id="hasClinicConsult"
                   isChecked={formData.hasClinicConsult}
                   onChange={() => handleToggle('hasClinicConsult')}
                   colorScheme="brand"
+                  dir='ltr'
                 />
               </FormControl>
             </Box>
@@ -567,13 +576,14 @@ const EditDoctor = () => {
             <Box>
               <FormControl display="flex" alignItems="center" mt={4}>
                 <FormLabel htmlFor="hasOnlineConsult" mb="0" color={textColor}>
-                  Online Consultation
+                  {t('doctors.onlineConsultation')}
                 </FormLabel>
                 <Switch
                   id="hasOnlineConsult"
                   isChecked={formData.hasOnlineConsult}
                   onChange={() => handleToggle('hasOnlineConsult')}
                   colorScheme="brand"
+                  dir='ltr'
                 />
               </FormControl>
             </Box>
@@ -582,13 +592,14 @@ const EditDoctor = () => {
             <Box>
               <FormControl display="flex" alignItems="center" mt={4}>
                 <FormLabel htmlFor="isActive" mb="0" color={textColor}>
-                  Active
+                  {t('doctors.active')}
                 </FormLabel>
                 <Switch
                   id="isActive"
                   isChecked={isActive}
                   onChange={() => setIsActive(!isActive)}
                   colorScheme="brand"
+                  dir='ltr'
                 />
               </FormControl>
             </Box>
@@ -596,13 +607,13 @@ const EditDoctor = () => {
             {/* Phones */}
             <Box gridColumn="1 / -1" mt={2} mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Phone Numbers<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
+                {t('doctors.phoneNumbers')}<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               {phones.map((phone, index) => (
                 <Flex key={index} align="center" mt="8px" mb={2}>
                   <Input
                     type="text"
-                    placeholder={`Phone ${index + 1}`}
+                    placeholder={`${t('doctors.phone')} ${index + 1}`}
                     value={phone.phoneNumber}
                     onChange={(e) => handlePhoneChange(index, e.target.value)}
                     bg={inputBg}
@@ -635,20 +646,20 @@ const EditDoctor = () => {
                 leftIcon={<FaPlus />}
                 onClick={handleAddPhone}
               >
-                Add Phone
+                {t('doctors.addPhone')}
               </Button>
             </Box>
 
             {/* Languages */}
             <Box gridColumn="1 / -1" mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Languages<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
+                {t('doctors.languages')}<span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               {languages.map((lang, index) => (
                 <Flex key={index} align="center" mt="8px" mb={2}>
                   <Input
                     type="text"
-                    placeholder={`Language ${index + 1}`}
+                    placeholder={`${t('doctors.language')} ${index + 1}`}
                     value={lang.language}
                     onChange={(e) =>
                       handleLanguageChange(index, 'language', e.target.value)
@@ -662,7 +673,7 @@ const EditDoctor = () => {
                   />
                   <FormControl display="flex" alignItems="center" width="auto">
                     <FormLabel htmlFor={`active-${index}`} mb="0" mr={2} color={textColor}>
-                      Active
+                      {t('doctors.active')}
                     </FormLabel>
                     <Switch
                       id={`active-${index}`}
@@ -671,6 +682,7 @@ const EditDoctor = () => {
                         handleLanguageChange(index, 'isActive', e.target.checked)
                       }
                       colorScheme="brand"
+                      dir='ltr'
                     />
                   </FormControl>
                   {languages.length > 1 && (
@@ -697,14 +709,14 @@ const EditDoctor = () => {
                 leftIcon={<FaPlus />}
                 onClick={handleAddLanguage}
               >
-                Add Language
+                {t('doctors.addLanguage')}
               </Button>
             </Box>
 
             {/* Clinics */}
             <Box gridColumn="1 / -1" mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Clinics
+                {t('doctors.clinics')}
               </Text>
               <Flex wrap="wrap" gap={4} mt={2}>
                 {clinics.map((clinic) => (
@@ -724,7 +736,7 @@ const EditDoctor = () => {
             {/* Doctor Image */}
             <Box gridColumn="1 / -1" mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Doctor Image
+                {t('doctors.doctorImage')}
               </Text>
               <Box
                 border="1px dashed"
@@ -743,7 +755,7 @@ const EditDoctor = () => {
                   <Flex direction="column" align="center">
                     <Image
                       src={typeof image === 'string' ? image : URL.createObjectURL(image)}
-                      alt="Doctor"
+                      alt={t('doctors.doctor')}
                       maxH="200px"
                       mb={2}
                       borderRadius="md"
@@ -757,24 +769,24 @@ const EditDoctor = () => {
                         setFormData((prev) => ({ ...prev, imageKey: '' }));
                       }}
                     >
-                      Remove Image
+                      {t('doctors.removeImage')}
                     </Button>
                   </Flex>
                 ) : (
                   <>
                     <Icon as={FaUpload} w={8} h={8} color="brand.500" mb={2} />
                     <Text color={textColor} mb={2}>
-                      Drag & Drop Image Here
+                      {t('doctors.dragDropImage')}
                     </Text>
                     <Text color={textColor} mb={2}>
-                      or
+                      {t('doctors.or')}
                     </Text>
                     <Button
                       variant="outline"
                       colorScheme="brand"
                       onClick={() => document.getElementById('doctorImage').click()}
                     >
-                      Upload Image
+                      {t('doctors.uploadImage')}
                       <input
                         type="file"
                         id="doctorImage"
@@ -791,7 +803,7 @@ const EditDoctor = () => {
             {/* Certificates */}
             <Box gridColumn="1 / -1">
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Certificates
+                {t('doctors.certificates')}
               </Text>
               <Box mt={2}>
                 <Button
@@ -801,7 +813,7 @@ const EditDoctor = () => {
                   leftIcon={<FaPlus />}
                   cursor="pointer"
                 >
-                  Add Certificates
+                  {t('doctors.addCertificates')}
                   <input
                     type="file"
                     hidden
@@ -817,7 +829,7 @@ const EditDoctor = () => {
                     <Box key={index} position="relative">
                       <Image
                         src={typeof cert.imageKey === 'string' ? cert.imageKey : URL.createObjectURL(cert.imageKey)}
-                        alt={`Certificate ${index + 1}`}
+                        alt={`${t('doctors.certificate')} ${index + 1}`}
                         borderRadius="md"
                         boxShadow="md"
                       />
@@ -849,7 +861,7 @@ const EditDoctor = () => {
               onClick={handleCancel}
               width="150px"
             >
-              Cancel
+              {t('doctors.cancel')}
             </Button>
             <Button
               type="submit"
@@ -862,7 +874,7 @@ const EditDoctor = () => {
               py="5px"
               width="150px"
             >
-              Save Doctor
+              {t('doctors.saveDoctor')}
             </Button>
           </Flex>
         </form>

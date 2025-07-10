@@ -31,10 +31,14 @@ import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { useGetAdminsQuery, useDeleteUserMutation } from 'api/userSlice';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
 const Admins = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [page, setPage] = React.useState(1); // Current page
   const [limit, setLimit] = React.useState(10); // Items per page
   const [searchQuery, setSearchQuery] = React.useState(''); // Search query
@@ -82,7 +86,7 @@ const Admins = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Name
+          {t('admin.name')}
         </Text>
       ),
       cell: (info) => (
@@ -102,7 +106,7 @@ const Admins = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          EMAIL
+          {t('admin.email')}
         </Text>
       ),
       cell: (info) => (
@@ -120,7 +124,7 @@ const Admins = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Phone Number
+          {t('admin.phoneNumber')}
         </Text>
       ),
       cell: (info) => (
@@ -138,7 +142,7 @@ const Admins = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          ROLE
+          {t('admin.role')}
         </Text>
       ),
       cell: (info) => (
@@ -156,7 +160,7 @@ const Admins = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Actions
+          {t('common.actions')}
         </Text>
       ),
       cell: (info) => (
@@ -210,23 +214,23 @@ const Admins = () => {
   const handleDeleteRole = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('messages.confirmDelete'),
+        text: t('admin.deleteWarning'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('messages.yesDelete'),
       });
 
       if (result.isConfirmed) {
         await deleteUser(id).unwrap(); // Delete the role
         refetch(); // Refetch the data
-        Swal.fire('Deleted!', 'The Admin has been deleted.', 'success');
+        Swal.fire(t('messages.deleted'), t('admin.deleteSuccess'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete role:', error);
-      Swal.fire('Error!', 'Failed to delete the role.', 'error');
+      Swal.fire(t('messages.error'), t('admin.deleteError'), 'error');
     }
   };
 
@@ -249,7 +253,7 @@ const Admins = () => {
   };
 
   return (
-    <div className="container">
+    <div className="container" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Card
         flexDirection="column"
         w="100%"
@@ -263,7 +267,7 @@ const Admins = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            Admins
+            {t('admin.title')}
           </Text>
           <div className="search-container d-flex align-items-center gap-2">
             <InputGroup w={{ base: "100", md: "400px" }}>
@@ -291,9 +295,11 @@ const Admins = () => {
                 fontWeight="500"
                 _placeholder={{ color: "gray.400", fontSize: "14px" }}
                 borderRadius="30px"
-                placeholder="Search by name..."
+                placeholder={t('admin.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+                dir="ltr"
               />
             </InputGroup>
           </div>
@@ -308,11 +314,18 @@ const Admins = () => {
             onClick={() => navigate('/admin/add-admin')}
             width={'200px'}
           >
-            Create New Admin
+            {t('admin.createNewAdmin')}
           </Button>
         </Flex>
         <Box>
-          <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+          <Table 
+            variant="simple" 
+            color="gray.500" 
+            mb="24px" 
+            mt="12px" 
+            className="admin-table"
+            dir={language === 'ar' ? 'rtl' : 'ltr'}
+          >
             <Thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <Tr key={headerGroup.id}>
@@ -377,7 +390,7 @@ const Admins = () => {
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
-              Rows per page:
+              {t('table.rowsPerPage')}
             </Text>
             <Select
               value={limit}
@@ -396,7 +409,7 @@ const Admins = () => {
             </Select>
           </Flex>
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages} ({pagination.totalItems} total items)
+            {t('table.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
           </Text>
           <Flex>
             <Button
@@ -407,7 +420,7 @@ const Admins = () => {
               mr="10px"
             >
               <Icon as={ChevronLeftIcon} mr="5px" />
-              Previous
+              {t('table.previous')}
             </Button>
             <Button
               onClick={handleNextPage}
@@ -415,7 +428,7 @@ const Admins = () => {
               variant="outline"
               size="sm"
             >
-              Next
+              {t('table.next')}
               <Icon as={ChevronRightIcon} ml="5px" />
             </Button>
           </Flex>

@@ -28,6 +28,7 @@ import {
 import Card from "components/card/Card";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetUserFamilyQuery } from "api/clientSlice";
+import { useTranslation } from 'react-i18next';
 
 const columnHelper = createColumnHelper();
 
@@ -36,6 +37,8 @@ const FamilyAccounts = () => {
   const { id } = useParams();
   const { data: familyData } = useGetUserFamilyQuery(id);
   const [searchTerm, setSearchTerm] = useState("");
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   const family = familyData?.data || [];
   const filteredData = family.filter((member) =>
@@ -48,22 +51,22 @@ const FamilyAccounts = () => {
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
-      header: () => <Text color="gray.400">Name</Text>,
+      header: () => <Text color="gray.400">{t('common.name')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor("age", {
       id: "age",
-      header: () => <Text color="gray.400">Age</Text>,
+      header: () => <Text color="gray.400">{t('user.age')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor("gender", {
       id: "gender",
-      header: () => <Text color="gray.400">Gender</Text>,
+      header: () => <Text color="gray.400">{t('user.gender')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor("relationship", {
       id: "relationship",
-      header: () => <Text color="gray.400">Relationship</Text>,
+      header: () => <Text color="gray.400">{t('user.relationship')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
   ];
@@ -76,10 +79,10 @@ const FamilyAccounts = () => {
   });
 
   return (
-    <div className="container">
+    <div className="container" dir={isRTL ? 'rtl' : 'ltr'}>
       <Card flexDirection="column" w="100%" px="0px" overflowX="auto">
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
-          <Text color={textColor} fontSize="22px" fontWeight="700">Family Accounts</Text>
+          <Text color={textColor} fontSize="22px" fontWeight="700" textAlign={isRTL ? 'right' : 'left'}>{t('user.familyAccounts')}</Text>
           <Button
             type="button"
             onClick={() => navigate(-1)}
@@ -87,14 +90,14 @@ const FamilyAccounts = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('common.back')}
           </Button>
         </Flex>
         {/* <InputGroup mb="4">
           <InputLeftElement pointerEvents="none" children={<FaSearch color="gray.300" />} />
           <Input
             type="text"
-            placeholder="Search by name"
+            placeholder={t('common.searchByName')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

@@ -26,6 +26,8 @@ import {
   import { EditIcon, PlusSquareIcon } from '@chakra-ui/icons';
   import { FaEye, FaTrash } from 'react-icons/fa6';
   import { useNavigate } from 'react-router-dom';
+  import { useTranslation } from 'react-i18next';
+  import { useLanguage } from '../../../contexts/LanguageContext';
   
   const columnHelper = createColumnHelper();
   
@@ -60,17 +62,20 @@ import {
     const textColor = useColorModeValue('secondaryGray.900', 'white');
     const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
   
+    const { t } = useTranslation();
+    const { currentLanguage } = useLanguage();
+  
     const columns = [
         columnHelper.accessor('name', {
-          header: 'Name',
+          header: t('branches.name'),
           cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
         }),
         columnHelper.accessor('imageKey', {
-          header: 'Image',
+          header: t('branches.image'),
           cell: (info) => (
             <img
               src={info.getValue()}
-              alt="Pharmacy"
+              alt={t('branches.image')}
               width={70}
               height={70}
               style={{ borderRadius: '8px' }}
@@ -78,20 +83,20 @@ import {
           ),
         }),
         columnHelper.accessor('address', {
-          header: 'Address',
+          header: t('branches.address'),
           cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
         }),
         columnHelper.accessor('isActive', {
-          header: 'Active',
+          header: t('branches.active'),
           cell: (info) =>
             info.getValue() ? (
-              <Text color="green.500">Active</Text>
+              <Text color="green.500">{t('branches.active')}</Text>
             ) : (
-              <Text color="red.500">Inactive</Text>
+              <Text color="red.500">{t('branches.inactive')}</Text>
             ),
         }),
         columnHelper.accessor('actions', {
-          header: 'Actions',
+          header: t('branches.actions'),
           cell: () => (
             <Flex align="center">
               <Icon w="18px" h="18px" me="10px" color="red.500" as={FaTrash} cursor="pointer" />
@@ -130,7 +135,7 @@ import {
               fontWeight="700"
               lineHeight="100%"
             >
-              All Branches
+              {t('branches.title')}
             </Text>
             <Button
               variant='darkBrand'
@@ -144,7 +149,7 @@ import {
               width={'200px'}
             >
               <PlusSquareIcon me="10px" />
-              Create New Branch
+              {t('branches.addBranch')}
             </Button>
           </Flex>
           <Box>

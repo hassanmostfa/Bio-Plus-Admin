@@ -22,6 +22,8 @@ import {
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useGetPharmacyQuery } from 'api/pharmacySlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const ShowPharmacy = () => {
   const { id } = useParams();
@@ -29,6 +31,8 @@ const ShowPharmacy = () => {
   const toast = useToast();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const cardBg = useColorModeValue('white', 'navy.700');
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   const {
     data,
@@ -40,24 +44,24 @@ const ShowPharmacy = () => {
   useEffect(() => {
     if (fetchError) {
       toast({
-        title: 'Error',
-        description: fetchError.data?.message || 'Failed to load pharmacy data',
+        title: t('common.error'),
+        description: fetchError.data?.message || t('pharmacy.failedToLoadData'),
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
     }
-  }, [fetchError, toast]);
+  }, [fetchError, toast, t]);
 
-  if (isFetching) return <Text>Loading...</Text>;
-  if (fetchError) return <Text>Error loading pharmacy data.</Text>;
-  if (!pharmacy) return <Text>No pharmacy data found.</Text>;
+  if (isFetching) return <Text>{t('pharmacy.loading')}</Text>;
+  if (fetchError) return <Text>{t('pharmacy.errorFetching')}</Text>;
+  if (!pharmacy) return <Text>{t('pharmacy.noData')}</Text>;
 
   return (
-    <Box p={{ base: "20px", md: "30px" }}>
+    <Box p={{ base: "20px", md: "30px" }} dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'} mt={10}>
       <Flex justify="space-between" align="center" mb="30px">
         <Text color={textColor} fontSize="2xl" fontWeight="bold">
-          Pharmacy Details
+          {t('pharmacy.showPharmacy')}
         </Text>
         <Button
           leftIcon={<IoMdArrowBack />}
@@ -65,7 +69,7 @@ const ShowPharmacy = () => {
           variant="outline"
           onClick={() => navigate(-1)}
         >
-          Back
+          {t('pharmacy.back')}
         </Button>
       </Flex>
 
@@ -74,28 +78,25 @@ const ShowPharmacy = () => {
         <Card bg={cardBg} boxShadow="lg" borderRadius="xl">
           <CardHeader>
             <Flex justify="space-between" align="center">
-              <Text fontSize="xl" fontWeight="bold">Basic Information</Text>
+              <Text fontSize="xl" fontWeight="bold">{t('pharmacy.basicInformation')}</Text>
               <Badge colorScheme={pharmacy.isActive ? "green" : "red"}>
-                {pharmacy.isActive ? "Active" : "Inactive"}
+                {pharmacy.isActive ? t('pharmacy.active') : t('pharmacy.inactive')}
               </Badge>
             </Flex>
           </CardHeader>
           <CardBody>
             <Stack spacing={4}>
               <Stat>
-                <StatLabel color="gray.500">Pharmacy Name (English)</StatLabel>
-                <StatNumber fontSize="lg">{pharmacy.name}</StatNumber>
+                <StatLabel color="gray.500">{t('pharmacy.pharmacyNameEn')}</StatLabel>
+                <StatNumber fontSize="lg">{ pharmacy.name}</StatNumber>
               </Stat>
+              
               <Stat>
-                <StatLabel color="gray.500">Pharmacy Name (Arabic)</StatLabel>
-                <StatNumber fontSize="lg">{pharmacy.name}</StatNumber>
-              </Stat>
-              <Stat>
-                <StatLabel color="gray.500">Email</StatLabel>
+                <StatLabel color="gray.500">{t('pharmacy.email')}</StatLabel>
                 <StatNumber fontSize="lg">{pharmacy.email}</StatNumber>
               </Stat>
               <Stat>
-                <StatLabel color="gray.500">WhatsApp Number</StatLabel>
+                <StatLabel color="gray.500">{t('pharmacy.whatsappNumber')}</StatLabel>
                 <StatNumber fontSize="lg">{pharmacy.whatsappNumber}</StatNumber>
               </Stat>
             </Stack>
@@ -105,14 +106,14 @@ const ShowPharmacy = () => {
         {/* Image Card */}
         <Card bg={cardBg} boxShadow="lg" borderRadius="xl">
           <CardHeader>
-            <Text fontSize="xl" fontWeight="bold">Pharmacy Image</Text>
+            <Text fontSize="xl" fontWeight="bold">{t('pharmacy.pharmacyImage')}</Text>
           </CardHeader>
           <CardBody>
             {pharmacy.imageKey ? (
               <Box>
                 <Image
                   src={pharmacy.imageKey}
-                  alt="Pharmacy"
+                  alt={t('pharmacy.pharmacy')}
                   maxH="300px"
                   borderRadius="md"
                   mx="auto"
@@ -120,7 +121,7 @@ const ShowPharmacy = () => {
                 />
               </Box>
             ) : (
-              <Text color="gray.500" textAlign="center">No image available</Text>
+              <Text color="gray.500" textAlign="center">{t('pharmacy.noImageAvailable')}</Text>
             )}
           </CardBody>
         </Card>
@@ -128,37 +129,37 @@ const ShowPharmacy = () => {
         {/* Revenue Settings Card */}
         <Card bg={cardBg} boxShadow="lg" borderRadius="xl">
           <CardHeader>
-            <Text fontSize="xl" fontWeight="bold">Revenue Settings</Text>
+            <Text fontSize="xl" fontWeight="bold">{t('pharmacy.revenueSettings')}</Text>
           </CardHeader>
           <CardBody>
             <Stack spacing={4}>
               <Stat>
-                <StatLabel color="gray.500">Revenue Share Type</StatLabel>
+                <StatLabel color="gray.500">{t('pharmacy.revenueShareType')}</StatLabel>
                 <StatNumber fontSize="lg">
-                  {pharmacy.revenueShareType === 'percentage' ? 'Percentage' : 'Fixed Fees'}
+                  {pharmacy.revenueShareType === 'percentage' ? t('pharmacy.percentage') : t('pharmacy.fixedFees')}
                 </StatNumber>
               </Stat>
 
               {pharmacy.revenueShareType === 'percentage' ? (
                 <Stat>
-                  <StatLabel color="gray.500">Percentage</StatLabel>
+                  <StatLabel color="gray.500">{t('pharmacy.percentage')}</StatLabel>
                   <StatNumber fontSize="lg">{pharmacy.revenueShare}%</StatNumber>
                 </Stat>
               ) : (
                 <>
                   <Stat>
-                    <StatLabel color="gray.500">Fixed Fees</StatLabel>
+                    <StatLabel color="gray.500">{t('pharmacy.fixedFees')}</StatLabel>
                     <StatNumber fontSize="lg">{pharmacy.fixedFees}</StatNumber>
                   </Stat>
                   <SimpleGrid columns={2} spacing={4}>
                     <Stat>
-                      <StatLabel color="gray.500">Start Date</StatLabel>
+                      <StatLabel color="gray.500">{t('pharmacy.feesStartDate')}</StatLabel>
                       <StatNumber fontSize="md">
                         {new Date(pharmacy.feesStartDate).toLocaleDateString()}
                       </StatNumber>
                     </Stat>
                     <Stat>
-                      <StatLabel color="gray.500">End Date</StatLabel>
+                      <StatLabel color="gray.500">{t('pharmacy.feesEndDate')}</StatLabel>
                       <StatNumber fontSize="md">
                         {new Date(pharmacy.feesEndDate).toLocaleDateString()}
                       </StatNumber>
@@ -173,25 +174,25 @@ const ShowPharmacy = () => {
         {/* Additional Settings Card */}
         <Card bg={cardBg} boxShadow="lg" borderRadius="xl">
           <CardHeader>
-            <Text fontSize="xl" fontWeight="bold">Additional Settings</Text>
+            <Text fontSize="xl" fontWeight="bold">{t('pharmacy.additionalSettings')}</Text>
           </CardHeader>
           <CardBody>
             <Stack spacing={4}>
               <Stat>
-                <StatLabel color="gray.500">Working Hours</StatLabel>
+                <StatLabel color="gray.500">{t('pharmacy.workingHours')}</StatLabel>
                 <StatNumber fontSize="lg">{pharmacy.workingHours}</StatNumber>
               </Stat>
               <Stat>
-                <StatLabel color="gray.500">IBAN</StatLabel>
+                <StatLabel color="gray.500">{t('pharmacy.iban')}</StatLabel>
                 <StatNumber fontSize="lg">{pharmacy.iban}</StatNumber>
               </Stat>
               <Divider />
               <Stack spacing={3}>
-                <Text color="gray.500">Delivery Settings:</Text>
-                <Text>• Delivery across your zone</Text>
-                <Text>• Usually dispatches orders on the same day</Text>
-                <Text>• Delivery fee will apply</Text>
-                <Text>• All orders will be delivered by healthy pharmacy</Text>
+                <Text color="gray.500">{t('pharmacy.deliverySettings')}:</Text>
+                <Text>• {t('pharmacy.deliveryAcrossZone')}</Text>
+                <Text>• {t('pharmacy.usuallyDispatchesOrders')}</Text>
+                <Text>• {t('pharmacy.deliveryFeeWillApply')}</Text>
+                <Text>• {t('pharmacy.allOrdersWillBeDelivered')}</Text>
               </Stack>
             </Stack>
           </CardBody>
@@ -201,41 +202,41 @@ const ShowPharmacy = () => {
       {/* Branches Section */}
       <Card bg={cardBg} boxShadow="lg" borderRadius="xl" mt={6}>
         <CardHeader>
-          <Text fontSize="xl" fontWeight="bold">Branches ({pharmacy.numOfBranches})</Text>
+          <Text fontSize="xl" fontWeight="bold">{t('pharmacy.branches')} ({pharmacy.numOfBranches})</Text>
         </CardHeader>
         <CardBody>
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
             {pharmacy.branches?.map((branch, index) => (
               <Card key={index} variant="outline" p={4}>
                 <Flex justify="space-between" align="center" mb={4}>
-                  <Text fontSize="lg" fontWeight="bold">Branch {index + 1}</Text>
+                  <Text fontSize="lg" fontWeight="bold">{t('pharmacy.branch')} {index + 1}</Text>
                   <Badge colorScheme={branch.isActive ? "green" : "red"}>
-                    {branch.isActive ? "Active" : "Inactive"}
+                    {branch.isActive ? t('pharmacy.active') : t('pharmacy.inactive')}
                   </Badge>
                 </Flex>
                 <Stack spacing={4}>
                   <Stat>
-                    <StatLabel color="gray.500">Name (English)</StatLabel>
+                    <StatLabel color="gray.500">{t('pharmacy.branchNameEn')}</StatLabel>
                     <StatNumber fontSize="lg">{branch.name}</StatNumber>
                   </Stat>
                   <Stat>
-                    <StatLabel color="gray.500">Name (Arabic)</StatLabel>
+                    <StatLabel color="gray.500">{t('pharmacy.branchNameAr')}</StatLabel>
                     <StatNumber fontSize="lg">{branch.name}</StatNumber>
                   </Stat>
                   <Stat>
-                    <StatLabel color="gray.500">Address (English)</StatLabel>
+                    <StatLabel color="gray.500">{t('pharmacy.addressEn')}</StatLabel>
                     <StatNumber fontSize="lg">{branch.address}</StatNumber>
                   </Stat>
                   <Stat>
-                    <StatLabel color="gray.500">Address (Arabic)</StatLabel>
+                    <StatLabel color="gray.500">{t('pharmacy.addressAr')}</StatLabel>
                     <StatNumber fontSize="lg">{branch.address}</StatNumber>
                   </Stat>
                   {branch.locationLink && (
                     <Stat>
-                      <StatLabel color="gray.500">Location Link</StatLabel>
+                      <StatLabel color="gray.500">{t('pharmacy.locationLink')}</StatLabel>
                       <StatHelpText>
                         <a href={branch.locationLink} target="_blank" rel="noopener noreferrer" style={{ color: 'teal' }}>
-                          View Location
+                          {t('pharmacy.viewLocation')}
                         </a>
                       </StatHelpText>
                     </Stat>

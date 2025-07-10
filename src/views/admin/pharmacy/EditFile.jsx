@@ -17,6 +17,8 @@ import Swal from 'sweetalert2';
 import { useAddPharmacyFileMutation } from 'api/pharmacyFiles';
 import { useUpdatePharmacyFileMutation } from 'api/pharmacyFiles';
 import { useGetPharmacyFilesQuery } from 'api/pharmacyFiles';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const EditFile = () => {
   const [fileName, setFileName] = useState(''); // State for file name
@@ -53,6 +55,9 @@ const EditFile = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
+
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   // Handle image upload
   const handleImageUpload = (files) => {
@@ -145,23 +150,23 @@ const EditFile = () => {
       <Box bg={cardBg} className="add-file-card shadow p-4 w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700" mb="20px !important" lineHeight="100%">
-            Add New File
+            {t('files.editFile')}
           </Text>
           <Button type="button" onClick={() => navigate(-1)} colorScheme="teal" size="sm" leftIcon={<IoMdArrowBack />}>
-            Back
+            {t('files.back')}
           </Button>
         </div>
-        <form>
+        <form dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
           {/* Title or File Name Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              File Name
+              {t('files.fileName')}
               <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="text"
               id="file_name"
-              placeholder="Enter File Name"
+              placeholder={t('files.enterFileName')}
               value={fileName}
               onChange={(e) => setFileName(e.target.value)}
               required
@@ -190,20 +195,20 @@ const EditFile = () => {
                     <Image src={typeof image === 'string' ? image : URL.createObjectURL(image)} alt="File" maxH="200px" mb={2} borderRadius="md" />
                   </a>
                   <Button variant="outline" colorScheme="red" size="sm" onClick={() => setImage(null)}>
-                    Remove Image
+                    {t('files.removeImage')}
                   </Button>
                   </Flex>
                 ) : (
                   <>
                   <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
                   <Text color="gray.500" mb={2}>
-                    Drag & Drop Image Here
+                    {t('files.dragDropImageHere')}
                   </Text>
                   <Text color="gray.500" mb={2}>
-                    or
+                    {t('files.or')}
                   </Text>
                   <Button variant="outline" color="#422afb" border="none" onClick={() => document.getElementById('fileInput').click()}>
-                    Upload Image
+                    {t('files.uploadImage')}
                     <input
                     type="file"
                     id="fileInput"
@@ -219,7 +224,7 @@ const EditFile = () => {
                 {/* Action Buttons */}
           <Flex justify="center" mt={4}>
             <Button variant="outline" colorScheme="red" onClick={handleCancel} mr={2}>
-              Cancel
+              {t('files.cancel')}
             </Button>
             <Button
               variant="darkBrand"
@@ -231,7 +236,7 @@ const EditFile = () => {
               py="5px"
               onClick={handleSend}
             >
-              Save
+              {t('files.save')}
             </Button>
           </Flex>
         </form>

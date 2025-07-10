@@ -12,12 +12,16 @@ import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAddSpecializationMutation } from "api/doctorSpecializationSlice";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const AddSpecialize = () => {
   const [name, setName] = useState("");
   const [arabicName, setArabicName] = useState("");
   const navigate = useNavigate();
   const [addSpecialize, { isLoading }] = useAddSpecializationMutation();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   // Color mode values
   const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -40,13 +44,13 @@ const AddSpecialize = () => {
 
     try {
       const response = await addSpecialize(tagData).unwrap();
-      Swal.fire('Success!', 'Tag created successfully.', 'success');
+      Swal.fire(t('specializations.success'), t('specializations.specializationCreatedSuccessfully'), 'success');
       navigate('/admin/specializations');
     } catch (error) {
       console.error('Failed to add tag:', error);
       Swal.fire(
-        'Error!',
-        error.data?.message || 'Failed to create tag.',
+        t('specializations.error'),
+        error.data?.message || t('specializations.failedToCreateSpecialization'),
         'error'
       );
     }
@@ -59,11 +63,11 @@ const AddSpecialize = () => {
   };
 
   return (
-    <Flex justify="center" p="20px" mt={'80px'}>
+    <Flex justify="center" p="20px" mt={'80px'} dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <Box w="100%" p="6" boxShadow="md" borderRadius="lg" bg={cardBg}>
         <Flex justify="space-between" align="center" mb="20px">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Add New Specialization
+            {t('specializations.addNewSpecialization')}
           </Text>
           <Button
             type="button"
@@ -72,7 +76,7 @@ const AddSpecialize = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('specializations.back')}
           </Button>
         </Flex>
 
@@ -81,12 +85,12 @@ const AddSpecialize = () => {
             {/* English Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                English Name
+                {t('specializations.englishName')}
                 <span style={{ color: 'red' }}> *</span>
               </Text>
               <Input
                 type="text"
-                placeholder="Enter English Name"
+                placeholder={t('specializations.enterEnglishName')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 bg={inputBg}
@@ -99,12 +103,12 @@ const AddSpecialize = () => {
             {/* Arabic Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Arabic Name
+                {t('specializations.arabicName')}
                 <span style={{ color: 'red' }}> *</span>
               </Text>
               <Input
                 type="text"
-                placeholder="ادخل الاسم بالعربية"
+                placeholder={t('specializations.enterArabicName')}
                 value={arabicName}
                 onChange={(e) => setArabicName(e.target.value)}
                 bg={inputBg}
@@ -124,7 +128,7 @@ const AddSpecialize = () => {
               onClick={handleCancel}
               width="120px"
             >
-              Cancel
+              {t('specializations.cancel')}
             </Button>
             <Button
               variant='solid'
@@ -137,10 +141,10 @@ const AddSpecialize = () => {
               py='5px'
               type="submit"
               isLoading={isLoading}
-              loadingText="Submitting..."
+              loadingText={t('specializations.submitting')}
               width="120px"
             >
-              Create
+              {t('specializations.create')}
             </Button>
           </Flex>
         </form>

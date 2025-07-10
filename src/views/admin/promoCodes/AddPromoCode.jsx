@@ -20,8 +20,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAddPromocodeMutation } from 'api/promocodeSlice';
 import Swal from 'sweetalert2';
 import { IoMdArrowBack } from 'react-icons/io';
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "contexts/LanguageContext";
 
 const AddPromoCode = () => {
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
@@ -73,24 +77,24 @@ const AddPromoCode = () => {
         
       }).unwrap();
 
-      Swal.fire('Success!', 'Promo code created successfully.', 'success');
+      Swal.fire(t('common.success'), t('promoCodes.createdSuccess'), 'success');
       navigate('/admin/promo-codes');
     } catch (error) {
       console.error('Failed to add promo code:', error);
       Swal.fire(
-        'Error!',
-        error.data?.message || 'Failed to create promo code.',
+        t('common.error'),
+        error.data?.message || t('promoCodes.createError'),
         'error',
       );
     }
   };
 
   return (
-    <Box className="container add-promo-container w-100">
+    <Box className="container add-promo-container w-100" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-promo-card shadow p-4 w-100" borderRadius="15px">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Add New PromoCode
+            {t('promoCodes.addNewPromoCode')}
           </Text>
           <Button
             type="button"
@@ -99,7 +103,7 @@ const AddPromoCode = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('common.back')}
           </Button>
         </div>
 
@@ -108,7 +112,7 @@ const AddPromoCode = () => {
             {/* Promo Code Field */}
             <FormControl>
               <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                Promo Code
+                {t('promoCodes.promoCode')}
                 <span className="text-danger mx-1">*</span>
               </FormLabel>
               <Input
@@ -116,18 +120,19 @@ const AddPromoCode = () => {
                 name="code"
                 value={formData.code}
                 onChange={handleInputChange}
-                placeholder="Enter promo code"
+                placeholder={t('promoCodes.enterPromoCode')}
                 required
                 mt={'8px'}
                 color={textColor}
                 bg={inputBg}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             {/* Amount Field */}
             <FormControl>
               <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                Amount
+                {t('promoCodes.amount')}
                 <span className="text-danger mx-1">*</span>
               </FormLabel>
               <Input
@@ -135,18 +140,19 @@ const AddPromoCode = () => {
                 name="amount"
                 value={formData.amount}
                 onChange={handleInputChange}
-                placeholder="Enter amount"
+                placeholder={t('promoCodes.enterAmount')}
                 required
                 mt={'8px'}
                 color={textColor}
                 bg={inputBg}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             {/* Type Dropdown */}
             <FormControl>
               <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                Type
+                {t('promoCodes.type')}
                 <span className="text-danger mx-1">*</span>
               </FormLabel>
               <Menu>
@@ -160,21 +166,22 @@ const AddPromoCode = () => {
                   _hover={{ bg: 'gray.200' }}
                   textAlign="left"
                   mt={'8px'}
+                  dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
                 >
-                  {formData.type === 'FIXED' ? 'Fixed Amount' : 'Percentage'}
+                  {formData.type === 'FIXED' ? t('promoCodes.fixedAmount') : t('promoCodes.percentage')}
                 </MenuButton>
                 <MenuList width="100%">
                   <MenuItem
                     onClick={() => handleSelectType('FIXED')}
                     bg={formData.type === 'FIXED' ? 'blue.100' : 'white'}
                   >
-                    Fixed Amount
+                    {t('promoCodes.fixedAmount')}
                   </MenuItem>
                   <MenuItem
                     onClick={() => handleSelectType('PERCENTAGE')}
                     bg={formData.type === 'PERCENTAGE' ? 'blue.100' : 'white'}
                   >
-                    Percentage
+                    {t('promoCodes.percentage')}
                   </MenuItem>
                 </MenuList>
               </Menu>
@@ -186,7 +193,7 @@ const AddPromoCode = () => {
             {/* End Date Field */}
             <FormControl>
               <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                End Date
+                {t('promoCodes.endDate')}
                 <span className="text-danger mx-1">*</span>
               </FormLabel>
               <Input
@@ -199,13 +206,14 @@ const AddPromoCode = () => {
                 min={new Date().toISOString().split('T')[0]}
                 color={textColor}
                 bg={inputBg}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             {/* Max Usage Field */}
             <FormControl>
               <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                Max Usage
+                {t('promoCodes.maxUsage')}
                 <span className="text-danger mx-1">*</span>
               </FormLabel>
               <Input
@@ -213,12 +221,13 @@ const AddPromoCode = () => {
                 name="maxUsage"
                 value={formData.maxUsage}
                 onChange={handleInputChange}
-                placeholder="Enter maximum usage"
+                placeholder={t('promoCodes.enterMaxUsage')}
                 required
                 mt={'8px'}
                 min="1"
                 color={textColor}
                 bg={inputBg}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
             {/* <FormControl display="flex" alignItems="center">
@@ -241,14 +250,14 @@ const AddPromoCode = () => {
           </Grid>
 
           {/* Submit Button */}
-          <Flex justify="center" mt={8}>
+          <Flex justify="center" mt={8} gap={4}>
             <Button
               variant="outline"
               colorScheme="red"
-              mr={2}
               onClick={() => navigate(-1)}
+              width="120px"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="darkBrand"
@@ -260,9 +269,11 @@ const AddPromoCode = () => {
               py="5px"
               type="submit"
               isLoading={isLoading}
-              loadingText="Submitting..."
+              loadingText={t('common.submitting')}
+              width="120px"
+              mx={2}
             >
-              Create Promo Code
+              {t('promoCodes.createPromoCode')}
             </Button>
           </Flex>
         </form>

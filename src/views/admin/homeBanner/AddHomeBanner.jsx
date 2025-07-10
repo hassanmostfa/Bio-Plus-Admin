@@ -21,8 +21,12 @@ import { FaUpload } from 'react-icons/fa6';
 import Swal from 'sweetalert2';
 import { useAddFileMutation } from 'api/filesSlice';
 import { IoMdArrowBack } from 'react-icons/io';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AddHomeBanner = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -56,7 +60,7 @@ const AddHomeBanner = () => {
     if (files && files.length > 0) {
       const selectedFile = files[0];
       if (!selectedFile.type.startsWith('image/')) {
-        Swal.fire('Error!', 'Please upload an image file', 'error');
+        Swal.fire(t('homeBanners.add.error'), t('homeBanners.add.uploadImageFile'), 'error');
         return;
       }
       setImage(selectedFile);
@@ -88,7 +92,7 @@ const AddHomeBanner = () => {
     e.preventDefault();
 
     if (!image) {
-      Swal.fire('Error!', 'Please upload an image.', 'error');
+      Swal.fire(t('homeBanners.add.error'), t('homeBanners.add.uploadImage'), 'error');
       return;
     }
 
@@ -115,7 +119,8 @@ const AddHomeBanner = () => {
 
       await createBanner(payload).unwrap();
       toast({
-        title: 'Banner added.',
+        title: t('homeBanners.add.success'),
+        description: t('homeBanners.add.createdSuccessfully'),
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -123,8 +128,8 @@ const AddHomeBanner = () => {
       navigate('/admin/undefined/cms/home-banners');
     } catch (error) {
       toast({
-        title: 'Error adding banner.',
-        description: error?.data?.message || 'Failed to add banner.',
+        title: t('homeBanners.add.error'),
+        description: error?.data?.message || t('homeBanners.add.failedToCreate'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -134,11 +139,11 @@ const AddHomeBanner = () => {
   };
 
   return (
-    <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
+    <Box pt={{ base: '130px', md: '80px', xl: '80px' }} dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Card>
         <Flex justifyContent="space-between" alignItems="center" mb="20px">
           <Text fontSize="xl" fontWeight="bold" lineHeight="100%" color={textColor}>
-            Add New Home Banner
+            {t('homeBanners.add.title')}
           </Text>
           <Button
             type="button"
@@ -147,14 +152,14 @@ const AddHomeBanner = () => {
             size="sm"
             leftIcon={<Icon as={IoMdArrowBack} w="20px" h="20px" color="inherit" />}
           >
-            Back
+            {t('homeBanners.add.back')}
           </Button>
         </Flex>
 
         <form onSubmit={handleSubmit}>
           <Stack spacing={4}>
             <FormControl id="image" isRequired>
-              <FormLabel>Banner Image</FormLabel>
+              <FormLabel>{t('homeBanners.add.bannerImage')}</FormLabel>
               <Box
                 border={'1px dashed #ccc'}
                 borderRadius="md"
@@ -185,7 +190,7 @@ const AddHomeBanner = () => {
                   <Flex direction="column" align="center">
                     <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
                     <Text fontSize="sm" color="gray.600">
-                      Drag and drop an image here, or click to select a file
+                      {t('homeBanners.add.dragDropImage')}
                     </Text>
                   </Flex>
                 )}
@@ -193,18 +198,19 @@ const AddHomeBanner = () => {
             </FormControl>
 
             <FormControl id="textEn">
-              <FormLabel>Title (English)</FormLabel>
+              <FormLabel>{t('homeBanners.add.titleEnglish')}</FormLabel>
               <Input
                 type="text"
                 name="textEn"
                 value={bannerData.textEn}
                 onChange={handleChange}
                 bg={inputBg}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             <FormControl id="textAr">
-              <FormLabel>Title (Arabic)</FormLabel>
+              <FormLabel>{t('homeBanners.add.titleArabic')}</FormLabel>
               <Input
                 type="text"
                 name="textAr"
@@ -216,30 +222,32 @@ const AddHomeBanner = () => {
             </FormControl>
 
             <FormControl id="link">
-              <FormLabel>Link</FormLabel>
+              <FormLabel>{t('homeBanners.add.link')}</FormLabel>
               <Input
                 type="text"
                 name="link"
                 value={bannerData.link}
                 onChange={handleChange}
                 bg={inputBg}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             <FormControl id="order">
-              <FormLabel>Order</FormLabel>
+              <FormLabel>{t('homeBanners.add.order')}</FormLabel>
               <Input
                 type="number"
                 name="order"
                 value={bannerData.order}
                 onChange={handleChange}
                 bg={inputBg}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             <FormControl id="isActive" display="flex" alignItems="center">
               <FormLabel htmlFor="isActive" mb="0">
-                Active Status
+                {t('homeBanners.add.activeStatus')}
               </FormLabel>
               <Switch
                 id="isActive"
@@ -251,7 +259,7 @@ const AddHomeBanner = () => {
             </FormControl>
 
             <Button colorScheme="blue" type="submit" mt={4} isLoading={isCreating || isUploadingImage} width="100%">
-              Add Banner
+              {t('homeBanners.add.addBanner')}
             </Button>
           </Stack>
         </form>

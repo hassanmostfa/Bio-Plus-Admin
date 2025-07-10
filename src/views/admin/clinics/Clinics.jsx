@@ -30,6 +30,8 @@ import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { useGetClinicsQuery, useDeleteClinicMutation } from 'api/clinicSlice';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
@@ -40,6 +42,8 @@ const Clinics = () => {
   const [debouncedSearch, setDebouncedSearch] = React.useState('');
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   // Debounce search query
   React.useEffect(() => {
@@ -73,23 +77,23 @@ const Clinics = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('clinics.confirmDelete'),
+        text: t('clinics.deleteWarning'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('clinics.delete'),
       });
 
       if (result.isConfirmed) {
         await deleteClinic(id).unwrap();
         refetch();
-        Swal.fire('Deleted!', 'The clinic has been deleted.', 'success');
+        Swal.fire(t('clinics.deleteSuccess'), t('clinics.clinicDeleted'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete clinic:', error);
-      Swal.fire('Error!', 'Failed to delete the clinic.', 'error');
+      Swal.fire(t('clinics.error'), t('clinics.deleteError'), 'error');
     }
   };
 
@@ -99,6 +103,24 @@ const Clinics = () => {
   };
 
   const columns = [
+    columnHelper.accessor('id', {
+      id: 'id',
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: '10px', lg: '12px' }}
+          color="gray.400"
+        >
+          {t('clinics.id')}
+        </Text>
+      ),
+      cell: (info) => (
+        <Flex align="center">
+          <Text color={textColor}>{info.getValue()}</Text>
+        </Flex>
+      ),
+    }),
     columnHelper.accessor('name', {
       id: 'name',
       header: () => (
@@ -108,7 +130,7 @@ const Clinics = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Name
+          {t('clinics.name')}
         </Text>
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
@@ -122,7 +144,7 @@ const Clinics = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Email
+          {t('clinics.email')}
         </Text>
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
@@ -136,7 +158,7 @@ const Clinics = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Opening Time
+          {t('clinics.openingTime')}
         </Text>
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
@@ -150,7 +172,7 @@ const Clinics = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Closing Time
+          {t('clinics.closingTime')}
         </Text>
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
@@ -164,7 +186,7 @@ const Clinics = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Actions
+          {t('clinics.actions')}
         </Text>
       ),
       cell: (info) => (
@@ -246,7 +268,7 @@ const Clinics = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            All Clinics
+            {t('clinics.allClinics')}
           </Text>
           <div className="search-container d-flex align-items-center gap-2">
             <InputGroup w={{ base: "100", md: "400px" }}>
@@ -274,7 +296,7 @@ const Clinics = () => {
                 fontWeight="500"
                 _placeholder={{ color: "gray.400", fontSize: "14px" }}
                 borderRadius="30px"
-                placeholder="Search clinics..."
+                placeholder={t('clinics.searchClinics')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -292,7 +314,7 @@ const Clinics = () => {
             width={'200px'}
           >
             <PlusSquareIcon me="10px" />
-            Add New Clinic
+            {t('clinics.addNewClinic')}
           </Button>
         </Flex>
         <Box>
@@ -361,7 +383,7 @@ const Clinics = () => {
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
-              Rows per page:
+              {t('clinics.rowsPerPage')}:
             </Text>
             <select
               value={limit}
@@ -374,7 +396,7 @@ const Clinics = () => {
             </select>
           </Flex>
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages} ({pagination.totalItems} total items)
+            {t('clinics.page')} {pagination.page} {t('clinics.of')} {pagination.totalPages}
           </Text>
           <Flex>
             <Button
@@ -385,7 +407,7 @@ const Clinics = () => {
               mr="10px"
             >
               <Icon as={ChevronLeftIcon} mr="5px" />
-              Previous
+              {t('clinics.previous')}
             </Button>
             <Button
               onClick={handleNextPage}
@@ -393,7 +415,7 @@ const Clinics = () => {
               variant="outline"
               size="sm"
             >
-              Next
+              {t('clinics.next')}
               <Icon as={ChevronRightIcon} ml="5px" />
             </Button>
           </Flex>

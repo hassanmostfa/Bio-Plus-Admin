@@ -14,6 +14,8 @@ import {
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { FaUpload } from "react-icons/fa6";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AddPrescription = () => {
   const [formData, setFormData] = useState({
@@ -28,6 +30,8 @@ const AddPrescription = () => {
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const navigate = useNavigate();
   const [isDragging, setIsDragging] = useState(false);
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,11 +68,11 @@ const AddPrescription = () => {
   };
 
   return (
-    <div className="container add-prescription-container w-100">
+    <div className="container add-prescription-container w-100" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <div className="add-prescription-card shadow p-4 bg-white w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Add New Prescription
+            {t('addPrescription.addNewPrescription')}
           </Text>
           <Button
             type="button"
@@ -77,7 +81,7 @@ const AddPrescription = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('addPrescription.back')}
           </Button>
         </div>
 
@@ -85,16 +89,17 @@ const AddPrescription = () => {
           <Grid templateColumns="repeat(2, 1fr)" gap={4}>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                User <span className="text-danger">*</span>
+                {t('addPrescription.user')} <span className="text-danger">*</span>
               </Text>
               <Select
                 name="user"
                 value={formData.user}
                 onChange={handleChange}
                 mt={2}
+                dir="ltr"
               >
                 <option value="" disabled hidden>
-                  Select User
+                  {t('addPrescription.selectUser')}
                 </option>
                 <option value="John Doe">John Doe</option>
                 <option value="Jane Doe">Jane Doe</option>
@@ -103,7 +108,7 @@ const AddPrescription = () => {
 
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Phone Number <span className="text-danger">*</span>
+                {t('addPrescription.phoneNumber')} <span className="text-danger">*</span>
               </Text>
               <Input
                 name="phoneNumber"
@@ -111,12 +116,13 @@ const AddPrescription = () => {
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 mt={2}
+                dir="ltr"
               />
             </GridItem>
 
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Upload Date <span className="text-danger">*</span>
+                {t('addPrescription.uploadDate')} <span className="text-danger">*</span>
               </Text>
               <Input
                 name="uploadDate"
@@ -124,22 +130,24 @@ const AddPrescription = () => {
                 value={formData.uploadDate}
                 onChange={handleChange}
                 mt={2}
+                dir="ltr"
               />
             </GridItem>
 
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Status <span className="text-danger">*</span>
+                {t('addPrescription.status')} <span className="text-danger">*</span>
               </Text>
               <Select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
                 mt={2}
+                dir="ltr"
               >
-                <option value="new">New</option>
-                <option value="assigned">Assigned</option>
-                <option value="checkout">Checkout</option>
+                <option value="new">{t('addPrescription.new')}</option>
+                <option value="assigned">{t('addPrescription.assigned')}</option>
+                <option value="checkout">{t('addPrescription.checkout')}</option>
               </Select>
             </GridItem>
 
@@ -175,10 +183,10 @@ const AddPrescription = () => {
           >
             <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
             <Text color="gray.500" mb={2}>
-              Drag & Drop Prescription Image Here
+              {t('addPrescription.dragDropPrescriptionImageHere')}
             </Text>
             <Text color="gray.500" mb={2}>
-              or
+              {t('addPrescription.or')}
             </Text>
             <Button
               variant="outline"
@@ -186,7 +194,7 @@ const AddPrescription = () => {
               border="none"
               onClick={() => document.getElementById("fileInput").click()}
             >
-              Upload Image
+              {t('addPrescription.uploadImage')}
               <input
                 type="file"
                 id="fileInput"
@@ -211,7 +219,7 @@ const AddPrescription = () => {
 
           <Flex justify="center" mt={6}>
             <Button variant="outline" colorScheme="red" mr={2}>
-              Cancel
+              {t('addPrescription.cancel')}
             </Button>
             <Button
               colorScheme="blue"
@@ -222,7 +230,7 @@ const AddPrescription = () => {
               py="5px"
               onClick={handleSubmit}
             >
-              Save
+              {t('addPrescription.save')}
             </Button>
           </Flex>
         </form>

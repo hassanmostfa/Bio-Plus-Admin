@@ -34,10 +34,14 @@ import { useNavigate } from 'react-router-dom';
 import { useGetTagsQuery, useDeleteTagMutation } from 'api/tagSlice';
 import Swal from 'sweetalert2';
 import { FaSearch } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
 const Tags = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -70,45 +74,45 @@ const Tags = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('tags.deleteConfirmTitle'),
+        text: t('tags.deleteConfirmText'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('tags.deleteConfirmButton'),
       });
 
       if (result.isConfirmed) {
         await deleteTag(id).unwrap();
         refetch();
-        Swal.fire('Deleted!', 'The tag has been deleted.', 'success');
+        Swal.fire(t('tags.deleteSuccessTitle'), t('tags.deleteSuccessText'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete tag:', error);
-      Swal.fire('Error!', 'Failed to delete the tag.', 'error');
+      Swal.fire(t('tags.deleteErrorTitle'), t('tags.deleteErrorText'), 'error');
     }
   };
 
   const columns = [
     columnHelper.accessor('id', {
       id: 'id',
-      header: () => <Text color="gray.400">ID</Text>,
+      header: () => <Text color="gray.400">{t('tags.table.id')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('name', {
       id: 'en_title',
-      header: () => <Text color="gray.400">English Title</Text>,
+      header: () => <Text color="gray.400">{t('tags.table.englishTitle')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('name', {
       id: 'ar_title',
-      header: () => <Text color="gray.400">Arabic Title</Text>,
+      header: () => <Text color="gray.400">{t('tags.table.arabicTitle')}</Text>,
       cell: (info) => <Text color={textColor} dir="">{info.getValue()}</Text>,
     }),
     columnHelper.accessor('id', {
       id: 'actions',
-      header: () => <Text color="gray.400">Actions</Text>,
+      header: () => <Text color="gray.400">{t('tags.table.actions')}</Text>,
       cell: (info) => (
         <Flex>
           <Icon
@@ -181,7 +185,7 @@ const Tags = () => {
       <Card flexDirection="column" w="100%" px="0px" overflowX={{ sm: 'scroll', lg: 'hidden' }}>
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
-            Tags
+            {t('tags.title')}
           </Text>
           
           <Flex align="center" gap={4}>
@@ -198,9 +202,10 @@ const Tags = () => {
               <Input
                 variant="search"
                 fontSize="sm"
-                placeholder="Search..."
+                placeholder={t('tags.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </InputGroup>
             
@@ -215,7 +220,7 @@ const Tags = () => {
               onClick={() => navigate('/admin/add-tag')}
               leftIcon={<PlusSquareIcon />}
             >
-              Add Tag
+              {t('tags.addTag')}
             </Button>
           </Flex>
         </Flex>
@@ -251,13 +256,14 @@ const Tags = () => {
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
-              Rows per page:
+              {t('tags.rowsPerPage')}:
             </Text>
             <Select
               value={limit}
               onChange={handleLimitChange}
               size="sm"
               w="80px"
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
@@ -266,7 +272,7 @@ const Tags = () => {
           </Flex>
           
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages}
+            {t('tags.pageInfo', { current: pagination.page, total: pagination.totalPages })}
           </Text>
           
           <Flex>
@@ -278,7 +284,7 @@ const Tags = () => {
               mr="10px"
               leftIcon={<ChevronLeftIcon />}
             >
-              Previous
+              {t('tags.previous')}
             </Button>
             <Button
               onClick={handleNextPage}
@@ -287,7 +293,7 @@ const Tags = () => {
               size="sm"
               rightIcon={<ChevronRightIcon />}
             >
-              Next
+              {t('tags.next')}
             </Button>
           </Flex>
         </Flex>

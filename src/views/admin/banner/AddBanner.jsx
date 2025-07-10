@@ -25,8 +25,12 @@ import Swal from "sweetalert2";
 import { useGetPharmaciesQuery } from "../../../api/pharmacySlice";
 import { useGetProductsQuery } from "../../../api/productSlice";
 import { useGetDoctorsQuery } from "../../../api/doctorSlice";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AddBanner = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [formData, setFormData] = useState({
     title: "",
     arTitle: "",
@@ -75,8 +79,8 @@ const AddBanner = () => {
       // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
-          title: 'Invalid file type',
-          description: 'Please upload an image file',
+          title: t('banners.add.invalidFileType'),
+          description: t('banners.add.uploadImageFile'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -87,8 +91,8 @@ const AddBanner = () => {
       // Validate file size (e.g., 5MB max)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: 'File too large',
-          description: 'Maximum file size is 5MB',
+          title: t('banners.add.fileTooLarge'),
+          description: t('banners.add.maxFileSize'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -145,13 +149,13 @@ const AddBanner = () => {
 
   const handleCancel = () => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'You will lose all unsaved changes',
+      title: t('banners.add.discardConfirmTitle'),
+      text: t('banners.add.discardConfirmText'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, discard changes',
+      confirmButtonText: t('banners.add.discardConfirmButton'),
     }).then((result) => {
       if (result.isConfirmed) {
         navigate("/admin/undefined/cms/banners");
@@ -165,8 +169,8 @@ const AddBanner = () => {
     // Adjust validation based on link type
     if (!formData.title || !formData.arTitle || (formData.linkType === "EXTERNAL" && !formData.link) || (formData.linkType !== "EXTERNAL" && !formData.linkId)) {
       toast({
-        title: "Error",
-        description: "Please fill all required fields",
+        title: t('banners.add.error'),
+        description: t('banners.add.fillRequiredFields'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -176,8 +180,8 @@ const AddBanner = () => {
 
     if (!image) {
       toast({
-        title: "Error",
-        description: "Please upload an image",
+        title: t('banners.add.error'),
+        description: t('banners.add.uploadImage'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -249,8 +253,8 @@ const AddBanner = () => {
       await createBanner(bannerData).unwrap();
 
       toast({
-        title: "Success",
-        description: "Banner created successfully",
+        title: t('banners.add.success'),
+        description: t('banners.add.createdSuccessfully'),
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -260,8 +264,8 @@ const AddBanner = () => {
     } catch (error) {
       console.error("Failed to create banner:", error);
       toast({
-        title: "Error",
-        description: error.data?.message || "Failed to create banner",
+        title: t('banners.add.error'),
+        description: error.data?.message || t('banners.add.failedToCreate'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -272,8 +276,8 @@ const AddBanner = () => {
   };
 
   return (
-    <Box className="container add-admin-container w-100">
-      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
+    <Box className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg" dir={language === 'ar' ? 'rtl' : 'ltr'}>
         <Flex mb={3} justify="space-between" align="center">
           <Text
             color={textColor}
@@ -282,7 +286,7 @@ const AddBanner = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Banner
+            {t('banners.add.title')}
           </Text>
           <Button
             onClick={handleCancel}
@@ -290,29 +294,30 @@ const AddBanner = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('banners.add.back')}
           </Button>
         </Flex>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} dir={language === 'ar' ? 'rtl' : 'ltr'}>
           {/* Title Field */}
           <FormControl mb={4} isRequired>
-            <FormLabel>English Title</FormLabel>
+            <FormLabel>{t('banners.add.englishTitle')}</FormLabel>
             <Input
               name="title"
-              placeholder="Enter Banner Title (English)"
+              placeholder={t('banners.add.enterEnglishTitle')}
               value={formData.title}
               onChange={handleChange}
               bg={inputBg}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </FormControl>
 
           {/* Arabic Title Field */}
           <FormControl mb={4} isRequired>
-            <FormLabel>Arabic Title</FormLabel>
+            <FormLabel>{t('banners.add.arabicTitle')}</FormLabel>
             <Input
               name="arTitle"
-              placeholder="ادخل عنوان البانر"
+              placeholder={t('banners.add.enterArabicTitle')}
               value={formData.arTitle}
               onChange={handleChange}
               dir="rtl"
@@ -324,35 +329,36 @@ const AddBanner = () => {
           <Flex mb={4} gap={4} direction={{ base: "column", md: "row" }}>
             {/* Link Type */}          
             <FormControl isRequired flex="1">
-              <FormLabel>Link Type</FormLabel>
+              <FormLabel>{t('banners.add.linkType')}</FormLabel>
               <Select
                 name="linkType"
                 value={formData.linkType}
                 onChange={handleChange}
                 bg={inputBg}
               >
-                <option value="PHARMACY">Pharmacy</option>
-                <option value="PRODUCT">Product</option>
-                <option value="DOCTOR">Doctor</option>
-                <option value="EXTERNAL">External Link</option>
+                <option value="PHARMACY">{t('banners.add.pharmacy')}</option>
+                <option value="PRODUCT">{t('banners.add.product')}</option>
+                <option value="DOCTOR">{t('banners.add.doctor')}</option>
+                <option value="EXTERNAL">{t('banners.add.externalLink')}</option>
               </Select>
             </FormControl>
 
             {/* Link or Link ID / Select Entity */}          
             {formData.linkType === "EXTERNAL" ? (
               <FormControl isRequired flex="1">
-                <FormLabel>Link URL</FormLabel>
+                <FormLabel>{t('banners.add.linkUrl')}</FormLabel>
                 <Input
                   name="link"
-                  placeholder="Enter External Link URL"
+                  placeholder={t('banners.add.enterExternalLink')}
                   value={formData.link}
                   onChange={handleChange}
                   bg={inputBg}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
               </FormControl>
             ) : (
               <FormControl isRequired flex="1">
-                <FormLabel>{formData.linkType} ID</FormLabel>
+                <FormLabel>{t('banners.add.selectEntity', { type: t(`banners.add.${formData.linkType.toLowerCase()}`) })}</FormLabel>
                 {formData.linkType === "PHARMACY" && isPharmaciesLoading ? (
                    <Spinner size="sm" />
                 ) : formData.linkType === "PRODUCT" && isProductsLoading ? (
@@ -362,7 +368,7 @@ const AddBanner = () => {
                 ) : (
                   <Select
                     name="linkId"
-                    placeholder={`Select ${formData.linkType}`}
+                    placeholder={t('banners.add.selectEntity', { type: t(`banners.add.${formData.linkType.toLowerCase()}`) })}
                     value={formData.linkId}
                     onChange={handleChange}
                     bg={inputBg}
@@ -384,21 +390,22 @@ const AddBanner = () => {
 
           {/* Order */}
           <FormControl mb={4}>
-            <FormLabel>Display Order</FormLabel>
+            <FormLabel>{t('banners.add.displayOrder')}</FormLabel>
             <Input
               name="order"
               type="number"
-              placeholder="Enter display order"
+              placeholder={t('banners.add.enterDisplayOrder')}
               value={formData.order}
               onChange={handleChange}
               min="1"
               bg={inputBg}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </FormControl>
 
           {/* Status */}
           <FormControl mb={4} display="flex" alignItems="center">
-            <FormLabel mb="0">Active Status</FormLabel>
+            <FormLabel mb="0">{t('banners.add.activeStatus')}</FormLabel>
             <Switch
               isChecked={formData.isActive}
               onChange={handleSwitchChange}
@@ -409,7 +416,7 @@ const AddBanner = () => {
 
           {/* Image Upload */}
           <FormControl mb={4} isRequired>
-            <FormLabel>Banner Image</FormLabel>
+            <FormLabel>{t('banners.add.bannerImage')}</FormLabel>
             <Box
               border="1px dashed"
               borderColor={isDragging ? "blue.500" : "gray.200"}
@@ -424,9 +431,9 @@ const AddBanner = () => {
               onClick={() => document.getElementById('fileInput').click()}
             >
               <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
-              <Text>Drag & Drop Image Here or Click to Browse</Text>
+              <Text>{t('banners.add.dragDropImage')}</Text>
               <Text fontSize="sm" color="gray.500" mt={2}>
-                Recommended size: 1200x400px (Max 5MB)
+                {t('banners.add.recommendedSize')}
               </Text>
               <input
                 type="file"
@@ -468,15 +475,15 @@ const AddBanner = () => {
               onClick={handleCancel}
               isDisabled={isLoading}
             >
-              Cancel
+              {t('banners.add.cancel')}
             </Button>
             <Button
               type="submit"
               colorScheme="blue"
               isLoading={isLoading}
-              loadingText="Creating..."
+              loadingText={t('banners.add.creating')}
             >
-              Save Banner
+              {t('banners.add.saveBanner')}
             </Button>
           </Flex>
         </form>

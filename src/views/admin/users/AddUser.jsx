@@ -15,6 +15,7 @@ import { IoMdArrowBack, IoIosArrowDown } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { useCreateUserMutation } from 'api/clientSlice';
+import { useTranslation } from 'react-i18next';
 
 
 const AddUser = () => {
@@ -28,53 +29,48 @@ const AddUser = () => {
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
   const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   const handleCancel = () => {
     setName('');
     setEmail('');
-    setGender('Select Gender');
+    setGender(t('user.gender'));
     setPhone('');
     setPassword('');
   };
 
   const handleSubmit = async () => {
-    // Validate phone number format
     if (!phone || !/^[\d\s\+\-\(\)]{10,15}$/.test(phone)) {
       Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: 'Please enter a valid phone number (10-15 digits)',
-        confirmButtonText: 'OK',
+        title: t('common.error'),
+        text: t('forms.invalidPhone'),
+        confirmButtonText: t('common.ok'),
       });
       return;
     }
-
-    if (!name || !email || gender === 'Select Gender' || !phone || !password) {
-      Swal.fire('Error!', 'Please fill all required fields.', 'error');
+    if (!name || !email || gender === t('user.gender') || !phone || !password) {
+      Swal.fire(t('common.error'), t('forms.required'), 'error');
       return;
     }
-
     try {
-      // Prepare data in required format
       const userData = {
         name,
         email,
-        phoneNumber: phone, // Map to phoneNumber
-        gender: gender.toUpperCase(), // Convert to uppercase
+        phoneNumber: phone,
+        gender: gender.toUpperCase(),
         password
       };
-
-      // Call API
       const response = await addUser(userData).unwrap();
-      
-      Swal.fire('Success!', 'User added successfully.', 'success');
+      Swal.fire(t('common.success'), t('user.addedSuccess'), 'success');
       navigate('/admin/users');
     } catch (error) {
       Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: error.data?.message || 'Failed to add user',
-        confirmButtonText: 'OK',
+        title: t('common.error'),
+        text: error.data?.message || t('user.addFailed'),
+        confirmButtonText: t('common.ok'),
       });
     }
   };
@@ -89,8 +85,9 @@ const AddUser = () => {
             fontWeight="700"
             mb="20px !important"
             lineHeight="100%"
+            textAlign={isRTL ? 'right' : 'left'}
           >
-            Add New User
+            {t('common.add')} {t('common.users')}
           </Text>
           <Button
             type="button"
@@ -99,48 +96,48 @@ const AddUser = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('common.back')}
           </Button>
         </div>
-        <form>
+        <form dir={isRTL ? 'rtl' : 'ltr'} style={{ textAlign: isRTL ? 'right' : 'left' }}>
           {/* Name */}
           <div className="mb-3">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              Name <span className="text-danger mx-1">*</span>
+            <Text color={textColor} fontSize="sm" fontWeight="700" mb={1} textAlign={isRTL ? 'right' : 'left'}>
+              {t('common.name')} <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="text"
-              placeholder="Enter Name"
+              placeholder={t('forms.enterName')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
               mt={'8px'}
               bg={inputBg}
               color={textColor}
+              dir={isRTL ? 'rtl' : 'ltr'}
             />
           </div>
-
           {/* Email */}
           <div className="mb-3">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              Email <span className="text-danger mx-1">*</span>
+            <Text color={textColor} fontSize="sm" fontWeight="700" mb={1} textAlign={isRTL ? 'right' : 'left'}>
+              {t('common.email')} <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="email"
-              placeholder="Enter Email"
+              placeholder={t('forms.enterEmail')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               mt={'8px'}
               bg={inputBg}
               color={textColor}
+              dir={isRTL ? 'rtl' : 'ltr'}
             />
           </div>
-
           {/* Gender */}
           <div className="mb-3">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              Gender <span className="text-danger mx-1">*</span>
+            <Text color={textColor} fontSize="sm" fontWeight="700" mb={1} textAlign={isRTL ? 'right' : 'left'}>
+              {t('user.gender')} <span className="text-danger mx-1">*</span>
             </Text>
             <Menu>
               <MenuButton
@@ -153,60 +150,60 @@ const AddUser = () => {
                 _hover={{ bg: 'gray.200' }}
                 textAlign="left"
                 fontSize={'sm'}
+                dir="ltr"
               >
                 {gender}
               </MenuButton>
-              <MenuList width="100%">
+              <MenuList width="100%" dir="ltr">
                 <MenuItem
                   _hover={{ bg: '#38487c', color: 'white' }}
-                  onClick={() => setGender('Male')}
+                  onClick={() => setGender(t('user.male'))}
                 >
-                  Male
+                  {t('user.male')}
                 </MenuItem>
                 <MenuItem
                   _hover={{ bg: '#38487c', color: 'white' }}
-                  onClick={() => setGender('Female')}
+                  onClick={() => setGender(t('user.female'))}
                 >
-                  Female
+                  {t('user.female')}
                 </MenuItem>
               </MenuList>
             </Menu>
           </div>
-
           {/* Phone */}
           <div className="mb-3">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              Phone <span className="text-danger mx-1">*</span>
+            <Text color={textColor} fontSize="sm" fontWeight="700" mb={1} textAlign={isRTL ? 'right' : 'left'}>
+              {t('common.phone')} <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="tel"
-              placeholder="Enter Phone Number (e.g., +1234567890)"
+              placeholder={t('forms.enterPhone')}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
               mt={'8px'}
               bg={inputBg}
               color={textColor}
+              dir={isRTL ? 'rtl' : 'ltr'}
             />
           </div>
-
           {/* Password */}
           <div className="mb-3">
-            <Text color={textColor} fontSize="sm" fontWeight="700">
-              Password <span className="text-danger mx-1">*</span>
+            <Text color={textColor} fontSize="sm" fontWeight="700" mb={1} textAlign={isRTL ? 'right' : 'left'}>
+              {t('auth.password')} <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="password"
-              placeholder="Enter Password"
+              placeholder={t('forms.enterPassword')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               mt={'8px'}
               bg={inputBg}
               color={textColor}
+              dir={isRTL ? 'rtl' : 'ltr'}
             />
           </div>
-
           {/* Buttons */}
           <Flex justify="center" mt={4}>
             <Button
@@ -215,7 +212,7 @@ const AddUser = () => {
               onClick={handleCancel}
               mr={2}
             >
-              Reset
+              {t('common.cancel')}
             </Button>
             <Button
               variant="darkBrand"
@@ -226,8 +223,9 @@ const AddUser = () => {
               px="24px"
               py="5px"
               onClick={handleSubmit}
+              mx={2}
             >
-              Save
+              {t('common.save')}
             </Button>
           </Flex>
         </form>

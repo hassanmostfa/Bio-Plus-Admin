@@ -19,6 +19,8 @@ import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useGetVarientQuery, useUpdateVarientMutation } from "api/varientSlice";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const EditVariant = () => {
   const { id } = useParams(); // Get the variant ID from the URL
@@ -38,10 +40,9 @@ const EditVariant = () => {
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
 
-  React.useEffect(() => {
-    refetch();
-  }, [refetch]);
-  
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
+
   // Populate form fields with existing data when variantData is fetched
   useEffect(() => {
     if (response?.data) {
@@ -64,17 +65,17 @@ const EditVariant = () => {
   // Handle fetch errors
   useEffect(() => {
     if (fetchError) {
-      Swal.fire("Error!", "Failed to fetch variant data.", "error");
+      Swal.fire(t('editVariant.errorFetch'), '', 'error');
       navigate("/admin/variants"); // Redirect to the variants list page
     }
-  }, [fetchError, navigate]);
+  }, [fetchError, navigate, t]);
 
   // Handle update errors
   useEffect(() => {
     if (updateError) {
-      Swal.fire("Error!", "Failed to update variant.", "error");
+      Swal.fire(t('editVariant.errorUpdate'), '', 'error');
     }
-  }, [updateError]);
+  }, [updateError, t]);
 
   const handleAttributeChange = (index, field, value) => {
     const updatedAttributes = [...attributes];
@@ -93,13 +94,13 @@ const EditVariant = () => {
 
   const validateForm = () => {
     if (!variantEn || !variantAr) {
-      Swal.fire("Error!", "Variant names in English and Arabic are required.", "error");
+      Swal.fire(t('editVariant.errorRequiredNames'), '', 'error');
       return false;
     }
 
     for (let i = 0; i < attributes.length; i++) {
       if (!attributes[i].enName || !attributes[i].arName) {
-        Swal.fire("Error!", `Attribute ${i + 1} names in English and Arabic are required.`, "error");
+        Swal.fire(t('editVariant.errorRequiredAttributeNames', {index: i+1}), '', 'error');
         return false;
       }
     }
@@ -137,11 +138,11 @@ const EditVariant = () => {
 
     try {
       const response = await updateVariant({id,varient:updatedVariantData}).unwrap(); // Send data to the API
-      Swal.fire("Success!", "Variant updated successfully.", "success");
+      Swal.fire(t('editVariant.successUpdate'), '', 'success');
       navigate("/admin/variants");
     } catch (error) {
       console.error("Failed to update variant:", error);
-      Swal.fire("Error!", "Failed to update variant.", "error");
+      Swal.fire(t('editVariant.errorUpdate'), '', 'error');
     }
   };
 
@@ -164,7 +165,7 @@ const EditVariant = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Edit Variant
+            {t('editVariant.title')}
           </Text>
           <Button
             type="button"
@@ -173,20 +174,20 @@ const EditVariant = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('editVariant.back')}
           </Button>
         </div>
 
-        <form>
+        <form dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
           {/* Variant Name Fields */}
           <SimpleGrid columns={2} spacing={4}>
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Variant En-Name <span className="text-danger">*</span>
+                {t('editVariant.variantEnName')} <span className="text-danger">*</span>
               </Text>
               <Input
                 type="text"
-                placeholder="Enter Variant Name"
+                placeholder={t('editVariant.enterVariantName')}
                 value={variantEn}
                 onChange={(e) => setVariantEn(e.target.value)}
                 required
@@ -197,11 +198,11 @@ const EditVariant = () => {
             </Box>
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Variant Ar-Name <span className="text-danger">*</span>
+                {t('editVariant.variantArName')} <span className="text-danger">*</span>
               </Text>
               <Input
                 type="text"
-                placeholder="أدخل اسم المتغير"
+                placeholder={t('editVariant.enterVariantArName')}
                 value={variantAr}
                 onChange={(e) => setVariantAr(e.target.value)}
                 required
@@ -215,7 +216,7 @@ const EditVariant = () => {
           {/* Input Type Selection (Radio Group) */}
           <Box mt={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Options <span className="text-danger">*</span>
+              {t('editVariant.options')} <span className="text-danger">*</span>
             </Text>
             <RadioGroup
               value={inputType}
@@ -223,9 +224,9 @@ const EditVariant = () => {
               mt={2}
             >
               <Stack direction="row">
-                <Radio value="dropdown">Dropdown</Radio>
-                <Radio value="radio">Radio</Radio>
-                <Radio value="text">Text</Radio>
+                <Radio value="dropdown">{t('editVariant.dropdown')}</Radio>
+                <Radio value="radio">{t('editVariant.radio')}</Radio>
+                <Radio value="text">{t('editVariant.text')}</Radio>
               </Stack>
             </RadioGroup>
           </Box>
@@ -234,7 +235,7 @@ const EditVariant = () => {
           <Box mt={4}>
             <FormControl display="flex" alignItems="center">
               <FormLabel htmlFor="isActive" mb="0">
-                Active Status
+                {t('editVariant.activeStatus')}
               </FormLabel>
               <Switch
                 id="isActive"
@@ -242,6 +243,7 @@ const EditVariant = () => {
                 onChange={() => setIsActive(!isActive)}
                 colorScheme="teal"
                 size="md"
+                dir="ltr"
               />
             </FormControl>
           </Box>
@@ -249,11 +251,11 @@ const EditVariant = () => {
           {/* Attributes Count */}
           <Box mt={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Number of Attributes <span className="text-danger">*</span>
+              {t('editVariant.numberOfAttributes')} <span className="text-danger">*</span>
             </Text>
             <Input
               type="number"
-              placeholder="Enter number of attributes"
+              placeholder={t('editVariant.enterNumberOfAttributes')}
               value={attributesCount}
               onChange={handleAttributesCountChange}
               min={0}
@@ -273,17 +275,17 @@ const EditVariant = () => {
               bg={inputBg}
             >
               <Text color={textColor} fontSize="md" fontWeight="bold">
-                Attribute {index + 1}
+                {t('editVariant.attribute')} {index + 1}
               </Text>
 
               <SimpleGrid columns={2} mt={4} spacing={4}>
                 <Box>
                   <Text color={textColor} fontSize="sm" fontWeight="700">
-                    Attribute En-Name <span className="text-danger">*</span>
+                    {t('editVariant.attributeEnName')} <span className="text-danger">*</span>
                   </Text>
                   <Input
                     type="text"
-                    placeholder="Enter Attribute Name"
+                    placeholder={t('editVariant.enterAttributeName')}
                     value={attr.enName}
                     onChange={(e) =>
                       handleAttributeChange(index, "enName", e.target.value)
@@ -297,11 +299,11 @@ const EditVariant = () => {
 
                 <Box>
                   <Text color={textColor} fontSize="sm" fontWeight="700">
-                    Attribute Ar-Name <span className="text-danger">*</span>
+                    {t('editVariant.attributeArName')} <span className="text-danger">*</span>
                   </Text>
                   <Input
                     type="text"
-                    placeholder="أدخل اسم السمة"
+                    placeholder={t('editVariant.enterAttributeArName')}
                     value={attr.arName}
                     onChange={(e) =>
                       handleAttributeChange(index, "arName", e.target.value)
@@ -330,7 +332,7 @@ const EditVariant = () => {
               isLoading={isUpdating}
               isDisabled={isFetching || isUpdating}
             >
-              Save Changes
+              {t('editVariant.saveChanges')}
             </Button>
           </Flex>
         </form>

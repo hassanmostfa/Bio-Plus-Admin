@@ -26,11 +26,15 @@ import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { useGetAdsQuery, useDeleteAdMutation } from 'api/adsSlice';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 
 const columnHelper = createColumnHelper();
 
 const Ads = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [page, setPage] = React.useState(1);
   const limit = 10;
   
@@ -56,35 +60,35 @@ const Ads = () => {
       link: ad.link,
       linkType: ad.linkType,
       image: ad.imageKey, // You might want to use a proper image URL here
-      isActive: ad.isActive ? 'Active' : 'Inactive',
+      isActive: ad.isActive ? t('ads.active') : t('ads.inactive'),
       order: ad.order,
     }));
-  }, [adsResponse]);
+  }, [adsResponse, t]);
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: t('ads.deleteConfirmTitle'),
+      text: t('ads.deleteConfirmText'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: t('ads.deleteConfirmButton')
     });
 
     if (result.isConfirmed) {
       try {
         await deleteAd(id).unwrap();
         await Swal.fire(
-          'Deleted!',
-          'The ad has been deleted.',
+          t('ads.deleteSuccessTitle'),
+          t('ads.deleteSuccessText'),
           'success'
         );
         refetch();
       } catch (error) {
         await Swal.fire(
-          'Error!',
-          error.message || 'Failed to delete the ad.',
+          t('ads.deleteErrorTitle'),
+          error.message || t('ads.deleteErrorText'),
           'error'
         );
       }
@@ -109,7 +113,7 @@ const Ads = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          ID
+          {t('ads.table.id')}
         </Text>
       ),
       cell: (info) => (
@@ -127,7 +131,7 @@ const Ads = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Title
+          {t('ads.table.title')}
         </Text>
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
@@ -141,7 +145,7 @@ const Ads = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Link
+          {t('ads.table.link')}
         </Text>
       ),
       cell: (info) => (
@@ -165,7 +169,7 @@ const Ads = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Link Type
+          {t('ads.table.linkType')}
         </Text>
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
@@ -179,12 +183,12 @@ const Ads = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Status
+          {t('ads.table.status')}
         </Text>
       ),
       cell: (info) => (
         <Text 
-          color={info.getValue() === 'Active' ? 'green.500' : 'red.500'}
+          color={info.getValue() === t('ads.active') ? 'green.500' : 'red.500'}
           fontWeight="bold"
         >
           {info.getValue()}
@@ -200,7 +204,7 @@ const Ads = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Image
+          {t('ads.table.image')}
         </Text>
       ),
       cell: (info) => (
@@ -222,7 +226,7 @@ const Ads = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Actions
+          {t('ads.table.actions')}
         </Text>
       ),
       cell: (info) => (
@@ -283,27 +287,27 @@ const Ads = () => {
           onClick={() => setPage(prev => Math.max(prev - 1, 1))}
           isDisabled={currentPage === 1}
         >
-          Previous
+          {t('ads.previous')}
         </Button>
         <Text>
-          Page {currentPage} of {totalPages}
+          {t('ads.page')} {currentPage} {t('ads.of')} {totalPages}
         </Text>
         <Button
           onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
           isDisabled={currentPage === totalPages}
         >
-          Next
+          {t('ads.next')}
         </Button>
       </Flex>
     );
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>{t('ads.loading')}</div>;
   }
 
   return (
-    <div className="container">
+    <div className="container" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Card
         flexDirection="column"
         w="100%"
@@ -317,7 +321,7 @@ const Ads = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            All Ads
+            {t('ads.title')}
           </Text>
           <Button
             variant="darkBrand"
@@ -331,7 +335,7 @@ const Ads = () => {
             width={'200px'}
           >
             <PlusSquareIcon me="10px" />
-            Create New Ad
+            {t('ads.createNewAd')}
           </Button>
         </Flex>
         <Box>

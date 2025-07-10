@@ -36,11 +36,15 @@ import { useGetProductQuery, useUpdateProductMutation } from 'api/productSlice';
 import Swal from 'sweetalert2';
 import { useAddFileMutation } from 'api/filesSlice';
 import { useGetTypesQuery } from 'api/typeSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   // State for form fields
   const [nameEn, setNameEn] = useState('');
@@ -493,7 +497,7 @@ const EditProduct = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Edit Product
+            {t('product.editProduct')}
           </Text>
           <Button
             type="button"
@@ -502,17 +506,17 @@ const EditProduct = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('common.back')}
           </Button>
         </div>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} dir="rtl">
           {/* Basic Information */}
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
             <Box>
               <FormControl isRequired>
-                <FormLabel>Product Name (English)</FormLabel>
+                <FormLabel>{t('product.productNameEn')}</FormLabel>
                 <Input
-                  placeholder="Enter Product Name"
+                  placeholder={t('product.enterProductName')}
                   value={nameEn}
                   onChange={(e) => setNameEn(e.target.value)}
                   color={textColor}
@@ -521,9 +525,9 @@ const EditProduct = () => {
             </Box>
             <Box>
               <FormControl>
-                <FormLabel>Product Name (Arabic)</FormLabel>
+                <FormLabel>{t('product.productNameAr')}</FormLabel>
                 <Input
-                  placeholder="أدخل اسم المنتج"
+                  placeholder={t('product.enterProductNameArabic')}
                   value={nameAr}
                   onChange={(e) => setNameAr(e.target.value)}
                   dir="rtl"
@@ -536,9 +540,9 @@ const EditProduct = () => {
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
             <Box>
               <FormControl isRequired>
-                <FormLabel>Description (English)</FormLabel>
+                <FormLabel>{t('product.descriptionEn')}</FormLabel>
                 <Textarea
-                  placeholder="Enter Product Description"
+                  placeholder={t('product.enterProductDescription')}
                   value={descriptionEn}
                   onChange={(e) => setDescriptionEn(e.target.value)}
                   color={textColor}
@@ -547,9 +551,9 @@ const EditProduct = () => {
             </Box>
             <Box>
               <FormControl>
-                <FormLabel>Description (Arabic)</FormLabel>
+                <FormLabel>{t('product.descriptionAr')}</FormLabel>
                 <Textarea
-                  placeholder="أدخل وصف المنتج"
+                  placeholder={t('product.enterProductDescriptionArabic')}
                   value={descriptionAr}
                   onChange={(e) => setDescriptionAr(e.target.value)}
                   dir="rtl"
@@ -588,9 +592,9 @@ const EditProduct = () => {
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
             <Box>
               <FormControl>
-                <FormLabel>How To Use (English)</FormLabel>
+                <FormLabel>{t('product.howToUseEn')}</FormLabel>
                 <Textarea
-                  placeholder="Enter How To Use"
+                  placeholder={t('product.enterHowToUse')}
                   value={howToUseEn}
                   onChange={(e) => setHowToUseEn(e.target.value)}
                   color={textColor}
@@ -599,9 +603,9 @@ const EditProduct = () => {
             </Box>
             <Box>
               <FormControl>
-                <FormLabel>How To Use (Arabic)</FormLabel>
+                <FormLabel>{t('product.howToUseAr')}</FormLabel>
                 <Textarea
-                  placeholder="أدخل طريقة الاستخدام"
+                  placeholder={t('product.enterHowToUseArabic')}
                   value={howToUseAr}
                   onChange={(e) => setHowToUseAr(e.target.value)}
                   dir="rtl"
@@ -615,9 +619,9 @@ const EditProduct = () => {
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
             <Box>
               <FormControl>
-                <FormLabel>Treatment (English)</FormLabel>
+                <FormLabel>{t('product.treatmentEn')}</FormLabel>
                 <Textarea
-                  placeholder="Enter Treatment Information"
+                  placeholder={t('product.enterTreatmentInformation')}
                   value={treatmentEn}
                   onChange={(e) => setTreatmentEn(e.target.value)}
                   color={textColor}
@@ -626,9 +630,9 @@ const EditProduct = () => {
             </Box>
             <Box>
               <FormControl>
-                <FormLabel>Treatment (Arabic)</FormLabel>
+                <FormLabel>{t('product.treatmentAr')}</FormLabel>
                 <Textarea
-                  placeholder="أدخل معلومات العلاج"
+                  placeholder={t('product.enterTreatmentInformationArabic')}
                   value={treatmentAr}
                   onChange={(e) => setTreatmentAr(e.target.value)}
                   dir="rtl"
@@ -642,9 +646,9 @@ const EditProduct = () => {
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
             <Box>
               <FormControl>
-                <FormLabel>Ingredients (English)</FormLabel>
+                <FormLabel>{t('product.ingredientsEn')}</FormLabel>
                 <Textarea
-                  placeholder="Enter Ingredients"
+                  placeholder={t('product.enterIngredients')}
                   value={ingredientsEn}
                   onChange={(e) => setIngredientsEn(e.target.value)}
                   color={textColor}
@@ -653,9 +657,9 @@ const EditProduct = () => {
             </Box>
             <Box>
               <FormControl>
-                <FormLabel>Ingredients (Arabic)</FormLabel>
+                <FormLabel>{t('product.ingredientsAr')}</FormLabel>
                 <Textarea
-                  placeholder="أدخل المكونات"
+                  placeholder={t('product.enterIngredientsArabic')}
                   value={ingredientsAr}
                   onChange={(e) => setIngredientsAr(e.target.value)}
                   dir="rtl"
@@ -669,12 +673,13 @@ const EditProduct = () => {
           <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
             <Box>
               <FormControl isRequired>
-                <FormLabel>Category</FormLabel>
+                <FormLabel>{t('product.category')}</FormLabel>
                 <Select
-                  placeholder="Select Category"
+                  placeholder={t('product.selectCategory')}
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
                   color={textColor}
+                  style={{ direction: 'ltr' }}
                 >
                   {categories?.map((cat) => (
                     <option key={cat.id} value={cat.id}>
@@ -687,12 +692,13 @@ const EditProduct = () => {
             </Box>
             <Box>
               <FormControl isRequired>
-                <FormLabel>Brand</FormLabel>
+                <FormLabel>{t('product.brand')}</FormLabel>
                 <Select
-                  placeholder="Select Brand"
+                  placeholder={t('product.selectBrand')}
                   value={brandId}
                   onChange={(e) => setBrandId(e.target.value)}
                   color={textColor}
+                  style={{ direction: 'ltr' }}
                 >
                   {brands.map((brand) => (
                     <option key={brand.id} value={brand.id}>
@@ -704,12 +710,13 @@ const EditProduct = () => {
             </Box>
             <Box>
               <FormControl isRequired>
-                <FormLabel>Pharmacy</FormLabel>
+                <FormLabel>{t('product.pharmacy')}</FormLabel>
                 <Select
-                  placeholder="Select Pharmacy"
+                  placeholder={t('product.selectPharmacy')}
                   value={pharmacyId}
                   onChange={(e) => setPharmacyId(e.target.value)}
                   color={textColor}
+                  style={{ direction: 'ltr' }}
                 >
                   {pharmacies.map((pharmacy) => (
                     <option key={pharmacy.id} value={pharmacy.id}>
@@ -722,12 +729,13 @@ const EditProduct = () => {
 
             <Box>
                 <FormControl>
-                  <FormLabel>Product Type</FormLabel>
+                  <FormLabel>{t('product.productType')}</FormLabel>
                   <Select
-                    placeholder="Select Product Type"
+                    placeholder={t('product.selectProductType')}
                     value={productTypeId}
                     onChange={(e) => setProductTypeId(e.target.value)}
                     color={textColor}
+                    style={{ direction: 'ltr' }}
                   >
                     {productTypes.map((type) => (
                       <option key={type.id} value={type.id}>
@@ -743,10 +751,10 @@ const EditProduct = () => {
           <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
             <Box>
               <FormControl>
-                <FormLabel>Cost</FormLabel>
+                <FormLabel>{t('product.cost')}</FormLabel>
                 <Input
                   type="number"
-                  placeholder="0.00"
+                  placeholder={t('product.enterCost')}
                   value={cost}
                   onChange={(e) => setCost(e.target.value)}
                   color={textColor}
@@ -755,10 +763,10 @@ const EditProduct = () => {
             </Box>
             <Box>
               <FormControl isRequired>
-                <FormLabel>Price</FormLabel>
+                <FormLabel>{t('product.price')}</FormLabel>
                 <Input
                   type="number"
-                  placeholder="0.00"
+                  placeholder={t('product.enterPrice')}
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   color={textColor}
@@ -767,10 +775,10 @@ const EditProduct = () => {
             </Box>
             <Box>
               <FormControl>
-                <FormLabel>Quantity</FormLabel>
+                <FormLabel>{t('product.quantity')}</FormLabel>
                 <Input
                   type="number"
-                  placeholder="0"
+                  placeholder={t('product.enterQuantity')}
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
                   color={textColor}
@@ -781,7 +789,7 @@ const EditProduct = () => {
 
           {/* Offer Type */}
           <Box mb={4}>
-            <FormLabel>Offer Type</FormLabel>
+            <FormLabel>{t('product.offerType')}</FormLabel>
             <RadioGroup
               value={offerType}
               onChange={(value) => {
@@ -800,10 +808,10 @@ const EditProduct = () => {
             {offerType === 'MONTHLY_OFFER' && (
               <Box mt={2}>
                 <FormControl>
-                  <FormLabel>Offer Percentage</FormLabel>
+                  <FormLabel>{t('product.offerPercentage')}</FormLabel>
                   <Input
                     type="number"
-                    placeholder="0.0"
+                    placeholder={t('product.enterOfferPercentage')}
                     value={offerPercentage}
                     onChange={(e) => setOfferPercentage(e.target.value)}
                     color={textColor}
@@ -816,24 +824,27 @@ const EditProduct = () => {
           {/* Status Switches */}
           <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
             <FormControl display="flex" alignItems="center">
-              <FormLabel mb="0">Has Variants</FormLabel>
+              <FormLabel mb="0">{t('product.hasVariants')}</FormLabel>
               <Switch
                 isChecked={hasVariants}
                 onChange={() => setHasVariants(!hasVariants)}
+                style={{ direction: 'ltr' }}
               />
             </FormControl>
             <FormControl display="flex" alignItems="center">
-              <FormLabel mb="0">Active</FormLabel>
+              <FormLabel mb="0">{t('product.active')}</FormLabel>
               <Switch
                 isChecked={isActive}
                 onChange={() => setIsActive(!isActive)}
+                style={{ direction: 'ltr' }}
               />
             </FormControl>
             <FormControl display="flex" alignItems="center">
-              <FormLabel mb="0">Published</FormLabel>
+              <FormLabel mb="0">{t('product.published')}</FormLabel>
               <Switch
                 isChecked={isPublished}
                 onChange={() => setIsPublished(!isPublished)}
+                style={{ direction: 'ltr' }}
               />
             </FormControl>
           </SimpleGrid>
@@ -842,11 +853,12 @@ const EditProduct = () => {
           {hasVariants && (
             <Box mb={4}>
               <FormControl mb={4}>
-                <FormLabel>Select Variant</FormLabel>
+                <FormLabel>{t('product.selectVariant')}</FormLabel>
                 <Select
-                  placeholder="Select Variant"
+                  placeholder={t('product.selectVariant')}
                   onChange={handleVariantSelect}
                   color={textColor}
+                  style={{ direction: 'ltr' }}
                 >
                   {variants.map((variant) => (
                     <option key={variant.id} value={variant.id}>
@@ -877,7 +889,7 @@ const EditProduct = () => {
                       <CardBody>
                         <SimpleGrid columns={2} spacing={2}>
                           <FormControl>
-                            <FormLabel>Cost</FormLabel>
+                            <FormLabel>{t('product.cost')}</FormLabel>
                             <Input
                               type="number"
                               value={attr.cost}
@@ -892,7 +904,7 @@ const EditProduct = () => {
                             />
                           </FormControl>
                           <FormControl isRequired>
-                            <FormLabel>Price</FormLabel>
+                            <FormLabel>{t('product.price')}</FormLabel>
                             <Input
                               type="number"
                               value={attr.price}
@@ -907,7 +919,7 @@ const EditProduct = () => {
                             />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Quantity</FormLabel>
+                            <FormLabel>{t('product.quantity')}</FormLabel>
                             <Input
                               type="number"
                               value={attr.quantity}
@@ -922,7 +934,7 @@ const EditProduct = () => {
                             />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Variant Image</FormLabel>
+                            <FormLabel>{t('product.variantImage')}</FormLabel>
                             <Input
                               type="file"
                               accept="image/*"
@@ -950,10 +962,10 @@ const EditProduct = () => {
 
                           {/* Variant Lot Number, Expiry Date, Discount */}
                           <FormControl>
-                            <FormLabel>Lot Number</FormLabel>
+                            <FormLabel>{t('product.lotNumber')}</FormLabel>
                             <Input
                               type="text"
-                              placeholder="Enter Lot Number"
+                              placeholder={t('product.enterLotNumber')}
                               value={attr.lotNumber}
                               onChange={(e) =>
                                 handleAttributeChange(index, 'lotNumber', e.target.value)
@@ -962,7 +974,7 @@ const EditProduct = () => {
                             />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Expiry Date</FormLabel>
+                            <FormLabel>{t('product.expiryDate')}</FormLabel>
                             <Input
                               type="date"
                               value={attr.expiryDate}
@@ -973,10 +985,10 @@ const EditProduct = () => {
                             />
                           </FormControl>
                           <FormControl>
-                            <FormLabel>Discount</FormLabel>
+                            <FormLabel>{t('product.discount')}</FormLabel>
                             <Input
                               type="number"
-                              placeholder="Enter discount value"
+                              placeholder={t('product.enterDiscountValue')}
                               value={attr.discount != null ? attr.discount : ''}
                               onChange={(e) =>
                                 handleAttributeChange(index, 'discount', e.target.value)
@@ -997,7 +1009,7 @@ const EditProduct = () => {
           {/* Product Images */}
           <Box mb={4}>
             <FormControl>
-              <FormLabel>Product Images</FormLabel>
+              <FormLabel>{t('product.productImages')}</FormLabel>
               <Box
                 border="1px dashed"
                 borderColor={isDragging ? 'brand.500' : 'gray.300'}
@@ -1079,10 +1091,10 @@ const EditProduct = () => {
                   <>
                     <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
                     <Text color="gray.500" mb={2}>
-                      Drag & Drop Image Here
+                      {t('product.dragDropImageHere')}
                     </Text>
                     <Text color="gray.500" mb={2}>
-                      or
+                      {t('product.or')}
                     </Text>
                     <Button
                       variant="outline"
@@ -1090,7 +1102,7 @@ const EditProduct = () => {
                       border="none"
                       onClick={() => document.getElementById('file-upload').click()}
                     >
-                      Upload Image
+                      {t('product.uploadImage')}
                       <input
                         type="file"
                         id="file-upload"
@@ -1111,10 +1123,10 @@ const EditProduct = () => {
             <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
               <Box>
                 <FormControl>
-                  <FormLabel>SKU</FormLabel>
+                  <FormLabel>{t('product.sku')}</FormLabel>
                   <Input
                     type="text"
-                    placeholder="Enter SKU"
+                    placeholder={t('product.enterSKU')}
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
                     color={textColor}
@@ -1123,10 +1135,10 @@ const EditProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>Lot Number</FormLabel>
+                  <FormLabel>{t('product.lotNumber')}</FormLabel>
                   <Input
                     type="text"
-                    placeholder="Enter Lot Number"
+                    placeholder={t('product.enterLotNumber')}
                     value={lotNumber}
                     onChange={(e) => setLotNumber(e.target.value)}
                     color={textColor}
@@ -1135,7 +1147,7 @@ const EditProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>Expiry Date</FormLabel>
+                  <FormLabel>{t('product.expiryDate')}</FormLabel>
                   <Input
                     type="date"
                     value={expiryDate}
@@ -1146,10 +1158,10 @@ const EditProduct = () => {
               </Box>
                <Box>
                 <FormControl>
-                  <FormLabel>Discount</FormLabel>
+                  <FormLabel>{t('product.discount')}</FormLabel>
                   <Input
                     type="number"
-                    placeholder="Enter discount value"
+                    placeholder={t('product.enterDiscountValue')}
                     value={discount != null ? discount : ''}
                     onChange={(e) => setDiscount(e.target.value)}
                     color={textColor}
@@ -1162,10 +1174,10 @@ const EditProduct = () => {
           {/* Submit Buttons */}
           <Flex justify="flex-end" gap={4}>
             <Button variant="outline" colorScheme="red" onClick={handleCancel}>
-              Cancel
+              {t('product.cancel')}
             </Button>
             <Button type="submit" colorScheme="blue" isLoading={isUpdating}>
-              Update Product
+              {t('product.updateProduct')}
             </Button>
           </Flex>
         </form>

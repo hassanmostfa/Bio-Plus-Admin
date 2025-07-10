@@ -17,9 +17,11 @@ import { IoMdArrowBack } from 'react-icons/io';
  // Adjust the import path
 import { useGetModulesQuery } from 'api/roleSlice';
 import { useAddRoleMutation } from 'api/roleSlice';
+import { useTranslation } from 'react-i18next';
 import Swal from 'sweetalert2';
 
 const AddRole = () => {
+  const { t } = useTranslation();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const navigate = useNavigate();
 
@@ -168,9 +170,9 @@ const AddRole = () => {
      
       Swal.fire({
         icon: 'success',
-        title: 'Success',
-        text: 'Role added successfully',
-        confirmButtonText: 'OK',
+        title: t('messages.success'),
+        text: t('roleAddedSuccessfully'),
+        confirmButtonText: t('ok'),
         onClose: () => {
           navigate('/admin/undefined/roles'); // Redirect to the roles page after successful submission
         }
@@ -182,19 +184,19 @@ const AddRole = () => {
     } catch (error) {
       Swal.fire({
         icon: 'error',
-        title: 'Error',
+        title: t('messages.error'),
         text: error.data.message,
-        confirmButtonText: 'OK',
+        confirmButtonText: t('ok'),
       });
     }
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>{t('loading')}</div>;
   }
 
   if (isError) {
-    return <div>Error fetching modules.</div>;
+    return <div>{t('errorFetchingModules')}</div>;
   }
 
   return (
@@ -213,7 +215,7 @@ const AddRole = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            Add New Role
+            {t('addNewRole')}
           </Text>
           <Button
             type="button"
@@ -222,18 +224,18 @@ const AddRole = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('back')}
           </Button>
         </Flex>
         <form onSubmit={handleSubmit}>
           {/* Role Name Input */}
           <Box mb="20px">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Role Name
+              {t('roleName')}
             </Text>
             <Input
               name="roleName"
-              placeholder="Enter role name"
+              placeholder={t('enterRoleName')}
               size="sm"
               width={'50%'}
               required
@@ -264,26 +266,26 @@ const AddRole = () => {
                     isChecked={parentCheckboxes[category.id]?.canView}
                     onChange={() => handleParentCheckboxChange(category.id, 'canView')}
                   >
-                    View
+                    {t('view')}
                   </Checkbox>
                   <Checkbox
                     isChecked={parentCheckboxes[category.id]?.canAdd}
                     onChange={() => handleParentCheckboxChange(category.id, 'canAdd')}
                   >
-                    Add
+                    {t('add')}
                   </Checkbox>
                   <Checkbox
                     isChecked={parentCheckboxes[category.id]?.canEdit}
                     onChange={() => handleParentCheckboxChange(category.id, 'canEdit')}
                   >
-                    Edit
+                    {t('edit')}
                   </Checkbox>
                   
                   <Checkbox
                     isChecked={parentCheckboxes[category.id]?.canDelete}
                     onChange={() => handleParentCheckboxChange(category.id, 'canDelete')}
                   >
-                    Delete
+                    {t('delete')}
                   </Checkbox>
                 </Box>
                 <hr />
@@ -310,7 +312,7 @@ const AddRole = () => {
                           )
                         }
                       >
-                        View
+                        {t('view')}
                       </Checkbox>
                       <Checkbox
                         isChecked={subcategory.permissions.canAdd}
@@ -322,7 +324,7 @@ const AddRole = () => {
                           )
                         }
                       >
-                        Add
+                        {t('add')}
                       </Checkbox>
                       <Checkbox
                         isChecked={subcategory.permissions.canEdit}
@@ -334,7 +336,7 @@ const AddRole = () => {
                           )
                         }
                       >
-                        Edit
+                        {t('edit')}
                       </Checkbox>
                       <Checkbox
                         isChecked={subcategory.permissions.canDelete}
@@ -346,7 +348,7 @@ const AddRole = () => {
                           )
                         }
                       >
-                        Delete
+                        {t('delete')}
                       </Checkbox>
                     </Stack>
                   </Box>
@@ -368,7 +370,7 @@ const AddRole = () => {
             mt="20px"
             isLoading={isAdding}
           >
-            Submit
+            {t('submit')}
           </Button>
         </form>
       </Card>

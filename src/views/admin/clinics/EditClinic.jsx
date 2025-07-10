@@ -15,6 +15,8 @@ import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateClinicMutation, useGetClinicQuery } from 'api/clinicSlice';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const EditClinic = () => {
   const { id } = useParams();
@@ -37,6 +39,8 @@ const EditClinic = () => {
   const inputBorder = useColorModeValue('gray.300', 'gray.600');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   // Initialize form with clinic data
   useEffect(() => {
@@ -125,20 +129,20 @@ const EditClinic = () => {
 
     try {
       const response = await updateClinic({ id, data: clinicUpdateData }).unwrap();
-      Swal.fire('Success!', 'Clinic updated successfully.', 'success');
+      Swal.fire(t('clinics.success'), t('clinics.clinicUpdatedSuccessfully'), 'success');
       navigate('/admin/clinics');
     } catch (error) {
       if (error.data?.errors) {
         const errorMessages = {};
         error.data.errors.forEach((err) => {
           const fieldMap = {
-            name: 'English Name',
-            'translations.0.name': 'Arabic Name',
-            password: 'Password',
-            fromTime: 'Opening Time',
-            toTime: 'Closing Time',
-            'locations.0.name': 'Location English Name',
-            'locations.0.translations.0.name': 'Location Arabic Name',
+            name: t('clinics.englishName'),
+            'translations.0.name': t('clinics.arabicName'),
+            password: t('clinics.password'),
+            fromTime: t('clinics.openingTime'),
+            toTime: t('clinics.closingTime'),
+            'locations.0.name': t('clinics.locationEnglishName'),
+            'locations.0.translations.0.name': t('clinics.locationArabicName'),
           };
 
           const fieldName = fieldMap[err.field] || err.field;
@@ -158,14 +162,14 @@ const EditClinic = () => {
         });
 
         Swal.fire({
-          title: 'Validation Error!',
+          title: t('clinics.validationError'),
           html: errorList,
           icon: 'error',
         });
       } else {
         Swal.fire(
-          'Error!',
-          error.data?.message || 'Failed to update clinic.',
+          t('clinics.error'),
+          error.data?.message || t('clinics.failedToUpdateClinic'),
           'error',
         );
       }
@@ -189,7 +193,7 @@ const EditClinic = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>{t('clinics.loading')}</div>;
   }
 
   return (
@@ -197,7 +201,7 @@ const EditClinic = () => {
       <Box w="100%" p="6" boxShadow="md" borderRadius="lg" bg={cardBg}>
         <Flex justify="space-between" align="center" mb="20px">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Edit Clinic
+            {t('clinics.editClinic')}
           </Text>
           <Button
             onClick={() => navigate(-1)}
@@ -205,21 +209,21 @@ const EditClinic = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('clinics.back')}
           </Button>
         </Flex>
 
-        <form>
+        <form dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
           <Grid templateColumns="repeat(2, 1fr)" gap={6}>
             {/* Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                English Name
+                {t('clinics.englishName')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="text"
-                placeholder="Enter Clinic Name (English)"
+                placeholder={t('clinics.enterClinicNameEn')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 bg={inputBg}
@@ -233,12 +237,12 @@ const EditClinic = () => {
             {/* Arabic Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Arabic Name
+                {t('clinics.arabicName')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="text"
-                placeholder="أدخل اسم العيادة"
+                placeholder={t('clinics.enterClinicNameAr')}
                 value={arabicName}
                 onChange={(e) => setArabicName(e.target.value)}
                 bg={inputBg}
@@ -253,12 +257,12 @@ const EditClinic = () => {
             {/* Email Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Email
+                {t('clinics.email')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
                 type="email"
-                placeholder="Enter Email"
+                placeholder={t('clinics.enterEmail')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 bg={inputBg}
@@ -272,11 +276,11 @@ const EditClinic = () => {
             {/* Password Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Password (leave blank to keep current)
+                {t('clinics.passwordLeaveBlank')}
               </Text>
               <Input
                 type="password"
-                placeholder="Enter new password"
+                placeholder={t('clinics.enterNewPassword')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 bg={inputBg}
@@ -289,7 +293,7 @@ const EditClinic = () => {
             {/* From Time Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Opening Time
+                {t('clinics.openingTime')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
@@ -307,7 +311,7 @@ const EditClinic = () => {
             {/* To Time Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Closing Time
+                {t('clinics.closingTime')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
               <Input
@@ -325,7 +329,7 @@ const EditClinic = () => {
             {/* Active Status Toggle */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Active
+                {t('clinics.active')}
               </Text>
               <Switch
                 isChecked={isActive}
@@ -333,13 +337,14 @@ const EditClinic = () => {
                 colorScheme="teal"
                 size="md"
                 mt="8px"
+                dir='ltr'
               />
             </Box>
 
             {/* Locations Field */}
             <Box gridColumn="1 / -1">
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                Locations
+                {t('clinics.locations')}
                 <span style={{ color: 'red', marginLeft: '4px' }}>*</span>
               </Text>
 
@@ -357,11 +362,11 @@ const EditClinic = () => {
                     {/* Location Name */}
                     <Box>
                       <Text fontSize="sm" fontWeight="600" mb={1} color={textColor}>
-                        Location Name (English)
+                        {t('clinics.locationNameEn')}
                       </Text>
                       <Input
                         type="text"
-                        placeholder="Enter location name"
+                        placeholder={t('clinics.enterLocationName')}
                         value={location.name}
                         onChange={(e) =>
                           handleLocationChange(index, 'name', e.target.value)
@@ -376,11 +381,11 @@ const EditClinic = () => {
                     {/* Arabic Location Name */}
                     <Box>
                       <Text fontSize="sm" fontWeight="600" mb={1} color={textColor}>
-                        Location Name (Arabic)
+                        {t('clinics.locationNameAr')}
                       </Text>
                       <Input
                         type="text"
-                        placeholder="أدخل اسم الموقع"
+                        placeholder={t('clinics.enterLocationNameAr')}
                         value={location.arabicName}
                         onChange={(e) =>
                           handleLocationChange(index, 'arabicName', e.target.value)
@@ -407,7 +412,7 @@ const EditClinic = () => {
                         size="sm"
                         onClick={() => handleDeleteLocation(index)}
                       >
-                        Remove Location
+                        {t('clinics.removeLocation')}
                       </Button>
                     </Box>
                   </Grid>
@@ -421,7 +426,7 @@ const EditClinic = () => {
                 mt={2}
                 onClick={handleAddLocation}
               >
-                Add New Location
+                {t('clinics.addNewLocation')}
               </Button>
             </Box>
           </Grid>
@@ -434,7 +439,7 @@ const EditClinic = () => {
               onClick={handleCancel}
               width="120px"
             >
-              Cancel
+              {t('clinics.cancel')}
             </Button>
             <Button
               colorScheme="brandScheme"
@@ -447,9 +452,8 @@ const EditClinic = () => {
               onClick={handleSend}
               width="120px"
               isLoading={isUpdating}
-              loadingText="Saving..."
             >
-              Save Changes
+              {t('clinics.saveChanges')}
             </Button>
           </Flex>
         </form>

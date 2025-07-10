@@ -17,6 +17,7 @@ import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useGetUsersQuery, useUpdateUserProfileMutation } from 'api/clientSlice';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
 
 const EditUser = () => {
   const { id } = useParams();
@@ -24,6 +25,8 @@ const EditUser = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   // Fetch all users to find the one to edit (or ideally, fetch a single user endpoint)
   // Note: Fetching all users to find one by ID is inefficient. A dedicated getUserById query is preferred.
@@ -55,11 +58,11 @@ const EditUser = () => {
           phoneNumber: userToEdit.phoneNumber || '',
         });
       } else {
-        Swal.fire('Error!', 'User not found.', 'error');
+        Swal.fire(t('common.error'), t('user.notFound'), 'error');
         navigate('/admin/users');
       }
     }
-  }, [usersResponse, id, navigate]);
+  }, [usersResponse, id, navigate, t]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -81,13 +84,13 @@ const EditUser = () => {
 
     try {
       await updateUserProfile({ id, data: userData }).unwrap();
-      Swal.fire('Success!', 'User updated successfully.', 'success');
+      Swal.fire(t('common.success'), t('user.updatedSuccess'), 'success');
       navigate('/admin/users');
     } catch (error) {
       console.error('Failed to update user:', error);
       Swal.fire(
-        'Error!',
-        error.data?.message || 'Failed to update user.',
+        t('common.error'),
+        error.data?.message || t('user.updateFailed'),
         'error'
       );
     }
@@ -105,8 +108,8 @@ const EditUser = () => {
     <Box w="100%" className="container add-admin-container w-100">
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <Flex justifyContent="space-between" align="center" w="100%" mb="20px">
-          <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%">
-            Edit User
+          <Text color={textColor} fontSize="22px" fontWeight="700" lineHeight="100%" textAlign={isRTL ? 'right' : 'left'}>
+            {t('common.edit')} {t('common.users')}
           </Text>
           <Button
             type="button"
@@ -115,26 +118,27 @@ const EditUser = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('common.back')}
           </Button>
         </Flex>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} dir={isRTL ? 'rtl' : 'ltr'} style={{ textAlign: isRTL ? 'right' : 'left' }}>
           <Grid templateColumns="repeat(2, 1fr)" gap={6}>
             {/* Name Field */}
             <GridItem colSpan={2}>
               <FormControl>
-                <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                  Name
+                <FormLabel color={textColor} fontSize="sm" fontWeight="700" mb={1} textAlign={isRTL ? 'right' : 'left'}>
+                  {t('common.name')}
                 </FormLabel>
                 <Input
                   type="text"
                   name="name"
-                  placeholder="Enter User Name"
+                  placeholder={t('forms.enterName')}
                   value={formData.name}
                   onChange={handleInputChange}
                   mt={'8px'}
                   bg={inputBg}
                   color={textColor}
+                  dir={isRTL ? 'rtl' : 'ltr'}
                 />
               </FormControl>
             </GridItem>
@@ -142,18 +146,19 @@ const EditUser = () => {
             {/* Email Field */}
             <GridItem>
               <FormControl>
-                <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                  Email
+                <FormLabel color={textColor} fontSize="sm" fontWeight="700" mb={1} textAlign={isRTL ? 'right' : 'left'}>
+                  {t('common.email')}
                 </FormLabel>
                 <Input
                   type="email"
                   name="email"
-                  placeholder="Enter Email"
+                  placeholder={t('forms.enterEmail')}
                   value={formData.email}
                   onChange={handleInputChange}
                   mt={'8px'}
                   bg={inputBg}
                   color={textColor}
+                  dir={isRTL ? 'rtl' : 'ltr'}
                 />
               </FormControl>
             </GridItem>
@@ -161,18 +166,19 @@ const EditUser = () => {
             {/* Phone Number Field */}
             <GridItem>
               <FormControl>
-                <FormLabel color={textColor} fontSize="sm" fontWeight="700">
-                  Phone Number
+                <FormLabel color={textColor} fontSize="sm" fontWeight="700" mb={1} textAlign={isRTL ? 'right' : 'left'}>
+                  {t('common.phone')}
                 </FormLabel>
                 <Input
                   type="text"
                   name="phoneNumber"
-                  placeholder="Enter Phone Number"
+                  placeholder={t('forms.enterPhone')}
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
                   mt={'8px'}
                   bg={inputBg}
                   color={textColor}
+                  dir={isRTL ? 'rtl' : 'ltr'}
                 />
               </FormControl>
             </GridItem>
@@ -191,9 +197,9 @@ const EditUser = () => {
               py="5px"
               type="submit"
               isLoading={isLoading}
-              loadingText="Saving..."
+              loadingText={t('common.saving')}
             >
-              Save Changes
+              {t('common.saveChanges')}
             </Button>
           </Flex>
         </form>

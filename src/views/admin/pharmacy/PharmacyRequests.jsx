@@ -38,6 +38,8 @@ import { FaCheck, FaTimes } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useGetPharmaciesRequestsQuery } from 'api/pharmacyRequestsSlice';
 import { useProcessRequestMutation } from 'api/pharmacyRequestsSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
@@ -58,6 +60,9 @@ const PharmacyRequests = () => {
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   // Transform API data to match table structure
   const tableData = React.useMemo(() => {
@@ -85,7 +90,7 @@ const PharmacyRequests = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Pharmacy Name
+          {t('pharmacyRequests.pharmacyName')}
         </Text>
       ),
       cell: (info) => (
@@ -103,7 +108,7 @@ const PharmacyRequests = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Product Name
+          {t('pharmacyRequests.productName')}
         </Text>
       ),
       cell: (info) => (
@@ -121,7 +126,7 @@ const PharmacyRequests = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Price
+          {t('pharmacyRequests.price')}
         </Text>
       ),
       cell: (info) => (
@@ -139,7 +144,7 @@ const PharmacyRequests = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Brand
+          {t('pharmacyRequests.brand')}
         </Text>
       ),
       cell: (info) => (
@@ -157,7 +162,7 @@ const PharmacyRequests = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Offer %
+          {t('pharmacyRequests.offerPercentage')}
         </Text>
       ),
       cell: (info) => (
@@ -175,7 +180,7 @@ const PharmacyRequests = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Offer Type
+          {t('pharmacyRequests.offerType')}
         </Text>
       ),
       cell: (info) => (
@@ -193,7 +198,7 @@ const PharmacyRequests = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          Actions
+          {t('pharmacyRequests.actions')}
         </Text>
       ),
       cell: (info) => {
@@ -211,7 +216,7 @@ const PharmacyRequests = () => {
               >
                 <Icon w="18px" h="18px" color="green.500" as={FaCheck} />
                 <Text fontSize="sm" color="green.500" fontWeight="bold">
-                  Approve
+                  {t('pharmacyRequests.approve')}
                 </Text>
               </Flex>
         
@@ -228,7 +233,7 @@ const PharmacyRequests = () => {
               >
                 <Icon w="18px" h="18px" color="red.500" as={FaTimes} />
                 <Text fontSize="sm" color="red.500" fontWeight="bold">
-                  Reject
+                  {t('pharmacyRequests.reject')}
                 </Text>
               </Flex>
             </Flex>
@@ -237,7 +242,7 @@ const PharmacyRequests = () => {
           return (
             <Flex align="center" gap="10px">
               <Text fontSize="sm" color="red.500" fontWeight="bold">
-                REJECTED
+                {t('pharmacyRequests.rejected')}
               </Text>
             </Flex>
           );
@@ -245,7 +250,7 @@ const PharmacyRequests = () => {
           return (
             <Flex align="center" gap="10px">
               <Text fontSize="sm" color="green.500" fontWeight="bold">
-                APPROVED
+                {t('pharmacyRequests.approved')}
               </Text>
             </Flex>
           );
@@ -281,7 +286,7 @@ const PharmacyRequests = () => {
         }).unwrap();
         
         toast({
-          title: "Request approved",
+          title: t('pharmacyRequests.requestApproved'),
           status: "success",
           duration: 5000,
           isClosable: true,
@@ -290,11 +295,11 @@ const PharmacyRequests = () => {
         await processRequest({
           id: selectedRequest,
           status: "REJECTED",
-          rejectionReason: rejectionReason || "No reason provided"
+          rejectionReason: rejectionReason || t('pharmacyRequests.noReasonProvided')
         }).unwrap();
         
         toast({
-          title: "Request rejected",
+          title: t('pharmacyRequests.requestRejected'),
           status: "success",
           duration: 5000,
           isClosable: true,
@@ -304,8 +309,8 @@ const PharmacyRequests = () => {
       refetch();
     } catch (err) {
       toast({
-        title: `Error ${actionType === 'approve' ? 'approving' : 'rejecting'} request`,
-        description: err.message || "Something went wrong",
+        title: t('pharmacyRequests.error'),
+        description: err.message || t('pharmacyRequests.somethingWentWrong'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -319,7 +324,7 @@ const PharmacyRequests = () => {
   // Handle reject action
   const handleReject = async (id) => {
     // In a real app, you might want to show a modal to collect the rejection reason
-    const rejectionReason = "Price is too low for this discount percentage";
+    const rejectionReason = t('pharmacyRequests.priceIsTooLowForThisDiscountPercentage');
     
     try {
       await processRequest({
@@ -329,7 +334,7 @@ const PharmacyRequests = () => {
       }).unwrap();
       
       toast({
-        title: "Request rejected",
+        title: t('pharmacyRequests.requestRejected'),
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -338,8 +343,8 @@ const PharmacyRequests = () => {
       refetch();
     } catch (err) {
       toast({
-        title: "Error rejecting request",
-        description: err.message || "Something went wrong",
+        title: t('pharmacyRequests.error'),
+        description: err.message || t('pharmacyRequests.somethingWentWrong'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -358,7 +363,7 @@ const PharmacyRequests = () => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>{t('pharmacy.loading')}</div>;
   }
 
   return (
@@ -376,10 +381,10 @@ const PharmacyRequests = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            Pharmacy Requests
+            {t('pharmacyRequests.title')}
           </Text>
           <Text color="gray.500" fontSize="sm">
-            Total: {response?.pagination?.totalItems || 0} requests
+            {t('pharmacyRequests.totalRequests', { count: response?.pagination?.totalItems || 0 })}
           </Text>
         </Flex>
         <Box>
@@ -448,7 +453,7 @@ const PharmacyRequests = () => {
         {/* Pagination Controls */}
         <Flex justify="space-between" align="center" px="25px" py="15px">
           <Flex align="center">
-            <Text mr={2}>Rows per page:</Text>
+            <Text mr={2}>{t('pharmacyRequests.rowsPerPage')}:</Text>
             <Select
               value={limit}
               onChange={handleLimitChange}
@@ -463,7 +468,7 @@ const PharmacyRequests = () => {
           </Flex>
           <Flex align="center">
             <Text mr={4}>
-              Page {page} of {response?.pagination?.totalPages || 1}
+              {t('pharmacyRequests.page')} {page} {t('pharmacyRequests.of')} {response?.pagination?.totalPages || 1}
             </Text>
             <Button
               size="sm"
@@ -471,14 +476,14 @@ const PharmacyRequests = () => {
               isDisabled={page === 1}
               mr={2}
             >
-              Previous
+              {t('pharmacyRequests.previous')}
             </Button>
             <Button
               size="sm"
               onClick={() => handlePageChange(page + 1)}
               isDisabled={page === (response?.pagination?.totalPages || 1)}
             >
-              Next
+              {t('pharmacyRequests.next')}
             </Button>
           </Flex>
         </Flex>
@@ -489,21 +494,21 @@ const PharmacyRequests = () => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            {actionType === 'approve' ? 'Approve Request' : 'Reject Request'}
+            {actionType === 'approve' ? t('pharmacyRequests.approveRequest') : t('pharmacyRequests.rejectRequest')}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             {actionType === 'approve' ? (
-              <Text>Are you sure you want to approve this request?</Text>
+              <Text>{t('pharmacyRequests.areYouSureYouWantToApproveThisRequest')}</Text>
             ) : (
               <>
-                <Text mb={4}>Are you sure you want to reject this request?</Text>
+                <Text mb={4}>{t('pharmacyRequests.areYouSureYouWantToRejectThisRequest')}</Text>
                 <FormControl>
-                  <FormLabel>Reason for rejection</FormLabel>
+                  <FormLabel>{t('pharmacyRequests.reasonForRejection')}</FormLabel>
                   <Textarea
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
-                    placeholder="Enter the reason for rejection..."
+                    placeholder={t('pharmacyRequests.enterTheReasonForRejection')}
                   />
                 </FormControl>
               </>
@@ -512,14 +517,14 @@ const PharmacyRequests = () => {
 
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>
-              Cancel
+              {t('pharmacyRequests.cancel')}
             </Button>
             <Button 
               colorScheme={actionType === 'approve' ? 'green' : 'red'} 
               onClick={handleConfirmAction}
               isDisabled={actionType === 'reject' && !rejectionReason}
             >
-              {actionType === 'approve' ? 'Approve' : 'Reject'}
+              {actionType === 'approve' ? t('pharmacyRequests.approve') : t('pharmacyRequests.reject')}
             </Button>
           </ModalFooter>
         </ModalContent>

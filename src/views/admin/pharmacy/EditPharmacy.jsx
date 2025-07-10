@@ -27,6 +27,8 @@ import {
   useUpdatePharmacyMutation,
 } from 'api/pharmacySlice';
 import { useAddFileMutation } from 'api/filesSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const EditPharmacy = () => {
   const { id } = useParams();
@@ -36,6 +38,8 @@ const EditPharmacy = () => {
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
   const [addFile] = useAddFileMutation();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   const {
     data,
@@ -46,7 +50,6 @@ const EditPharmacy = () => {
   const pharmacy = data?.data;
   
   const [updatePharmacy, { isLoading: isUpdating }] = useUpdatePharmacyMutation();
-
   const [formData, setFormData] = useState({
     name: '',
     imageKey: '',
@@ -317,15 +320,15 @@ const EditPharmacy = () => {
     }
   };
 
-  if (isFetching) return <Text>Loading...</Text>;
-  if (fetchError) return <Text>Error loading pharmacy data.</Text>;
+  if (isFetching) return <Text>{t('pharmacy.loading')}</Text>;
+  if (fetchError) return <Text>{t('pharmacy.errorFetching')}</Text>;
 
   return (
     <div className="container add-admin-container w-100">
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100">
         <Box className="mb-3 d-flex justify-content-between align-items-center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Edit Pharmacy
+            {t('pharmacy.editPharmacy')}
           </Text>
           <Button
             type="button"
@@ -334,13 +337,13 @@ const EditPharmacy = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('pharmacy.back')}
           </Button>
         </Box>
-        <form>
+        <form dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
           {error?.success === false && (
             <div className="alert alert-danger" role="alert">
-              <h4 className="alert-heading">Validation failed</h4>
+              <h4 className="alert-heading">{t('pharmacy.validationFailed')}</h4>
               <ul>
                 {error.errors?.map((err) => (
                   <li key={err.field}>
@@ -354,34 +357,28 @@ const EditPharmacy = () => {
           <Grid templateColumns="repeat(2, 1fr)" gap={4}>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Pharmacy Name En <span className="text-danger">*</span>
+                {t('pharmacy.pharmacyNameEn')} <span className="text-danger">*</span>
               </Text>
               <Input
                 bg={inputBg}
                 color={textColor}
-                value={
-                  formData.translations.find((t) => t.languageId === 'en').name
-                }
-                onChange={(e) =>
-                  handleTranslationChange('en', 'name', e.target.value)
-                }
+                value={formData.translations.find((t) => t.languageId === 'en').name}
+                onChange={(e) => handleTranslationChange('en', 'name', e.target.value)}
                 mt={2}
+                placeholder={t('pharmacy.enterBranchEnName')}
               />
             </GridItem>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Pharmacy Name Ar <span className="text-danger">*</span>
+                {t('pharmacy.pharmacyNameAr')} <span className="text-danger">*</span>
               </Text>
               <Input
                 bg={inputBg}
                 color={textColor}
-                value={
-                  formData.translations.find((t) => t.languageId === 'ar').name
-                }
-                onChange={(e) =>
-                  handleTranslationChange('ar', 'name', e.target.value)
-                }
+                value={formData.translations.find((t) => t.languageId === 'ar').name}
+                onChange={(e) => handleTranslationChange('ar', 'name', e.target.value)}
                 mt={2}
+                placeholder={t('pharmacy.enterBranchArName')}
               />
             </GridItem>
           </Grid>
@@ -389,7 +386,7 @@ const EditPharmacy = () => {
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mt={4}>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Email <span className="text-danger">*</span>
+                {t('pharmacy.email')} <span className="text-danger">*</span>
               </Text>
               <Input
                 bg={inputBg}
@@ -398,11 +395,12 @@ const EditPharmacy = () => {
                 value={formData.email}
                 onChange={handleChange}
                 mt={2}
+                placeholder={t('pharmacy.email')}
               />
             </GridItem>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                WhatsApp Number <span className="text-danger">*</span>
+                {t('pharmacy.whatsappNumber')} <span className="text-danger">*</span>
               </Text>
               <Input
                 bg={inputBg}
@@ -411,6 +409,7 @@ const EditPharmacy = () => {
                 value={formData.whatsappNumber}
                 onChange={handleChange}
                 mt={2}
+                placeholder={t('pharmacy.whatsappNumber')}
               />
             </GridItem>
           </Grid>
@@ -418,7 +417,7 @@ const EditPharmacy = () => {
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mt={4}>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Password <span className="text-danger">*</span>
+                {t('pharmacy.password')} <span className="text-danger">*</span>
               </Text>
               <Input
                 bg={inputBg}
@@ -428,11 +427,12 @@ const EditPharmacy = () => {
                 value={formData.password}
                 onChange={handleChange}
                 mt={2}
+                placeholder={t('pharmacy.password')}
               />
             </GridItem>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Iban <span className="text-danger">*</span>
+                {t('pharmacy.iban')} <span className="text-danger">*</span>
               </Text>
               <Input
                 bg={inputBg}
@@ -441,6 +441,7 @@ const EditPharmacy = () => {
                 value={formData.iban}
                 onChange={handleChange}
                 mt={2}
+                placeholder={t('pharmacy.iban')}
               />
             </GridItem>
           </Grid>
@@ -448,7 +449,7 @@ const EditPharmacy = () => {
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mt={4}>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Working Hours <span className="text-danger">*</span>
+                {t('pharmacy.workingHours')} <span className="text-danger">*</span>
               </Text>
               <Input
                 bg={inputBg}
@@ -457,25 +458,21 @@ const EditPharmacy = () => {
                 value={formData.workingHours}
                 onChange={handleChange}
                 mt={2}
+                placeholder={t('pharmacy.workingHours')}
               />
             </GridItem>
             <GridItem>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Revenue Share Type <span className="text-danger">*</span>
+                {t('pharmacy.revenueShareType')} <span className="text-danger">*</span>
               </Text>
               <RadioGroup
-                onChange={(value) =>
-                  setFormData((prevData) => ({
-                    ...prevData,
-                    revenueShareType: value,
-                  }))
-                }
+                onChange={(value) => setFormData((prevData) => ({ ...prevData, revenueShareType: value }))}
                 value={formData.revenueShareType}
                 mt={2}
               >
                 <Stack direction="row">
-                  <Radio value="percentage">Percentage</Radio>
-                  <Radio value="fixed">Fixed Fees</Radio>
+                  <Radio value="percentage">{t('pharmacy.percentage')}</Radio>
+                  <Radio value="fixed">{t('pharmacy.fixedFees')}</Radio>
                 </Stack>
               </RadioGroup>
             </GridItem>
@@ -484,7 +481,7 @@ const EditPharmacy = () => {
           {formData.revenueShareType === 'percentage' ? (
             <GridItem colSpan={2} mt={2}>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Percentage <span className="text-danger">*</span>
+                {t('pharmacy.percentage')} <span className="text-danger">*</span>
               </Text>
               <Input
                 bg={inputBg}
@@ -500,7 +497,7 @@ const EditPharmacy = () => {
             <>
               <GridItem mt={2}>
                 <Text color={textColor} fontSize="sm" fontWeight="700">
-                  Fixed Fees <span className="text-danger">*</span>
+                  {t('pharmacy.fixedFees')} <span className="text-danger">*</span>
                 </Text>
                 <Input
                   bg={inputBg}
@@ -510,11 +507,12 @@ const EditPharmacy = () => {
                   value={formData.fixedFees}
                   onChange={handleChange}
                   mt={2}
+                  placeholder={t('pharmacy.fixedFees')}
                 />
               </GridItem>
               <GridItem mt={2}>
                 <Text color={textColor} fontSize="sm" fontWeight="700">
-                  Fees Start Date <span className="text-danger">*</span>
+                  {t('pharmacy.feesStartDate')} <span className="text-danger">*</span>
                 </Text>
                 <Input
                   bg={inputBg}
@@ -524,11 +522,12 @@ const EditPharmacy = () => {
                   value={formData.feesStartDate || ''}
                   onChange={handleChange}
                   mt={2}
+                  placeholder={t('pharmacy.feesStartDate')}
                 />
               </GridItem>
               <GridItem mt={2}>
                 <Text color={textColor} fontSize="sm" fontWeight="700">
-                  Fees End Date <span className="text-danger">*</span>
+                  {t('pharmacy.feesEndDate')} <span className="text-danger">*</span>
                 </Text>
                 <Input
                   bg={inputBg}
@@ -538,6 +537,7 @@ const EditPharmacy = () => {
                   value={formData.feesEndDate || ''}
                   onChange={handleChange}
                   mt={2}
+                  placeholder={t('pharmacy.feesEndDate')}
                 />
               </GridItem>
             </>
@@ -546,7 +546,7 @@ const EditPharmacy = () => {
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mt={4}>
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Description En<span className="text-danger">*</span>
+                {t('pharmacy.descriptionEn')} <span className="text-danger">*</span>
               </Text>
               <Textarea
                 bg={inputBg}
@@ -565,7 +565,7 @@ const EditPharmacy = () => {
             </Box>
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Description Ar<span className="text-danger">*</span>
+                {t('pharmacy.descriptionAr')} <span className="text-danger">*</span>
               </Text>
               <Textarea
                 bg={inputBg}
@@ -600,10 +600,10 @@ const EditPharmacy = () => {
           >
             <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
             <Text color="gray.500" mb={2}>
-              Drag & Drop Image Here
+              {t('pharmacy.dragDropImage')}
             </Text>
             <Text color="gray.500" mb={2}>
-              or
+              {t('common.or')}
             </Text>
             <Button
               variant="outline"
@@ -611,7 +611,7 @@ const EditPharmacy = () => {
               border="none"
               onClick={() => document.getElementById('fileInput').click()}
             >
-              Upload Image
+              {t('pharmacy.uploadImage')}
               <input
                 type="file"
                 id="fileInput"
@@ -644,7 +644,7 @@ const EditPharmacy = () => {
               >
                 <img
                   src={pharmacy.imageKey}
-                  alt="Current pharmacy"
+                  alt={t('pharmacy.currentPharmacy')}
                   width={80}
                   height={80}
                   borderRadius="md"
@@ -655,7 +655,7 @@ const EditPharmacy = () => {
 
           <Box mt={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Number of Branches <span className="text-danger">*</span>
+              {t('pharmacy.numberOfBranches')} <span className="text-danger">*</span>
             </Text>
             <Input
               bg={inputBg}
@@ -665,6 +665,7 @@ const EditPharmacy = () => {
               onChange={handleNumberOfBranchesChange}
               mt={2}
               min={0}
+              placeholder={t('pharmacy.numberOfBranches')}
             />
           </Box>
 
@@ -679,18 +680,18 @@ const EditPharmacy = () => {
               bg={cardBg}
             >
               <Text color={textColor} fontSize="md" fontWeight="bold">
-                Branch {index + 1}
+                {t('pharmacy.branch')} {index + 1}
               </Text>
 
               <SimpleGrid columns={2} mt={4} spacing={4}>
                 <Box>
                   <Text color={textColor} fontSize="sm" fontWeight="700">
-                    Branch En-Name <span className="text-danger">*</span>
+                    {t('pharmacy.branchEnName')} <span className="text-danger">*</span>
                   </Text>
                   <Input
                     bg={inputBg}
                     color={textColor}
-                    placeholder="Enter Branch En-Name"
+                    placeholder={t('pharmacy.enterBranchEnName')}
                     value={
                       formData.branches[index]?.translations.find(
                         (t) => t.languageId === 'en',
@@ -709,12 +710,12 @@ const EditPharmacy = () => {
 
                 <Box>
                   <Text color={textColor} fontSize="sm" fontWeight="700">
-                    Branch En-Address <span className="text-danger">*</span>
+                    {t('pharmacy.branchEnAddress')} <span className="text-danger">*</span>
                   </Text>
                   <Input
                     bg={inputBg}
                     color={textColor}
-                    placeholder="Enter Branch En-Address"
+                    placeholder={t('pharmacy.enterBranchEnAddress')}
                     value={
                       formData.branches[index]?.translations.find(
                         (t) => t.languageId === 'en',
@@ -733,12 +734,12 @@ const EditPharmacy = () => {
 
                 <Box>
                   <Text color={textColor} fontSize="sm" fontWeight="700">
-                    Branch Ar-Name <span className="text-danger">*</span>
+                    {t('pharmacy.branchArName')} <span className="text-danger">*</span>
                   </Text>
                   <Input
                     bg={inputBg}
                     color={textColor}
-                    placeholder="أدخل اسم الفرع بالعربية"
+                    placeholder={t('pharmacy.enterBranchArName')}
                     value={
                       formData.branches[index]?.translations.find(
                         (t) => t.languageId === 'ar',
@@ -757,12 +758,12 @@ const EditPharmacy = () => {
 
                 <Box>
                   <Text color={textColor} fontSize="sm" fontWeight="700">
-                    Branch Ar-Address <span className="text-danger">*</span>
+                    {t('pharmacy.branchArAddress')} <span className="text-danger">*</span>
                   </Text>
                   <Input
                     bg={inputBg}
                     color={textColor}
-                    placeholder="أدخل عنوان الفرع بالعربية"
+                    placeholder={t('pharmacy.enterBranchArAddress')}
                     value={
                       formData.branches[index]?.translations.find(
                         (t) => t.languageId === 'ar',
@@ -782,13 +783,13 @@ const EditPharmacy = () => {
 
               <Box mt={4}>
                 <Text color={textColor} fontSize="sm" fontWeight="700">
-                  Location Link <span className="text-danger">*</span>
+                  {t('pharmacy.locationLink')} <span className="text-danger">*</span>
                 </Text>
 
                 <Input
                   bg={inputBg}
                   color={textColor}
-                  placeholder="Enter Branch Location Link"
+                  placeholder={t('pharmacy.enterBranchLocation')}
                   value={formData.branches[index]?.locationLink || ''}
                   onChange={(e) =>
                     setFormData((prevData) => ({
@@ -806,9 +807,9 @@ const EditPharmacy = () => {
           ))}
 
           {/* Active Status Toggle */}
-          <Box mb="20px" mt={6}>
+          <Box mb="20px" mt={6} dir="ltr">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Active Status
+              {t('pharmacy.activeStatus')}
             </Text>
             <Switch
               isChecked={isActive}
@@ -821,32 +822,32 @@ const EditPharmacy = () => {
            {/* Additional Checkboxes Section */}
            <Box mt={6} p={4} borderRadius="lg" boxShadow="sm" border="1px solid #ccc" bg={cardBg}>
             <Text color={textColor} fontSize="md" fontWeight="bold" mb={4}>
-              Additional Settings
+              {t('pharmacy.additionalSettings')}
             </Text>
             <Stack spacing={3}>
               <Checkbox
                 isChecked={formData.hasZoneDelivery}
                 onChange={(e) => setFormData(prev => ({ ...prev, hasZoneDelivery: e.target.checked }))}
               >
-                Delivery across your zone
+                {t('pharmacy.deliveryAcrossYourZone')}
               </Checkbox>
               <Checkbox
                 isChecked={formData.hasSameDayDispatch}
                 onChange={(e) => setFormData(prev => ({ ...prev, hasSameDayDispatch: e.target.checked }))}
               >
-                Usually dispatches orders on the same day
+                {t('pharmacy.usuallyDispatchesOrdersOnTheSameDay')}
               </Checkbox>
               <Checkbox
                 isChecked={formData.hasDeliveryFee}
                 onChange={(e) => setFormData(prev => ({ ...prev, hasDeliveryFee: e.target.checked }))}
               >
-                Delivery fee will apply
+                {t('pharmacy.deliveryFeeWillApply')}
               </Checkbox>
               <Checkbox
                 isChecked={formData.isHealthyPharmacyDelivery}
                 onChange={(e) => setFormData(prev => ({ ...prev, isHealthyPharmacyDelivery: e.target.checked }))}
               >
-                All orders will be delivered by healthy pharmacy
+                {t('pharmacy.allOrdersWillBeDeliveredByHealthyPharmacy')}
               </Checkbox>
             </Stack>
           </Box>
@@ -858,7 +859,7 @@ const EditPharmacy = () => {
               mr={2}
               onClick={() => navigate(-1)}
             >
-              Cancel
+              {t('pharmacy.cancel')}
             </Button>
             <Button
               variant="darkBrand"
@@ -871,7 +872,7 @@ const EditPharmacy = () => {
               onClick={handleSubmit}
               isLoading={isUpdating}
             >
-              Save Changes
+              {t('pharmacy.saveChanges')}
             </Button>
           </Flex>
         </form>

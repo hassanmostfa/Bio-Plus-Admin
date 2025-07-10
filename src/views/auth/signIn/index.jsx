@@ -22,10 +22,10 @@ import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { RiEyeCloseLine } from "react-icons/ri";
 import { useLoginUserMutation } from "api/userSlice";
 import Swal from "sweetalert2";
-import { LanguageContext } from "../../../components/auth/LanguageContext"; // Adjust the path accordingly
+import { useLanguage } from "../../../contexts/LanguageContext";
 import Logo from "../../../assets/img/bio-logo.png";
 function SignIn() {
-  const { language, toggleLanguage } = useContext(LanguageContext);
+  const { currentLanguage, toggleLanguage } = useLanguage();
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = "gray.400";
   const brandStars = useColorModeValue("brand.500", "brand.400");
@@ -96,7 +96,7 @@ function SignIn() {
         mb={{ base: "30px", md: "30px" }}
         px={{ base: "25px", md: "0px" }}
         flexDirection="column"
-        dir={language === "ar" ? "rtl" : "ltr"} // Set direction based on language
+        dir={currentLanguage === "ar" ? "rtl" : "ltr"} // Set direction based on language
       >
         <Box me="auto">
           <Flex mb="40px" justifyContent="center">
@@ -104,7 +104,7 @@ function SignIn() {
           </Flex>
           <Flex gap={40}>
           <Heading color={textColor} fontSize="36px" mb="10px">
-            {translations[language].welcome}
+            {translations[currentLanguage].welcome}
           </Heading>
 
           <Button
@@ -115,7 +115,7 @@ function SignIn() {
           fontWeight='500'
           borderRadius='70px'
           mb="20px">
-          {language === "en" ? "العربية" : "English"}
+          {currentLanguage === "en" ? "العربية" : "English"}
         </Button>
 
           </Flex>
@@ -126,7 +126,7 @@ function SignIn() {
             fontWeight="400"
             fontSize="md"
           >
-            {translations[language].enterDetails}
+            {translations[currentLanguage].enterDetails}
           </Text>
         </Box>
         <form onSubmit={handleSubmit}>
@@ -151,7 +151,7 @@ function SignIn() {
                 mb="8px"
                 mt={"30px"}
               >
-                {translations[language].email}
+                {translations[currentLanguage].email}
                 <Text color={brandStars}>*</Text>
               </FormLabel>
               <Input
@@ -177,7 +177,7 @@ function SignIn() {
                 color={textColor}
                 display="flex"
               >
-                {translations[language].password}
+                {translations[currentLanguage].password}
                 <Text color={brandStars}>*</Text>
               </FormLabel>
               <InputGroup size="md" mb="20px">
@@ -216,7 +216,7 @@ function SignIn() {
                     color={textColor}
                     fontSize="sm"
                   >
-                    {translations[language].rememberMe}
+                    {translations[currentLanguage].rememberMe}
                   </FormLabel>
                 </FormControl>
               </Flex>
@@ -229,7 +229,7 @@ function SignIn() {
                 mb="30px"
                 type="submit"
               >
-                {translations[language].signIn}
+                {translations[currentLanguage].signIn}
               </Button>
             </FormControl>
           </Flex>

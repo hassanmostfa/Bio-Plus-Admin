@@ -34,11 +34,15 @@ import { useGetClinicsQuery } from 'api/clinicSlice';
 import { useGetDoctorsQuery } from 'api/doctorSlice';
 import { BsFillPersonBadgeFill } from 'react-icons/bs';
 import { BiBuilding, BiVideo } from 'react-icons/bi';
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "contexts/LanguageContext";
 
 
 const columnHelper = createColumnHelper();
 
 const Appointments = () => {
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const toast = useToast();
 
   // State for filters and pagination
@@ -114,19 +118,19 @@ const Appointments = () => {
 
   const columns = [
     columnHelper.accessor('appointmentNumber', {
-      header: 'Appointment #',
+      header: t('appointments.appointmentNumber'),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('patient.name', {
-      header: 'Patient',
+      header: t('appointments.patient'),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('patient.phoneNumber', {
-      header: 'Phone',
+      header: t('appointments.phone'),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('doctor', {
-      header: 'Doctor',
+      header: t('appointments.doctor'),
       cell: (info) => (
         <Flex align="center">
           <Image
@@ -134,7 +138,7 @@ const Appointments = () => {
             boxSize="40px"
             borderRadius="full"
             mr="2"
-            alt="Doctor"
+            alt={t('appointments.doctor')}
           />
           <Box>
             <Text color={textColor} fontWeight="bold">
@@ -148,33 +152,33 @@ const Appointments = () => {
       ),
     }),
     columnHelper.accessor('location.clinicName', {
-      header: 'Clinic',
+      header: t('appointments.clinic'),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('consultationType', {
-      header: 'Type',
+      header: t('appointments.type'),
       cell: (info) => (
         <Badge
           colorScheme={info.getValue() === 'AT_CLINIC' ? 'blue' : 'green'}
           p="5px 10px"
           borderRadius="8px"
         >
-          {info.getValue() === 'AT_CLINIC' ? 'At Clinic' : 'Online'}
+          {info.getValue() === 'AT_CLINIC' ? t('appointments.atClinic') : t('appointments.online')}
         </Badge>
       ),
     }),
     columnHelper.accessor('appointmentDate', {
-      header: 'Date',
+      header: t('appointments.date'),
       cell: (info) => (
         <Text color={textColor}>{formatAppointmentDate(info.getValue())}</Text>
       ),
     }),
     columnHelper.accessor('formattedTime', {
-      header: 'Time',
+      header: t('appointments.time'),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('status', {
-      header: 'Status',
+      header: t('appointments.status'),
       cell: (info) => (
         <Badge
           colorScheme={
@@ -192,7 +196,7 @@ const Appointments = () => {
       ),
     }),
     columnHelper.accessor('paymentStatus', {
-      header: 'Payment',
+      header: t('appointments.payment'),
       cell: (info) => (
         <Badge
           colorScheme={info.getValue() === 'PAID' ? 'green' : 'red'}
@@ -236,7 +240,7 @@ const Appointments = () => {
   };
 
   return (
-    <div className="container">
+    <div className="container" >
       <Card
         flexDirection="column"
         w="100%"
@@ -250,27 +254,28 @@ const Appointments = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            Appointments
+            {t('appointments.title')}
           </Text>
         </Flex>
 
       {/* Filters */}
       <Box bg={cardBg} boxShadow="sm" mb={4} borderRadius="lg" p={6}>
         <Text fontSize="lg" fontWeight="bold" mb={4} color={textColor}>
-          Filter Consultations
+          {t('appointments.filterConsultations')}
         </Text>
         <Flex wrap="wrap" gap={4}>
           {/* Doctor Filter */}
           <Box flex="1 1 250px" minW="220px">
             <FormControl>
-              <FormLabel color={textColor}>Doctor</FormLabel>
+              <FormLabel color={textColor}>{t('appointments.doctor')}</FormLabel>
               <Select
                 value={filters.doctorId}
                 onChange={(e) => handleFilterChange('doctorId', e.target.value)}
                 bg={inputBg}
                 color={textColor}
+                // dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               >
-                <option value="">All Doctors</option>
+                <option value="">{t('appointments.allDoctors')}</option>
                 {doctors.map((doctor) => (
                   <option key={doctor.id} value={doctor.id}>
                     {doctor.fullName}
@@ -282,14 +287,15 @@ const Appointments = () => {
           {/* Clinic Filter */}
           <Box flex="1 1 250px" minW="220px">
             <FormControl>
-              <FormLabel color={textColor}>Clinic</FormLabel>
+              <FormLabel color={textColor}>{t('appointments.clinic')}</FormLabel>
               <Select
                 value={filters.clinicId}
                 onChange={(e) => handleFilterChange('clinicId', e.target.value)}
                 bg={inputBg}
                 color={textColor}
+                // dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               >
-                <option value="">All Clinics</option>
+                <option value="">{t('appointments.allClinics')}</option>
                 {clinics.map((clinic) => (
                   <option key={clinic.id} value={clinic.id}>
                     {clinic.name}
@@ -301,52 +307,55 @@ const Appointments = () => {
           {/* Consultation Type Filter */}
           <Box flex="1 1 250px" minW="220px">
             <FormControl>
-              <FormLabel color={textColor}>Consultation Type</FormLabel>
+              <FormLabel color={textColor}>{t('appointments.consultationType')}</FormLabel>
               <Select
                 value={filters.consultType}
                 onChange={(e) => handleFilterChange('consultType', e.target.value)}
                 bg={inputBg}
                 color={textColor}
+                // dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               >
-                <option value="">All Types</option>
-                <option value="AT_CLINIC">At Clinic</option>
-                <option value="ONLINE">Online</option>
+                <option value="">{t('appointments.allTypes')}</option>
+                <option value="AT_CLINIC">{t('appointments.atClinic')}</option>
+                <option value="ONLINE">{t('appointments.online')}</option>
               </Select>
             </FormControl>
           </Box>
           {/* Date Range Filter - Start Date */}
           <Box flex="1 1 200px" minW="180px">
             <FormControl>
-              <FormLabel color={textColor}>From Date</FormLabel>
+              <FormLabel color={textColor}>{t('appointments.fromDate')}</FormLabel>
               <Input
                 type="date"
                 value={filters.startDate}
                 onChange={(e) => handleFilterChange('startDate', e.target.value)}
                 bg={inputBg}
                 color={textColor}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
           </Box>
           {/* Date Range Filter - End Date */}
           <Box flex="1 1 200px" minW="180px">
             <FormControl>
-              <FormLabel color={textColor}>To Date</FormLabel>
+              <FormLabel color={textColor}>{t('appointments.toDate')}</FormLabel>
               <Input
                 type="date"
                 value={filters.endDate}
                 onChange={(e) => handleFilterChange('endDate', e.target.value)}
                 bg={inputBg}
                 color={textColor}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
           </Box>
           {/* Buttons */}
           <Flex align="flex-end" gap={2} minW="200px">
             <Button colorScheme="blue" onClick={applyFilters}>
-              Apply Filters
+              {t('appointments.applyFilters')}
             </Button>
             <Button variant="outline" colorScheme="gray" onClick={resetFilters}>
-              Reset
+              {t('appointments.reset')}
             </Button>
           </Flex>
         </Flex>
@@ -423,12 +432,13 @@ const Appointments = () => {
         {/* Pagination Controls */}
         <Flex justify="space-between" align="center" px="25px" py="15px">
           <Flex align="center">
-            <Text mr={2}>Rows per page:</Text>
+            <Text mr={2}>{t('common.rowsPerPage')}:</Text>
             <Select
               value={limit}
               onChange={handleLimitChange}
               w="70px"
               size="sm"
+              dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -438,7 +448,7 @@ const Appointments = () => {
           </Flex>
           <Flex align="center">
             <Text mr={4}>
-              Page {page} of {pagination.totalPages}
+              {t('common.page')} {page} {t('common.of')} {pagination.totalPages}
             </Text>
             <Button
               size="sm"
@@ -446,14 +456,14 @@ const Appointments = () => {
               isDisabled={page === 1}
               mr={2}
             >
-              Previous
+              {t('common.previous')}
             </Button>
             <Button
               size="sm"
               onClick={() => handlePageChange(page + 1)}
               isDisabled={page === pagination.totalPages}
             >
-              Next
+              {t('common.next')}
             </Button>
           </Flex>
         </Flex>

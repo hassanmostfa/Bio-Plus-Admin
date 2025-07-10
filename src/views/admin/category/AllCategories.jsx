@@ -31,6 +31,7 @@ import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { useGetCategoriesQuery, useDeleteCategoryMutation } from 'api/categorySlice';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
 
 const columnHelper = createColumnHelper();
 
@@ -42,6 +43,8 @@ const AllCategories = () => {
   const [deleteCategory, { isLoading: isDeleting }] = useDeleteCategoryMutation();
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
@@ -67,23 +70,23 @@ const AllCategories = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('category.deleteConfirmTitle'),
+        text: t('category.deleteConfirmText'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('category.deleteConfirmButton'),
       });
 
       if (result.isConfirmed) {
         await deleteCategory(id).unwrap(); // Delete the category
         refetch(); // Refetch the data
-        Swal.fire('Deleted!', 'The category has been deleted.', 'success');
+        Swal.fire(t('category.deleteSuccessTitle'), t('category.deleteSuccessText'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete category:', error);
-      Swal.fire('Error!', 'Failed to delete the category.', 'error');
+      Swal.fire(t('common.error'), t('category.deleteError'), 'error');
     }
   };
 
@@ -92,25 +95,18 @@ const AllCategories = () => {
     return filteredData.map((category, index) => ({
       index: index + 1,
       id: category.id,
-      en_name: category.translations.find((t) => t.languageId === 'en')?.name || 'N/A',
-      ar_name: category.translations.find((t) => t.languageId === 'ar')?.name || 'N/A',
-      category_type: 'N/A', // Replace with actual category type if available
+      en_name: category.translations.find((t) => t.languageId === 'en')?.name || t('category.notAvailable'),
+      ar_name: category.translations.find((t) => t.languageId === 'ar')?.name || t('category.notAvailable'),
+      category_type: t('category.notAvailable'), // Replace with actual category type if available
       image: category.image,
     }));
-  }, [filteredData]);
+  }, [filteredData, t]);
 
   const columns = [
     columnHelper.accessor('index', {
       id: 'index',
       header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          ID
-        </Text>
+        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">{t('common.id')}</Text>
       ),
       cell: (info) => (
         <Flex align="center">
@@ -121,56 +117,21 @@ const AllCategories = () => {
     columnHelper.accessor('en_name', {
       id: 'en_name',
       header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          En-Name
-        </Text>
+        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">{t('category.enName')}</Text>
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('ar_name', {
       id: 'ar_name',
       header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          Ar-Name
-        </Text>
+        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">{t('category.arName')}</Text>
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
-    // columnHelper.accessor('category_type', {
-    //   id: 'category_type',
-    //   header: () => (
-    //     <Text
-    //       justifyContent="space-between"
-    //       align="center"
-    //       fontSize={{ sm: '10px', lg: '12px' }}
-    //       color="gray.400"
-    //     >
-    //       Category Type
-    //     </Text>
-    //   ),
-    //   cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-    // }),
     columnHelper.accessor('image', {
       id: 'image',
       header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          Image
-        </Text>
+        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">{t('category.image')}</Text>
       ),
       cell: (info) => (
         <img
@@ -185,14 +146,7 @@ const AllCategories = () => {
     columnHelper.accessor('id', {
       id: 'actions',
       header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          Actions
-        </Text>
+        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">{t('common.actions')}</Text>
       ),
       cell: (info) => (
         <Flex align="center">
@@ -204,6 +158,8 @@ const AllCategories = () => {
             as={FaTrash}
             cursor="pointer"
             onClick={() => handleDelete(info.getValue())}
+            title={t('common.delete')}
+            aria-label={t('common.delete')}
           />
           <Icon
             w="18px"
@@ -213,6 +169,8 @@ const AllCategories = () => {
             as={EditIcon}
             cursor="pointer"
             onClick={() => navigate(`/admin/edit-category/${info.getValue()}`)}
+            title={t('common.edit')}
+            aria-label={t('common.edit')}
           />
           <Icon
             w="18px"
@@ -222,6 +180,8 @@ const AllCategories = () => {
             as={FaEye}
             cursor="pointer"
             onClick={() => navigate(`/admin/edit-category/${info.getValue()}`)}
+            title={t('common.view')}
+            aria-label={t('common.view')}
           />
         </Flex>
       ),
@@ -259,7 +219,7 @@ const AllCategories = () => {
   };
 
   return (
-    <div className="container">
+    <div className="container" >
       <Card
         flexDirection="column"
         w="100%"
@@ -271,9 +231,9 @@ const AllCategories = () => {
             color={textColor}
             fontSize="22px"
             fontWeight="700"
-            lineHeight="100%"
+            textAlign={isRTL ? 'right' : 'left'}
           >
-            All Categories
+            {t('category.allCategories')}
           </Text>
           <div className="search-container d-flex align-items-center gap-2">
             <InputGroup w={{ base: "100", md: "400px" }}>
@@ -296,14 +256,15 @@ const AllCategories = () => {
               <Input
                 variant="search"
                 fontSize="sm"
-                bg={useColorModeValue("secondaryGray.300", "gray.700")} // Light mode / Dark mode
-                color={useColorModeValue("gray.700", "white")} // Text color for light and dark mode
+                bg={useColorModeValue("secondaryGray.300", "gray.700")}
+                color={useColorModeValue("gray.700", "white")}
                 fontWeight="500"
                 _placeholder={{ color: "gray.400", fontSize: "14px" }}
                 borderRadius="30px"
-                placeholder="Search by name..."
+                placeholder={t('category.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                dir={isRTL ? 'rtl' : 'ltr'}
               />
             </InputGroup>
           </div>
@@ -319,7 +280,7 @@ const AllCategories = () => {
             width={'200px'}
           >
             <PlusSquareIcon me="10px" />
-            Create New Category
+            {t('category.addButton')}
           </Button>
         </Flex>
         <Box>
@@ -348,8 +309,8 @@ const AllCategories = () => {
                             header.getContext(),
                           )}
                           {{
-                            asc: ' 🔼',
-                            desc: ' 🔽',
+                            asc: t('common.sortAsc'),
+                            desc: t('common.sortDesc'),
                           }[header.column.getIsSorted()] ?? null}
                         </Flex>
                       </Th>
@@ -388,7 +349,7 @@ const AllCategories = () => {
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
-              Rows per page:
+              {t('common.rowsPerPage')}
             </Text>
             <Select
               value={limit}
@@ -400,6 +361,7 @@ const AllCategories = () => {
               borderColor="gray.200"
               _hover={{ borderColor: 'gray.300' }}
               _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
+              dir="ltr"
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
@@ -407,7 +369,7 @@ const AllCategories = () => {
             </Select>
           </Flex>
           <Text color={textColor} fontSize="sm">
-            Page {pagination.page} of {pagination.totalPages}
+            {t('common.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
           </Text>
           <Flex>
             <Button
@@ -418,7 +380,7 @@ const AllCategories = () => {
               mr="10px"
             >
               <Icon as={ChevronLeftIcon} mr="5px" />
-              Previous
+              {t('common.previous')}
             </Button>
             <Button
               onClick={handleNextPage}
@@ -426,7 +388,7 @@ const AllCategories = () => {
               variant="outline"
               size="sm"
             >
-              Next
+              {t('common.next')}
               <Icon as={ChevronRightIcon} ml="5px" />
             </Button>
           </Flex>

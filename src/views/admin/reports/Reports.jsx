@@ -44,10 +44,14 @@ import {
 } from "../../../api/reportsSlice"; // Import RTK Query hooks
 import Pagination from "theme/components/Pagination"; // Assuming you have a Pagination component
 import * as XLSX from 'xlsx'; // Import xlsx library
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "contexts/LanguageContext";
 
 const columnHelper = createColumnHelper();
 
 const Reports = () => {
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   const [activeTab, setActiveTab] = React.useState(0);
   const [tableData, setTableData] = React.useState([]);
   const [globalFilter, setGlobalFilter] = React.useState('');
@@ -136,8 +140,8 @@ const Reports = () => {
       default:
         // If no tab is active or an unexpected value, do nothing or show an error
         toast({
-          title: 'Export Error',
-          description: 'Could not determine which report to export.',
+          title: t('reports.exportError'),
+          description: t('reports.couldNotDetermineReport'),
           status: 'error',
           duration: 3000,
           isClosable: true,
@@ -147,8 +151,8 @@ const Reports = () => {
 
     if (sheetData.length === 0) {
       toast({
-        title: 'No Data to Export',
-        description: `No data available in the ${sheetName} to export.`, // Use sheetName for clarity
+        title: t('reports.noDataToExport'),
+        description: t('reports.noDataAvailable', { sheetName }), // Use sheetName for clarity
         status: 'info',
         duration: 3000,
         isClosable: true,
@@ -162,8 +166,8 @@ const Reports = () => {
     XLSX.writeFile(workbook, fileName);
 
     toast({
-      title: 'Download Started',
-      description: `${sheetName} is being downloaded as Excel.`, // Use sheetName for clarity
+      title: t('reports.downloadStarted'),
+      description: t('reports.downloadingAsExcel', { sheetName }), // Use sheetName for clarity
       status: 'success',
       duration: 3000,
       isClosable: true,
@@ -175,7 +179,7 @@ const Reports = () => {
       id: 'name',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Product Name
+          {t('reports.productName')}
         </Text>
       ),
       cell: (info) => (
@@ -188,7 +192,7 @@ const Reports = () => {
       id: 'category',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Category
+          {t('reports.category')}
         </Text>
       ),
       cell: (info) => (
@@ -201,7 +205,7 @@ const Reports = () => {
       id: 'sku',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          SKU
+          {t('reports.sku')}
         </Text>
       ),
       cell: (info) => (
@@ -214,7 +218,7 @@ const Reports = () => {
       id: 'quantity',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Quantity
+          {t('reports.quantity')}
         </Text>
       ),
       cell: (info) => (
@@ -227,7 +231,7 @@ const Reports = () => {
       id: 'stockStatus',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Status
+          {t('reports.status')}
         </Text>
       ),
       cell: (info) => (
@@ -247,7 +251,7 @@ const Reports = () => {
       id: 'name',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Pharmacy (EN)
+          {t('reports.pharmacy')}
         </Text>
       ),
       cell: (info) => (
@@ -260,7 +264,7 @@ const Reports = () => {
       id: 'revenueShare',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Revenue Share
+          {t('reports.revenueShare')}
         </Text>
       ),
       cell: (info) => (
@@ -273,7 +277,7 @@ const Reports = () => {
       id: 'createdAt',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Created At
+          {t('reports.createdAt')}
         </Text>
       ),
       cell: (info) => (
@@ -289,7 +293,7 @@ const Reports = () => {
       id: 'name',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Clinic (EN)
+          {t('reports.clinics')}
         </Text>
       ),
       cell: (info) => (
@@ -302,7 +306,7 @@ const Reports = () => {
       id: 'createdAt',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Created At
+          {t('reports.createdAt')}
         </Text>
       ),
       cell: (info) => (
@@ -338,7 +342,7 @@ const Reports = () => {
   });
 
   return (
-    <Box className="container">
+    <Box className="container" >
       <Card
         flexDirection="column"
         w="100%"
@@ -352,10 +356,10 @@ const Reports = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            Reports
+            {t('reports.title')}
           </Text>
           <IconButton
-            aria-label="Download all reports"
+            aria-label={t('reports.downloadAllReports')}
             icon={<FaDownload />}
             colorScheme="green"
             variant="outline"
@@ -365,9 +369,9 @@ const Reports = () => {
 
         <Tabs variant="soft-rounded" my={"20px"} colorScheme="brand" onChange={(index) => setActiveTab(index)}>
           <TabList px="25px">
-            <Tab>Inventory</Tab>
-            <Tab>Pharmacy</Tab>
-            <Tab>Clinics</Tab>
+            <Tab>{t('reports.inventory')}</Tab>
+            <Tab>{t('reports.pharmacy')}</Tab>
+            <Tab>{t('reports.clinics')}</Tab>
           </TabList>
 
           <Flex px="25px" my="20px">
@@ -377,9 +381,12 @@ const Reports = () => {
               </InputLeftElement>
               <Input
                 borderRadius={"20px"}
-                placeholder="Search..."
+                placeholder={t('common.search')}
                 value={globalFilter ?? ''}
                 onChange={(e) => setGlobalFilter(e.target.value)}
+                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                pl="30px"
+                pr="30px"
               />
             </InputGroup>
           </Flex>
@@ -392,7 +399,7 @@ const Reports = () => {
                 </Flex>
               ) : isInventoryError ? (
                 <Flex justifyContent="center" alignItems="center" height="200px">
-                  <Text color="red.500">Error loading inventory report: {inventoryError.message}</Text>
+                  <Text color="red.500">{t('reports.errorLoadingInventory')}: {inventoryError.message}</Text>
                 </Flex>
               ) : (
                 <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -470,7 +477,7 @@ const Reports = () => {
                 </Flex>
               ) : isPharmacyError ? (
                 <Flex justifyContent="center" alignItems="center" height="200px">
-                  <Text color="red.500">Error loading pharmacy report: {pharmacyError.message}</Text>
+                  <Text color="red.500">{t('reports.errorLoadingPharmacy')}: {pharmacyError.message}</Text>
                 </Flex>
               ) : (
                 <Table variant="simple" color="gray.500" mb="24px" mt="12px">
@@ -548,7 +555,7 @@ const Reports = () => {
                 </Flex>
               ) : isClinicError ? (
                 <Flex justifyContent="center" alignItems="center" height="200px">
-                  <Text color="red.500">Error loading clinics report: {clinicError.message}</Text>
+                  <Text color="red.500">{t('reports.errorLoadingClinics')}: {clinicError.message}</Text>
                 </Flex>
               ) : (
                 <Table variant="simple" color="gray.500" mb="24px" mt="12px">

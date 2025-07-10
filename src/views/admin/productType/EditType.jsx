@@ -14,12 +14,16 @@ import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetTypeQuery, useUpdateTypeMutation } from "api/typeSlice";
 import Swal from "sweetalert2";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const EditType = () => {
   const { id } = useParams(); // Get the product type ID from the URL
   const { data: typeResponse, isLoading: isFetching, isError: fetchError , refetch } = useGetTypeQuery(id); // Fetch the product type data
   const [updateType, { isLoading: isUpdating }] = useUpdateTypeMutation(); // Mutation hook for updating a product type
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   // State for form fields
   const [enName, setEnName] = useState("");
@@ -51,7 +55,7 @@ const EditType = () => {
   // Handle form submission
   const handleSend = async () => {
     if (!enName || !arName) {
-      Swal.fire("Error!", "Please fill all required fields.", "error");
+      Swal.fire(t('editProductType.ErrorRequiredFields'));
       return;
     }
 
@@ -66,11 +70,11 @@ const EditType = () => {
 
     try {
       const response = await updateType({id, type: payload}).unwrap(); // Send data to the API
-      Swal.fire("Success!", "Product type updated successfully.", "success");
+      Swal.fire(t('editProductType.SuccessUpdate'));
       navigate("/admin/product-types"); // Redirect to the product types page
     } catch (error) {
       console.error("Failed to update product type:", error);
-      Swal.fire("Error!", "Failed to update product type.", "error");
+      Swal.fire(t('editProductType.ErrorUpdate'));
     }
   };
 
@@ -78,7 +82,7 @@ const EditType = () => {
   if (fetchError) return <Text>Error loading product type data.</Text>;
 
   return (
-    <Box className="container add-admin-container w-100">
+    <Box className="container add-admin-container w-100" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
@@ -88,7 +92,7 @@ const EditType = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Edit Product Type
+            {t('editProductType.EditProductType')}
           </Text>
           <Button
             type="button"
@@ -97,20 +101,20 @@ const EditType = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('editProductType.Back')}
           </Button>
         </div>
         <form>
           {/* English Name Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Product En-Type
+              {t('editProductType.ProductEnType')}
               <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="text"
               id="en_name"
-              placeholder="Enter Product En-Type"
+              placeholder={t('editProductType.EnterProductEnType')}
               value={enName}
               onChange={(e) => setEnName(e.target.value)}
               required
@@ -123,13 +127,13 @@ const EditType = () => {
           {/* Arabic Name Field */}
           <div className="mb-3">
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Product Ar-Type
+              {t('editProductType.ProductArType')}
               <span className="text-danger mx-1">*</span>
             </Text>
             <Input
               type="text"
               id="ar_name"
-              placeholder="Enter Product Ar-Type"
+              placeholder={t('editProductType.EnterProductArType')}
               value={arName}
               onChange={(e) => setArName(e.target.value)}
               required
@@ -143,7 +147,7 @@ const EditType = () => {
           <Box mb="20px">
             <FormControl display="flex" alignItems="center">
               <FormLabel htmlFor="isActive" mb="0">
-                Active Status
+                {t('editProductType.ActiveStatus')}
               </FormLabel>
               <Switch
                 id="isActive"
@@ -151,6 +155,7 @@ const EditType = () => {
                 onChange={() => setIsActive(!isActive)}
                 colorScheme="teal"
                 size="md"
+                dir='ltr'
               />
             </FormControl>
           </Box>
@@ -168,7 +173,7 @@ const EditType = () => {
               onClick={handleSend}
               isLoading={isUpdating}
             >
-              Save Changes
+              {t('editProductType.SaveChanges')}
             </Button>
           </Flex>
         </form>

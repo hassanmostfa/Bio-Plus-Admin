@@ -20,6 +20,8 @@ import { useGetPharmacyFilesQuery } from 'api/pharmacyFiles';
 import { FaFilePen, FaPen, FaTrash } from 'react-icons/fa6';
 import { useDeletePharmacyFileMutation } from 'api/pharmacyFiles';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const FileManger = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
@@ -52,30 +54,34 @@ const FileManger = () => {
   };
 
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
+
   const handleDelete = (fileId) => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'You won\'t be able to revert this!',
+      title: t('files.confirmDelete'),
+      text: t('files.deleteWarning'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!',
+      confirmButtonText: t('files.delete'),
     }).then((result) => {
       if (result.isConfirmed) {
           deleteFile({id:pharmacyId, fileId:fileId})
           .unwrap()
           .then(() => {
-            Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+            Swal.fire(t('files.deleteSuccess'), '', 'success');
             refetch();
           })
           .catch((error) => {
-            Swal.fire('Error!', 'There was an error deleting the file.', 'error');
+            Swal.fire(t('files.deleteError'), '', 'error');
             console.error(error);
           });
       }
     });
   };
+
   return (
     <div className="container">
       <Card
@@ -91,35 +97,34 @@ const FileManger = () => {
             fontWeight="700"
             lineHeight="100%"
           >
-            File Manager
+            {t('files.title')}
           </Text>
-
-           <Button
-                      variant="darkBrand"
-                      color="white"
-                      fontSize="sm"
-                      fontWeight="500"
-                      borderRadius="70px"
-                      px="24px"
-                      py="5px"
-                      onClick={() => navigate(`/admin/pharmacy/${pharmacyId}/add-file`)}
-                      width={'200px'}
-                    >
-                      Add File
-                    </Button>
+          <Button
+            variant='darkBrand'
+            color='white'
+            fontSize='sm'
+            fontWeight='500'
+            borderRadius='70px'
+            px='24px'
+            py='5px'
+            onClick={() => navigate(`/admin/pharmacy/${pharmacyId}/add-file`)}
+            width={'200px'}
+          >
+            {t('files.addFile')}
+          </Button>
         </Flex>
         <Box>
           <Table variant="simple" color="gray.500" mb="24px" mt="12px">
             <Thead>
               <Tr>
                 <Th borderColor={borderColor}>
-                  <Text color="gray.400" fontSize="12px">File Name</Text>
+                  <Text color="gray.400" fontSize="12px">{t('files.fileName')}</Text>
                 </Th>
                 <Th borderColor={borderColor}>
-                  <Text color="gray.400" fontSize="12px">File URL</Text>
+                  <Text color="gray.400" fontSize="12px">{t('files.fileUrl')}</Text>
                 </Th>
                 <Th borderColor={borderColor}>
-                  <Text color="gray.400" fontSize="12px">Actions</Text>
+                  <Text color="gray.400" fontSize="12px">{t('files.actions')}</Text>
                 </Th>
               </Tr>
             </Thead>

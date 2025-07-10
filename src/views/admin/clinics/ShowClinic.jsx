@@ -11,6 +11,8 @@ import {
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useGetClinicQuery } from 'api/clinicSlice';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 const ShowClinic = () => {
   const { id } = useParams();
@@ -20,16 +22,18 @@ const ShowClinic = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   // Get Arabic translation
   const arabicTranslation = clinic.translations?.find(t => t.languageId === 'ar');
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>{t('clinics.loading')}</div>;
   }
 
   return (
-    <div className="container add-admin-container w-100">
+    <div className="container add-admin-container w-100" dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
       <div className="add-admin-card shadow p-4 bg-white w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
@@ -39,7 +43,7 @@ const ShowClinic = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Clinic Details
+            {t('clinics.clinicDetails')}
           </Text>
           <Button
             type="button"
@@ -48,61 +52,61 @@ const ShowClinic = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('clinics.back')}
           </Button>
         </div>
 
         <Grid templateColumns="repeat(2, 1fr)" gap={6} mb={8}>
           {/* Basic Info */}
           <Box>
-            <Text fontSize="lg" fontWeight="600" mb={4}>Basic Information</Text>
+            <Text fontSize="lg" fontWeight="600" mb={4}>{t('clinics.basicInformation')}</Text>
             
             <Box mb={3}>
-              <Text color="gray.500" fontSize="sm">English Name</Text>
+              <Text color="gray.500" fontSize="sm">{t('clinics.englishName')}</Text>
               <Text fontSize="md">{clinic.name}</Text>
             </Box>
             
             <Box mb={3}>
-              <Text color="gray.500" fontSize="sm">Arabic Name</Text>
-              <Text fontSize="md" dir="">{arabicTranslation?.name || 'N/A'}</Text>
+              <Text color="gray.500" fontSize="sm">{t('clinics.arabicName')}</Text>
+              <Text fontSize="md" dir="rtl">{arabicTranslation?.name || t('clinics.notAvailable')}</Text>
             </Box>
             
             <Box mb={3}>
-              <Text color="gray.500" fontSize="sm">Email</Text>
+              <Text color="gray.500" fontSize="sm">{t('clinics.email')}</Text>
               <Text fontSize="md">{clinic.email}</Text>
             </Box>
             
             <Box mb={3}>
-              <Text color="gray.500" fontSize="sm">Status</Text>
+              <Text color="gray.500" fontSize="sm">{t('clinics.status')}</Text>
               <Badge 
                 colorScheme={clinic.isActive ? 'green' : 'red'} 
                 fontSize="sm"
                 p={1}
                 borderRadius="md"
               >
-                {clinic.isActive ? 'Active' : 'Inactive'}
+                {clinic.isActive ? t('clinics.active') : t('clinics.inactive')}
               </Badge>
             </Box>
           </Box>
 
           {/* Working Hours */}
           <Box>
-            <Text fontSize="lg" fontWeight="600" mb={4}>Working Hours</Text>
+            <Text fontSize="lg" fontWeight="600" mb={4}>{t('clinics.workingHours')}</Text>
             
             <Box mb={3}>
-              <Text color="gray.500" fontSize="sm">Opening Time</Text>
+              <Text color="gray.500" fontSize="sm">{t('clinics.openingTime')}</Text>
               <Text fontSize="md">{clinic.fromTime}</Text>
             </Box>
             
             <Box mb={3}>
-              <Text color="gray.500" fontSize="sm">Closing Time</Text>
+              <Text color="gray.500" fontSize="sm">{t('clinics.closingTime')}</Text>
               <Text fontSize="md">{clinic.toTime}</Text>
             </Box>
           </Box>
 
           {/* Locations */}
           <Box gridColumn="1 / -1">
-            <Text fontSize="lg" fontWeight="600" mb={4}>Locations</Text>
+            <Text fontSize="lg" fontWeight="600" mb={4}>{t('clinics.locations')}</Text>
             
             {clinic.locations?.map((location, index) => {
               const locationArabicName = location.translations?.find(t => t.languageId === 'ar')?.name;
@@ -118,24 +122,24 @@ const ShowClinic = () => {
                 >
                   <Grid templateColumns="repeat(2, 1fr)" gap={4}>
                     <Box>
-                      <Text color="gray.500" fontSize="sm">English Name</Text>
+                      <Text color="gray.500" fontSize="sm">{t('clinics.englishName')}</Text>
                       <Text fontSize="md">{location.name}</Text>
                     </Box>
                     
                     <Box>
-                      <Text color="gray.500" fontSize="sm">Arabic Name</Text>
-                      <Text fontSize="md" dir="">{locationArabicName || 'N/A'}</Text>
+                      <Text color="gray.500" fontSize="sm">{t('clinics.arabicName')}</Text>
+                      <Text fontSize="md" dir="rtl">{locationArabicName || t('clinics.notAvailable')}</Text>
                     </Box>
                     
                     <Box>
-                      <Text color="gray.500" fontSize="sm">Status</Text>
+                      <Text color="gray.500" fontSize="sm">{t('clinics.status')}</Text>
                       <Badge 
                         colorScheme={location.isActive ? 'green' : 'red'} 
                         fontSize="sm"
                         p={1}
                         borderRadius="md"
                       >
-                        {location.isActive ? 'Active' : 'Inactive'}
+                        {location.isActive ? t('clinics.active') : t('clinics.inactive')}
                       </Badge>
                     </Box>
                   </Grid>
@@ -152,7 +156,7 @@ const ShowClinic = () => {
             onClick={() => navigate(-1)}
             width="120px"
           >
-            Back to List
+            {t('clinics.backToList')}
           </Button>
         </Flex>
       </div>

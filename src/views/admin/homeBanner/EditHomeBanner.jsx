@@ -22,8 +22,12 @@ import { FaUpload } from 'react-icons/fa6';
 import Swal from 'sweetalert2';
 import { useAddFileMutation } from 'api/filesSlice';
 import { IoMdArrowBack } from 'react-icons/io';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const EditHomeBanner = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -89,7 +93,7 @@ const EditHomeBanner = () => {
       const selectedFile = files[0];
       // Validate file type if needed
       if (!selectedFile.type.startsWith('image/')) {
-        Swal.fire('Error!', 'Please upload an image file', 'error');
+        Swal.fire(t('homeBanners.edit.error'), t('homeBanners.edit.uploadImageFile'), 'error');
         return;
       }
       setImage(selectedFile);
@@ -142,8 +146,8 @@ const EditHomeBanner = () => {
         imageKey = uploadResponse.data.uploadedFiles[0].url;
       } catch (uploadError) {
         toast({
-          title: 'Error uploading image.',
-          description: uploadError?.data?.message || 'Failed to upload image.',
+          title: t('homeBanners.edit.error'),
+          description: uploadError?.data?.message || t('homeBanners.edit.uploadError'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -152,7 +156,7 @@ const EditHomeBanner = () => {
         return; // Stop if image upload fails
       }
     } else if (!imageKey) { // If no new image and no existing image
-         Swal.fire('Error!', 'Please upload an image.', 'error');
+         Swal.fire(t('homeBanners.edit.error'), t('homeBanners.edit.uploadImage'), 'error');
          return;
     }
 
@@ -168,7 +172,8 @@ const EditHomeBanner = () => {
 
       await updateBanner(payload).unwrap();
       toast({
-        title: 'Banner updated.',
+        title: t('homeBanners.edit.success'),
+        description: t('homeBanners.edit.updatedSuccessfully'),
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -176,8 +181,8 @@ const EditHomeBanner = () => {
       navigate('/admin/undefined/cms/home-banners'); // Navigate back to list page
     } catch (error) {
       toast({
-        title: 'Error updating banner.',
-        description: error?.data?.message || 'Failed to update banner.',
+        title: t('homeBanners.edit.error'),
+        description: error?.data?.message || t('homeBanners.edit.failedToUpdate'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -197,7 +202,7 @@ const EditHomeBanner = () => {
   if (isErrorBanners) {
      return (
       <Flex justifyContent="center" alignItems="center" height="200px" pt={{ base: '130px', md: '80px', xl: '80px' }}>
-        <Text color="red.500">Error loading banners: {errorBanners.message}</Text>
+        <Text color="red.500">{t('homeBanners.edit.loadErrorText')}: {errorBanners.message}</Text>
       </Flex>
     );
   }
@@ -205,18 +210,18 @@ const EditHomeBanner = () => {
   if (!bannerToEdit) {
       return (
       <Flex justifyContent="center" alignItems="center" height="200px" pt={{ base: '130px', md: '80px', xl: '80px' }}>
-        <Text color="red.500">Banner not found.</Text>
+        <Text color="red.500">{t('homeBanners.edit.bannerNotFound')}</Text>
       </Flex>
     );
   }
 
   return (
-    <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
+    <Box pt={{ base: '130px', md: '80px', xl: '80px' }} dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Card>
         {/* Header with Title and Back Button */}
         <Flex justifyContent="space-between" alignItems="center" mb="20px">
           <Text fontSize="xl" fontWeight="bold" lineHeight="100%" color={textColor}>
-            Edit Home Banner
+            {t('homeBanners.edit.title')}
           </Text>
           <Button
             type="button"
@@ -225,7 +230,7 @@ const EditHomeBanner = () => {
             size="sm"
             leftIcon={<Icon as={IoMdArrowBack} w="20px" h="20px" color="inherit" />}
           >
-            Back
+            {t('homeBanners.edit.back')}
           </Button>
         </Flex>
 
@@ -234,7 +239,7 @@ const EditHomeBanner = () => {
 
              {/* Image Upload Field */}
              <FormControl id="image" isRequired>
-              <FormLabel>Banner Image</FormLabel>
+              <FormLabel>{t('homeBanners.edit.bannerImage')}</FormLabel>
               <Box
                 border={'1px dashed #ccc'}
                 borderRadius="md"
@@ -265,7 +270,7 @@ const EditHomeBanner = () => {
                   <Flex direction="column" align="center">
                     <Icon as={FaUpload} w={8} h={8} color="gray.400" mb={2} />
                     <Text fontSize="sm" color="gray.600">
-                      Drag and drop an image here, or click to select a file
+                      {t('homeBanners.edit.dragDropImage')}
                     </Text>
                   </Flex>
                 )}
@@ -274,18 +279,19 @@ const EditHomeBanner = () => {
 
 
             <FormControl id="textEn">
-              <FormLabel>Title (English)</FormLabel>
+              <FormLabel>{t('homeBanners.edit.titleEnglish')}</FormLabel>
               <Input
                 type="text"
                 name="textEn"
                 value={bannerData.textEn}
                 onChange={handleChange}
                 bg={inputBg}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             <FormControl id="textAr">
-              <FormLabel>Title (Arabic)</FormLabel>
+              <FormLabel>{t('homeBanners.edit.titleArabic')}</FormLabel>
               <Input
                 type="text"
                 name="textAr"
@@ -297,30 +303,32 @@ const EditHomeBanner = () => {
             </FormControl>
 
             <FormControl id="link">
-              <FormLabel>Link</FormLabel>
+              <FormLabel>{t('homeBanners.edit.link')}</FormLabel>
               <Input
                 type="text"
                 name="link"
                 value={bannerData.link}
                 onChange={handleChange}
                 bg={inputBg}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
              <FormControl id="order">
-              <FormLabel>Order</FormLabel>
+              <FormLabel>{t('homeBanners.edit.order')}</FormLabel>
               <Input
                 type="number"
                 name="order"
                 value={bannerData.order}
                 onChange={handleChange}
                 bg={inputBg}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </FormControl>
 
             <FormControl id="isActive" display="flex" alignItems="center">
               <FormLabel htmlFor="isActive" mb="0">
-                Active Status
+                {t('homeBanners.edit.activeStatus')}
               </FormLabel>
               <Switch
                 id="isActive"
@@ -334,7 +342,7 @@ const EditHomeBanner = () => {
             {/* Add more form controls for other fields */}
 
             <Button variant="darkBrand" color="white" type="submit" mt={4} isLoading={isUpdating || isUploadingImage} width="100%">
-              Update Banner
+              {t('homeBanners.edit.updateBanner')}
             </Button>
           </Stack>
         </form>

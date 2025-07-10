@@ -44,9 +44,14 @@ import { useNavigate } from 'react-router-dom';
 import { useGetBlogsQuery, useDeleteBlogMutation } from 'api/blogSlice';
 import Swal from 'sweetalert2';
 
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
+
 const columnHelper = createColumnHelper();
 
 const Blogs = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   // State management
   const [sorting, setSorting] = useState([]);
   const [pagination, setPagination] = useState({
@@ -84,22 +89,22 @@ const Blogs = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('blogs.deleteConfirmTitle'),
+        text: t('blogs.deleteConfirmText'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('blogs.deleteConfirmButton'),
       });
 
       if (result.isConfirmed) {
         await deleteBlog(id).unwrap();
         refetch();
-        Swal.fire('Deleted!', 'The blog has been deleted.', 'success');
+        Swal.fire(t('blogs.deleteSuccessTitle'), t('blogs.deleteSuccessText'), 'success');
       }
     } catch (error) {
-      Swal.fire('Error!', error.message || 'Failed to delete blog', 'error');
+      Swal.fire(t('blogs.deleteErrorTitle'), error.message || t('blogs.deleteErrorText'), 'error');
     }
   };
 
@@ -109,19 +114,19 @@ const Blogs = () => {
     );
 
     if (selectedIds.length === 0) {
-      Swal.fire('Info', 'Please select at least one blog to delete', 'info');
+      Swal.fire(t('blogs.infoTitle'), t('blogs.selectAtLeastOne'), 'info');
       return;
     }
 
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: `You are about to delete ${selectedIds.length} blog(s)`,
+        title: t('blogs.deleteConfirmTitle'),
+        text: t('blogs.bulkDeleteConfirmText', { count: selectedIds.length }),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete them!',
+        confirmButtonText: t('blogs.bulkDeleteConfirmButton'),
       });
 
       if (result.isConfirmed) {
@@ -129,13 +134,13 @@ const Blogs = () => {
         setRowSelection({});
         refetch();
         Swal.fire(
-          'Deleted!',
-          'The selected blogs have been deleted.',
+          t('blogs.bulkDeleteSuccessTitle'),
+          t('blogs.bulkDeleteSuccessText'),
           'success',
         );
       }
     } catch (error) {
-      Swal.fire('Error!', error.message || 'Failed to delete blogs', 'error');
+      Swal.fire(t('blogs.deleteErrorTitle'), error.message || t('blogs.bulkDeleteErrorText'), 'error');
     }
   };
 
@@ -146,8 +151,8 @@ const Blogs = () => {
 
   const handleSendNotification = (blogId) => {
     Swal.fire(
-      'Notification Sent!',
-      `Notification for blog ${blogId} has been sent.`,
+      t('blogs.notificationSentTitle'),
+      t('blogs.notificationSentText', { blogId }),
       'success',
     );
   };
@@ -176,7 +181,7 @@ const Blogs = () => {
       id: 'id',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          ID
+          {t('blogs.table.id')}
         </Text>
       ),
       cell: (info) => (
@@ -189,7 +194,7 @@ const Blogs = () => {
       id: 'image',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Image
+          {t('blogs.table.image')}
         </Text>
       ),
       cell: (info) => (
@@ -206,7 +211,7 @@ const Blogs = () => {
       id: 'title',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          EN Title
+          {t('blogs.table.enTitle')}
         </Text>
       ),
       cell: (info) => (
@@ -219,7 +224,7 @@ const Blogs = () => {
       id: 'title',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          AR Title
+          {t('blogs.table.arTitle')}
         </Text>
       ),
       cell: (info) => (
@@ -232,12 +237,12 @@ const Blogs = () => {
       id: 'status',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Status
+          {t('blogs.table.status')}
         </Text>
       ),
       cell: (info) => (
         <Badge colorScheme={info.getValue() ? 'green' : 'orange'} fontSize="sm">
-          {info.getValue() ? 'Active' : 'InActive'}
+          {info.getValue() ? t('blogs.active') : t('blogs.inactive')}
         </Badge>
       ),
     }),
@@ -245,7 +250,7 @@ const Blogs = () => {
       id: 'date',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Date
+          {t('blogs.table.date')}
         </Text>
       ),
       cell: (info) => (
@@ -258,7 +263,7 @@ const Blogs = () => {
       id: 'actions',
       header: () => (
         <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          Actions
+          {t('blogs.table.actions')}
         </Text>
       ),
       cell: (info) => (
@@ -320,7 +325,7 @@ const Blogs = () => {
   });
 
   if (isLoading) {
-    return <Box>Loading...</Box>;
+    return <Box>{t('blogs.loading')}</Box>;
   }
 
   return (
@@ -333,7 +338,7 @@ const Blogs = () => {
       >
         <Flex px="25px" mb="8px" justify="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700">
-            Blogs Management
+            {t('blogs.title')}
           </Text>
           <Button
             variant="darkBrand"
@@ -341,7 +346,7 @@ const Blogs = () => {
             onClick={() => navigate('/admin/add-blogs')}
             leftIcon={<PlusSquareIcon />}
           >
-            Add Blog
+            {t('blogs.addBlog')}
           </Button>
         </Flex>
 
@@ -438,17 +443,17 @@ const Blogs = () => {
         >
           <Flex align="center" gap={2}>
             <Text fontSize="sm">
-              Showing{' '}
+              {t('blogs.showing')}{' '}
               {table.getState().pagination.pageIndex *
                 table.getState().pagination.pageSize +
                 1}{' '}
-              to{' '}
+              {t('blogs.to')}{' '}
               {Math.min(
                 (table.getState().pagination.pageIndex + 1) *
                   table.getState().pagination.pageSize,
                 blogs?.totalCount || 0,
               )}{' '}
-              of {blogs?.totalCount || 0} entries
+              {t('blogs.of')} {blogs?.totalCount || 0} {t('blogs.entries')}
             </Text>
           </Flex>
           <Flex gap={2}>
@@ -457,14 +462,14 @@ const Blogs = () => {
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              Previous
+              {t('blogs.previous')}
             </Button>
             <Button
               size="sm"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              Next
+              {t('blogs.next')}
             </Button>
           </Flex>
         </Flex>
@@ -474,7 +479,7 @@ const Blogs = () => {
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Blog Details</ModalHeader>
+          <ModalHeader>{t('blogs.modal.title')}</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             {selectedBlog && (
@@ -488,26 +493,26 @@ const Blogs = () => {
                   />
                 </Flex>
                 <Text fontWeight="bold" mb={2}>
-                  English Title:
+                  {t('blogs.modal.englishTitle')}:
                 </Text>
                 <Text mb={4}>{selectedBlog.translations.en.title}</Text>
 
                 <Text fontWeight="bold" mb={2}>
-                  Arabic Title:
+                  {t('blogs.modal.arabicTitle')}:
                 </Text>
                 <Text mb={4} dir="rtl">
                   {selectedBlog.translations.ar.title}
                 </Text>
 
                 <Text fontWeight="bold" mb={2}>
-                  English Content:
+                  {t('blogs.modal.englishContent')}:
                 </Text>
                 <Text mb={4} whiteSpace="pre-wrap">
                   {selectedBlog.translations.en.content}
                 </Text>
 
                 <Text fontWeight="bold" mb={2}>
-                  Arabic Content:
+                  {t('blogs.modal.arabicContent')}:
                 </Text>
                 <Text mb={4} dir="rtl" whiteSpace="pre-wrap">
                   {selectedBlog.translations.ar.content}
@@ -516,7 +521,7 @@ const Blogs = () => {
                 <Flex gap={4}>
                   <Box>
                     <Text fontWeight="bold" mb={2}>
-                      Status:
+                      {t('blogs.modal.status')}:
                     </Text>
                     <Badge
                       colorScheme={
@@ -529,7 +534,7 @@ const Blogs = () => {
                   </Box>
                   <Box>
                     <Text fontWeight="bold" mb={2}>
-                      Created At:
+                      {t('blogs.modal.createdAt')}:
                     </Text>
                     <Text>
                       {new Date(selectedBlog.created_at).toLocaleString()}
@@ -541,7 +546,7 @@ const Blogs = () => {
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" mr={3} onClick={onClose}>
-              Close
+              {t('blogs.modal.close')}
             </Button>
           </ModalFooter>
         </ModalContent>

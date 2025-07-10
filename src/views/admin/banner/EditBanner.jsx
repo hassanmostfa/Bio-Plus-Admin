@@ -26,8 +26,12 @@ import Swal from 'sweetalert2';
 import { useGetPharmaciesQuery } from "../../../api/pharmacySlice";
 import { useGetProductsQuery } from "../../../api/productSlice";
 import { useGetDoctorsQuery } from "../../../api/doctorSlice";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const EditBanner = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -108,8 +112,8 @@ const EditBanner = () => {
       // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
-          title: 'Invalid file type',
-          description: 'Please upload an image file',
+          title: t('banners.edit.invalidFileType'),
+          description: t('banners.edit.uploadImageFile'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -120,8 +124,8 @@ const EditBanner = () => {
       // Validate file size (e.g., 5MB max)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: 'File too large',
-          description: 'Maximum file size is 5MB',
+          title: t('banners.edit.fileTooLarge'),
+          description: t('banners.edit.maxFileSize'),
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -178,13 +182,13 @@ const EditBanner = () => {
 
   const handleCancel = () => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: 'You will lose all unsaved changes',
+      title: t('banners.edit.discardConfirmTitle'),
+      text: t('banners.edit.discardConfirmText'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, discard changes',
+      confirmButtonText: t('banners.edit.discardConfirmButton'),
     }).then((result) => {
       if (result.isConfirmed) {
         navigate('/admin/undefined/cms/banners');
@@ -198,8 +202,8 @@ const EditBanner = () => {
     // Adjust validation based on link type
     if (!formData.title || !formData.arTitle || (formData.linkType === "EXTERNAL" && !formData.link) || (formData.linkType !== "EXTERNAL" && !formData.linkId)) {
       toast({
-        title: "Error",
-        description: "Please fill all required fields",
+        title: t('banners.edit.error'),
+        description: t('banners.edit.fillRequiredFields'),
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -279,8 +283,8 @@ const EditBanner = () => {
       await updateBanner({ id, data: payload }).unwrap();
 
       toast({
-        title: 'Success',
-        description: 'Banner updated successfully',
+        title: t('banners.edit.success'),
+        description: t('banners.edit.updatedSuccessfully'),
         status: 'success',
         duration: 5000,
         isClosable: true,
@@ -290,8 +294,8 @@ const EditBanner = () => {
     } catch (error) {
       console.error('Failed to update banner:', error);
       toast({
-        title: 'Error',
-        description: error.data?.message || 'Failed to update banner',
+        title: t('banners.edit.error'),
+        description: error.data?.message || t('banners.edit.failedToUpdate'),
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -324,13 +328,13 @@ const EditBanner = () => {
 
   if (error) {
     return (
-      <Box className="container add-admin-container w-100">
+      <Box className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
         <Box className="add-admin-card shadow p-4 bg-white w-100">
           <Text color="red.500" mb={4}>
-            Error loading banner: {error.data?.message || error.message}
+            {t('banners.edit.loadErrorText')}: {error.data?.message || error.message}
           </Text>
           <Button onClick={() => navigate(-1)} colorScheme="blue">
-            Go Back
+            {t('banners.edit.goBack')}
           </Button>
         </Box>
       </Box>
@@ -338,7 +342,7 @@ const EditBanner = () => {
   }
 
   return (
-    <Box className="container add-admin-container w-100">
+    <Box className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Box bg={cardBg} className="add-admin-card shadow p-4 w-100" borderRadius="lg">
         <Flex mb={3} justify="space-between" align="center">
           <Text
@@ -348,7 +352,7 @@ const EditBanner = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Edit Banner
+            {t('banners.edit.title')}
           </Text>
           <Button
             onClick={handleCancel}
@@ -356,29 +360,30 @@ const EditBanner = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('banners.edit.back')}
           </Button>
         </Flex>
 
         <form onSubmit={handleSubmit}>
           {/* Title Field */}
           <FormControl mb={4} isRequired>
-            <FormLabel>English Title</FormLabel>
+            <FormLabel>{t('banners.edit.englishTitle')}</FormLabel>
             <Input
               name="title"
-              placeholder="Enter Banner Title (English)"
+              placeholder={t('banners.edit.enterEnglishTitle')}
               value={formData.title}
               onChange={handleChange}
               bg={inputBg}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </FormControl>
 
           {/* Arabic Title Field */}
           <FormControl mb={4} isRequired>
-            <FormLabel>Arabic Title</FormLabel>
+            <FormLabel>{t('banners.edit.arabicTitle')}</FormLabel>
             <Input
               name="arTitle"
-              placeholder="ادخل عنوان البانر"
+              placeholder={t('banners.edit.enterArabicTitle')}
               value={formData.arTitle}
               onChange={handleChange}
               dir="rtl"
@@ -390,35 +395,36 @@ const EditBanner = () => {
           <Flex mb={4} gap={4} direction={{ base: "column", md: "row" }}>
             {/* Link Type */}          
             <FormControl isRequired flex="1">
-              <FormLabel>Link Type</FormLabel>
+              <FormLabel>{t('banners.edit.linkType')}</FormLabel>
               <Select
                 name="linkType"
                 value={formData.linkType}
                 onChange={handleChange}
                 bg={inputBg}
               >
-                <option value="PHARMACY">Pharmacy</option>
-                <option value="PRODUCT">Product</option>
-                <option value="DOCTOR">Doctor</option>
-                <option value="EXTERNAL">External Link</option>
+                <option value="PHARMACY">{t('banners.edit.pharmacy')}</option>
+                <option value="PRODUCT">{t('banners.edit.product')}</option>
+                <option value="DOCTOR">{t('banners.edit.doctor')}</option>
+                <option value="EXTERNAL">{t('banners.edit.externalLink')}</option>
               </Select>
             </FormControl>
 
             {/* Link or Link ID / Select Entity */}          
             {formData.linkType === "EXTERNAL" ? (
               <FormControl isRequired flex="1">
-                <FormLabel>Link URL</FormLabel>
+                <FormLabel>{t('banners.edit.linkUrl')}</FormLabel>
                 <Input
                   name="link"
-                  placeholder="Enter External Link URL"
+                  placeholder={t('banners.edit.enterExternalLink')}
                   value={formData.link}
                   onChange={handleChange}
                   bg={inputBg}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
               </FormControl>
             ) : (
               <FormControl isRequired flex="1">
-                <FormLabel>{formData.linkType} ID</FormLabel>
+                <FormLabel>{t('banners.edit.selectEntity', { type: t(`banners.edit.${formData.linkType.toLowerCase()}`) })}</FormLabel>
                 {formData.linkType === "PHARMACY" && isPharmaciesLoading ? (
                  <Spinner size="sm" />
               ) : formData.linkType === "PRODUCT" && isProductsLoading ? (
@@ -428,7 +434,7 @@ const EditBanner = () => {
               ) : (
                 <Select
                   name="linkId"
-                  placeholder={`Select ${formData.linkType}`}
+                  placeholder={t('banners.edit.selectEntity', { type: t(`banners.edit.${formData.linkType.toLowerCase()}`) })}
                   value={formData.linkId}
                   onChange={handleChange}
                   bg={inputBg}
@@ -450,21 +456,22 @@ const EditBanner = () => {
 
           {/* Order */}
           <FormControl mb={4}>
-            <FormLabel>Display Order</FormLabel>
+            <FormLabel>{t('banners.edit.displayOrder')}</FormLabel>
             <Input
               name="order"
               type="number"
-              placeholder="Enter display order"
+              placeholder={t('banners.edit.enterDisplayOrder')}
               value={formData.order}
               onChange={handleChange}
               min="1"
               bg={inputBg}
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </FormControl>
 
           {/* Status */}
           <FormControl mb={4} display="flex" alignItems="center">
-            <FormLabel mb="0">Active Status</FormLabel>
+            <FormLabel mb="0">{t('banners.edit.activeStatus')}</FormLabel>
             <Switch
               isChecked={formData.isActive}
               onChange={handleSwitchChange}
@@ -475,7 +482,7 @@ const EditBanner = () => {
 
           {/* Image Upload */}
           <FormControl mb={4}>
-            <FormLabel>Banner Image</FormLabel>
+            <FormLabel>{t('banners.edit.bannerImage')}</FormLabel>
             <Box
               border="1px dashed"
               borderColor={isDragging ? 'blue.500' : 'gray.200'}
@@ -490,9 +497,9 @@ const EditBanner = () => {
               onClick={() => document.getElementById('fileInput').click()}
             >
               <Icon as={FaUpload} w={8} h={8} color="blue.500" mb={2} />
-              <Text>Drag & Drop Image Here or Click to Browse</Text>
+              <Text>{t('banners.edit.dragDropImage')}</Text>
               <Text fontSize="sm" color="gray.500" mt={2}>
-                Recommended size: 1200x400px (Max 5MB)
+                {t('banners.edit.recommendedSize')}
               </Text>
               <input
                 type="file"
@@ -537,16 +544,16 @@ const EditBanner = () => {
               isDisabled={isLoading}
               bg={inputBg}
             >
-              Cancel
+              {t('banners.edit.cancel')}
             </Button>
             <Button
               type="submit"
               variant="darkBrand"
               isLoading={isLoading}
-              loadingText="Updating..."
-              bg={inputBg}
+              loadingText={t('banners.edit.updating')}
+              // bg={inputBg}
             >
-              Update Banner
+              {t('banners.edit.updateBanner')}
             </Button>
           </Flex>
         </form>

@@ -15,6 +15,8 @@ import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { useAddVarientMutation } from "api/varientSlice";
 import Swal from "sweetalert2";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AddVariant = () => {
   const [variantAr, setVariantAr] = useState("");
@@ -27,6 +29,8 @@ const AddVariant = () => {
   const navigate = useNavigate();
   const cardBg = useColorModeValue('white', 'navy.700');
   const inputBg = useColorModeValue('gray.100', 'gray.700');
+  const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
 
   const handleAttributeChange = (index, field, value) => {
     const updatedAttributes = [...attributes];
@@ -87,7 +91,7 @@ const AddVariant = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Variant
+            {t('addVariant.addNewVariant')}
           </Text>
           <Button
             type="button"
@@ -96,20 +100,20 @@ const AddVariant = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('addVariant.back')}
           </Button>
         </div>
 
-        <form>
+        <form dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
           {/* Variant Name Fields */}
           <SimpleGrid columns={2} spacing={4}>
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Variant En-Name <span className="text-danger">*</span>
+                {t('addVariant.variantEnName')} <span className="text-danger">*</span>
               </Text>
               <Input
                 type="text"
-                placeholder="Enter Variant Name"
+                placeholder={t('addVariant.enterVariantName')}
                 value={variantEn}
                 onChange={(e) => setVariantEn(e.target.value)}
                 required
@@ -120,11 +124,11 @@ const AddVariant = () => {
             </Box>
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Variant Ar-Name <span className="text-danger">*</span>
+                {t('addVariant.variantArName')} <span className="text-danger">*</span>
               </Text>
               <Input
                 type="text"
-                placeholder="أدخل اسم المتغير"
+                placeholder={t('addVariant.enterArName')}
                 value={variantAr}
                 onChange={(e) => setVariantAr(e.target.value)}
                 required
@@ -138,7 +142,7 @@ const AddVariant = () => {
           {/* Input Type Selection (Radio Group) */}
           <Box mt={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Options <span className="text-danger">*</span>
+              {t('addVariant.options')} <span className="text-danger">*</span>
             </Text>
             <RadioGroup
               value={inputType}
@@ -155,11 +159,11 @@ const AddVariant = () => {
           {/* Attributes Count */}
           <Box mt={4}>
             <Text color={textColor} fontSize="sm" fontWeight="700">
-              Number of Attributes <span className="text-danger">*</span>
+              {t('addVariant.numberOfAttributes')} <span className="text-danger">*</span>
             </Text>
             <Input
               type="number"
-              placeholder="Enter number of attributes"
+              placeholder={t('addVariant.enterNumber')}
               onChange={handleAttributesCountChange}
               min={0}
               mt={2}
@@ -178,17 +182,17 @@ const AddVariant = () => {
               bg={inputBg}
             >
               <Text color={textColor} fontSize="md" fontWeight="bold">
-                Attribute {index + 1}
+                {t('addVariant.attribute')} {index + 1}
               </Text>
 
               <SimpleGrid columns={2} mt={4} spacing={4}>
                 <Box>
                   <Text color={textColor} fontSize="sm" fontWeight="700">
-                    Attribute En-Name <span className="text-danger">*</span>
+                    {t('addVariant.attributeEnName')} <span className="text-danger">*</span>
                   </Text>
                   <Input
                     type="text"
-                    placeholder="Enter Attribute Name"
+                    placeholder={t('addVariant.enterAttributeName')}
                     value={attr.enName}
                     onChange={(e) =>
                       handleAttributeChange(index, "enName", e.target.value)
@@ -202,11 +206,11 @@ const AddVariant = () => {
 
                 <Box>
                   <Text color={textColor} fontSize="sm" fontWeight="700">
-                    Attribute Ar-Name <span className="text-danger">*</span>
+                    {t('addVariant.attributeArName')} <span className="text-danger">*</span>
                   </Text>
                   <Input
                     type="text"
-                    placeholder="أدخل اسم السمة"
+                    placeholder={t('addVariant.enterAttributeArName')}
                     value={attr.arName}
                     onChange={(e) =>
                       handleAttributeChange(index, "arName", e.target.value)
@@ -233,7 +237,7 @@ const AddVariant = () => {
               py="5px"
               onClick={handleSave}
             >
-              Save
+              {t('addVariant.save')}
             </Button>
           </Flex>
         </form>

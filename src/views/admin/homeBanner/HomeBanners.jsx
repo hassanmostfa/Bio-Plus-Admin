@@ -6,10 +6,14 @@ import { useGetBannersQuery, useDeleteBannerMutation } from 'api/homeBannerSlice
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
 const HomeBanners = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const toast = useToast();
   const [bannerToDelete, setBannerToDelete] = useState(null);
@@ -22,27 +26,27 @@ const HomeBanners = () => {
    
   const handleDeleteClick = (bannerId) => {
     Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
+      title: t('homeBanners.deleteConfirmTitle'),
+      text: t('homeBanners.deleteConfirmText'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonText: t('homeBanners.deleteConfirmButton')
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           await deleteBanner(bannerId).unwrap();
           Swal.fire(
-            'Deleted!',
-            'The banner has been deleted.',
+            t('homeBanners.deleteSuccessTitle'),
+            t('homeBanners.deleteSuccessText'),
             'success'
           );
           refetch(); // Refetch banners after deletion
         } catch (error) {
           Swal.fire(
-            'Error!',
-            error?.data?.message || 'Failed to delete banner.',
+            t('homeBanners.deleteErrorTitle'),
+            error?.data?.message || t('homeBanners.deleteErrorText'),
             'error'
           );
         }
@@ -55,37 +59,37 @@ const HomeBanners = () => {
 
   const columns = useMemo(() => [
     columnHelper.accessor('imageKey', {
-      header: 'Image',
+      header: t('homeBanners.table.image'),
       cell: (info) => (
         <Image src={info.getValue()} boxSize="50px" objectFit="cover" fallbackSrc="https://via.placeholder.com/50" />
       ),
     }),
     columnHelper.accessor('textEn', {
-      header: 'Title (English)',
+      header: t('homeBanners.table.titleEnglish'),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('textAr', {
-      header: 'Title (Arabic)',
+      header: t('homeBanners.table.titleArabic'),
       cell: (info) => <Text color={textColor} dir="rtl">{info.getValue()}</Text>,
     }),
     columnHelper.accessor('link', {
-      header: 'Link',
+      header: t('homeBanners.table.link'),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('order', {
-      header: 'Order',
+      header: t('homeBanners.table.order'),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('isActive', {
-      header: 'Active',
+      header: t('homeBanners.table.active'),
       cell: (info) => (
         <Badge colorScheme={info.getValue() ? 'green' : 'red'}>
-          {info.getValue() ? 'Yes' : 'No'}
+          {info.getValue() ? t('homeBanners.yes') : t('homeBanners.no')}
         </Badge>
       ),
     }),
     columnHelper.accessor('id', {
-      header: 'Actions',
+      header: t('homeBanners.table.actions'),
       cell: (info) => (
         <Flex>
           <Icon
@@ -108,7 +112,7 @@ const HomeBanners = () => {
         </Flex>
       ),
     }),
-  ], [textColor, navigate]);
+  ], [textColor, navigate, t]);
 
   const table = useReactTable({
     data: banners,
@@ -119,10 +123,10 @@ const HomeBanners = () => {
   });
 
   return (
-    <Box pt={{ base: '130px', md: '80px', xl: '80px' }}>
+    <Box pt={{ base: '130px', md: '80px', xl: '80px' }} dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Card flexDirection="column" w="100%" px="0px" overflowX={{ sm: 'scroll', lg: 'hidden' }}>
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
-          <Text color={textColor} fontSize="22px" fontWeight="700">Home Banners</Text>
+          <Text color={textColor} fontSize="22px" fontWeight="700">{t('homeBanners.title')}</Text>
           <Button
             variant="darkBrand"
             color="white"
@@ -133,7 +137,7 @@ const HomeBanners = () => {
             py="5px"
             onClick={() => navigate('/admin/home-banner/add')} // Assuming add route
           >
-            Add New Banner
+            {t('homeBanners.addNewBanner')}
           </Button>
         </Flex>
 
@@ -143,7 +147,7 @@ const HomeBanners = () => {
           </Flex>
         ) : isError ? (
           <Flex justifyContent="center" alignItems="center" height="200px">
-            <Text color="red.500">Error loading banners: {error.message}</Text>
+            <Text color="red.500">{t('homeBanners.loadErrorText')}: {error.message}</Text>
           </Flex>
         ) : (
           <Box overflowX="auto">
@@ -191,7 +195,7 @@ const HomeBanners = () => {
                 ) : (
                   <Tr>
                     <Td colSpan={columns.length} textAlign="center" py="40px">
-                      <Text color={textColor}>No banners found</Text>
+                      <Text color={textColor}>{t('homeBanners.noBannersFound')}</Text>
                     </Td>
                   </Tr>
                 )}

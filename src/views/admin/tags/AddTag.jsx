@@ -13,8 +13,12 @@ import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import { useAddTagMutation } from "api/tagSlice";
 import Swal from "sweetalert2";
+import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const AddTag = () => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [name, setName] = useState("");
   const [arabicName, setArabicName] = useState("");
   const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -39,13 +43,13 @@ const AddTag = () => {
 
     try {
       const response = await addTag(tagData).unwrap();
-      Swal.fire('Success!', 'Tag created successfully.', 'success');
+      Swal.fire(t('tags.addSuccessTitle'), t('tags.addSuccessText'), 'success');
       navigate('/admin/undefined/tags');
     } catch (error) {
       console.error('Failed to add tag:', error);
       Swal.fire(
-        'Error!',
-        error.data?.message || 'Failed to create tag.',
+        t('tags.addErrorTitle'),
+        error.data?.message || t('tags.addErrorText'),
         'error'
       );
     }
@@ -58,7 +62,7 @@ const AddTag = () => {
   };
 
   return (
-    <Box className="container add-admin-container w-100">
+    <Box className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Box className="add-admin-card shadow p-4 w-100" bg={cardBg} borderRadius="lg">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
@@ -68,7 +72,7 @@ const AddTag = () => {
             mb="20px !important"
             lineHeight="100%"
           >
-            Add New Tag
+            {t('tags.addTitle')}
           </Text>
           <Button
             type="button"
@@ -77,7 +81,7 @@ const AddTag = () => {
             size="sm"
             leftIcon={<IoMdArrowBack />}
           >
-            Back
+            {t('tags.back')}
           </Button>
         </div>
         <form onSubmit={handleSubmit}>
@@ -85,30 +89,31 @@ const AddTag = () => {
             {/* English Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                English Name
+                {t('tags.englishName')}
                 <span className="text-danger mx-1">*</span>
               </Text>
               <Input
                 type="text"
-                placeholder="Enter English Name"
+                placeholder={t('tags.englishNamePlaceholder')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
                 mt={"8px"}
                 bg={inputBg}
                 color={textColor}
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
               />
             </Box>
 
             {/* Arabic Name Field */}
             <Box>
               <Text color={textColor} fontSize="sm" fontWeight="700">
-                Arabic Name
+                {t('tags.arabicName')}
                 <span className="text-danger mx-1">*</span>
               </Text>
               <Input
                 type="text"
-                placeholder="ادخل الاسم بالعربية"
+                placeholder={t('tags.arabicNamePlaceholder')}
                 value={arabicName}
                 onChange={(e) => setArabicName(e.target.value)}
                 required
@@ -128,7 +133,7 @@ const AddTag = () => {
               onClick={handleCancel}
               width="120px"
             >
-              Cancel
+              {t('tags.cancel')}
             </Button>
             <Button
               variant='darkBrand'
@@ -140,10 +145,10 @@ const AddTag = () => {
               py='5px'
               type="submit"
               isLoading={isLoading}
-              loadingText="Submitting..."
+              loadingText={t('tags.submitting')}
               width="120px"
             >
-              Create Tag
+              {t('tags.createTag')}
             </Button>
           </Flex>
         </form>
