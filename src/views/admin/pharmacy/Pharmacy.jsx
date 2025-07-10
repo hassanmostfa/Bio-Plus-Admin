@@ -36,15 +36,16 @@ import { useDeletePharmacyMutation } from 'api/pharmacySlice';
 import Swal from 'sweetalert2';
 import { FaRegFolderClosed } from "react-icons/fa6";
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 const columnHelper = createColumnHelper();
 
 const Pharmacy = () => {
   const { t } = useTranslation();
-  const [currentPage, setCurrentPage] = useState(1); // Current page
-  const [limit, setLimit] = useState(10); // Items per page
-  const [searchQuery, setSearchQuery] = useState(''); // Search query
-  const [debouncedSearch, setDebouncedSearch] = useState(''); // Debounced search
+  const { language } = useLanguage();
   const [page, setPage] = React.useState(1); // Current page
+  const [limit, setLimit] = React.useState(10); // Items per page
+  const [searchQuery, setSearchQuery] = React.useState(''); // Search query
+  const [debouncedSearch, setDebouncedSearch] = React.useState(''); // Debounced search
 
   const bg = useColorModeValue('secondaryGray.300', 'gray.700'); // Background color for light and dark mode
   const color = useColorModeValue('gray.700', 'white'); // Text color for light and dark mode
@@ -53,7 +54,7 @@ const Pharmacy = () => {
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      setCurrentPage(1); // Reset to first page when searching
+      setPage(1); // Reset to first page when searching
     }, 500);
 
     return () => clearTimeout(timer);
@@ -61,54 +62,14 @@ const Pharmacy = () => {
 
   // Fetch data from API
   const { data: pharmacyData, refetch, isLoading, isError } = useGetPharmaciesQuery({
-    page: currentPage,
+    page,
     limit, 
     search: debouncedSearch
+  }, {
+    // Refetch when parameters change
+    refetchOnMountOrArgChange: true,
   });
   const [deletePharmacy, { isError: isDeleteError, isLoading: isDeleteLoading }] = useDeletePharmacyMutation();
-
-  React.useEffect(() => {
-    refetch();
-  }, [currentPage, limit, debouncedSearch, refetch]);
-
-  const deletePharmacyHandler = async (id) => {
-    try {
-      Swal.fire({
-        title: t('pharmacy.confirmDelete'),
-        text: t('pharmacy.deleteWarning'),
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: t('pharmacy.delete'),
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          await deletePharmacy(id);
-          refetch();
-          Swal.fire(t('pharmacy.deleteSuccess'), '', 'success');
-        }
-      });
-    } catch (error) {
-      Swal.fire(t('pharmacy.deleteError'), error.data?.message || '', 'error');
-    }
-  };
-
-  const handleLimitChange = (e) => {
-    setLimit(Number(e.target.value));
-    setCurrentPage(1); // Reset to the first page when changing the limit
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < pagination.totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
 
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
@@ -125,6 +86,73 @@ const Pharmacy = () => {
     totalPages: 1,
     hasNextPage: false,
     hasPreviousPage: false,
+  };
+
+  // Debug logging for search and pagination
+  React.useEffect(() => {
+    console.log('Search query changed:', searchQuery);
+    console.log('Debounced search:', debouncedSearch);
+  }, [searchQuery, debouncedSearch]);
+
+  React.useEffect(() => {
+    console.log('Page changed:', page);
+    console.log('Limit changed:', limit);
+  }, [page, limit]);
+
+  // Debug API response
+  React.useEffect(() => {
+    console.log('API Response:', pharmacyData);
+    console.log('Table Data:', tableData);
+    console.log('Pagination:', pagination);
+  }, [pharmacyData, tableData, pagination]);
+
+  // Delete function with proper response handling
+  const deletePharmacyHandler = async (id) => {
+    try {
+      const result = await Swal.fire({
+        title: t('messages.confirmDelete'),
+        text: t('pharmacy.deleteWarning'),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: t('messages.yesDelete'),
+      });
+
+      if (result.isConfirmed) {
+        const response = await deletePharmacy(id).unwrap();
+        refetch(); // Refetch the data
+        Swal.fire(
+          t('messages.deleted'), 
+          response?.message || t('pharmacy.deleteSuccess'), 
+          'success'
+        );
+      }
+    } catch (error) {
+      console.error('Failed to delete pharmacy:', error);
+      Swal.fire(
+        t('messages.error'), 
+        t('pharmacy.deleteError'), 
+        'error'
+      );
+    }
+  };
+
+  const handleLimitChange = (e) => {
+    setLimit(Number(e.target.value));
+    setPage(1); // Reset to the first page when changing the limit
+  };
+
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (page < pagination.totalPages) {
+      setPage(page + 1);
+    }
   };
 
   const columns = [
@@ -190,7 +218,7 @@ const Pharmacy = () => {
             color="blue.500"
             as={FaEye}
             cursor="pointer"
-            onClick={() => navigate(`/admin/show-pharmacy/${info.row.original.id}`)}
+            onClick={() => navigate(`/admin/show/pharmacy/${info.row.original.id}`)}
           />
           <Icon
             w="18px"
@@ -227,7 +255,7 @@ const Pharmacy = () => {
   }
 
   return (
-    <div className="container">
+    <div className="container" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Card
         flexDirection="column"
         w="100%"
@@ -244,36 +272,49 @@ const Pharmacy = () => {
             {t('pharmacy.title')}
           </Text>
 
-          <InputGroup w={{ base: '100%', md: '400px' }}>
-            <InputLeftElement>
-              <IconButton
-                bg="inherit"
-                borderRadius="inherit"
-                _hover="none"
-                _active={{
-                  bg: 'inherit',
-                  transform: 'none',
-                  borderColor: 'transparent',
-                }}
+          <div className="search-container d-flex align-items-center gap-2">
+            <InputGroup w={{ base: '100%', md: '400px' }}>
+              <InputLeftElement>
+                <IconButton
+                  bg="inherit"
+                  borderRadius="inherit"
+                  _hover="none"
+                  _active={{
+                    bg: 'inherit',
+                    transform: 'none',
+                    borderColor: 'transparent',
+                  }}
+                  _focus={{
+                    boxShadow: 'none',
+                  }}
+                  icon={<SearchIcon w="15px" h="15px" />}
+                />
+              </InputLeftElement>
+              <Input
+                variant="search"
+                fontSize="sm"
+                bg={bg}
+                color={textColor}
+                fontWeight="500"
+                _placeholder={{ color: 'gray.400', fontSize: '14px' }}
+                borderRadius="30px"
+                placeholder={t('pharmacy.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+                dir="ltr"
                 _focus={{
-                  boxShadow: 'none',
+                  borderColor: 'blue.500',
+                  boxShadow: '0 0 0 1px #3182ce',
                 }}
-                icon={<SearchIcon w="15px" h="15px" />}
               />
-            </InputLeftElement>
-            <Input
-              variant="search"
-              fontSize="sm"
-              bg={bg}
-              color={textColor}
-              fontWeight="500"
-              _placeholder={{ color: 'gray.400', fontSize: '14px' }}
-              borderRadius="30px"
-              placeholder={t('pharmacy.searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </InputGroup>
+            </InputGroup>
+            {debouncedSearch && (
+              <Text fontSize="sm" color="blue.500">
+                Searching: "{debouncedSearch}" {isLoading && "(Loading...)"}
+              </Text>
+            )}
+          </div>
           <Button
             variant="darkBrand"
             color="white"
@@ -289,7 +330,27 @@ const Pharmacy = () => {
           </Button>
         </Flex>
         <Box>
-          <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+          {isLoading ? (
+            <Flex justifyContent="center" alignItems="center" py="50px">
+              <Text color={textColor}>Loading pharmacies...</Text>
+            </Flex>
+          ) : isError ? (
+            <Flex justifyContent="center" alignItems="center" py="50px">
+              <Text color="red.500">Error loading pharmacies. Please try again.</Text>
+            </Flex>
+          ) : !tableData || tableData.length === 0 ? (
+            <Flex justifyContent="center" alignItems="center" py="50px">
+              <Text color={textColor}>No pharmacies found.</Text>
+            </Flex>
+          ) : (
+            <Table 
+              variant="simple" 
+              color="gray.500" 
+              mb="24px" 
+              mt="12px"
+              className="pharmacy-table"
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
+            >
             <Thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <Tr key={headerGroup.id}>
@@ -348,6 +409,7 @@ const Pharmacy = () => {
               })}
             </Tbody>
           </Table>
+          )}
         </Box>
 
         {/* Pagination Controls */}
@@ -373,12 +435,12 @@ const Pharmacy = () => {
             </Select>
           </Flex>
           <Text color={textColor} fontSize="sm">
-            {t('pharmacy.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
+            {t('pharmacy.pageOf', { page: pagination.page, totalPages: pagination.totalPages })} ({pagination.total} total)
           </Text>
           <Flex>
             <Button
               onClick={handlePreviousPage}
-              disabled={currentPage === 1}
+              disabled={page === 1}
               variant="outline"
               size="sm"
               mr="10px"
@@ -388,7 +450,7 @@ const Pharmacy = () => {
             </Button>
             <Button
               onClick={handleNextPage}
-              disabled={currentPage === pagination.totalPages}
+              disabled={page === pagination.totalPages}
               variant="outline"
               size="sm"
             >

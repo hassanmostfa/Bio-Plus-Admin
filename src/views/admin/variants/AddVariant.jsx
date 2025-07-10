@@ -42,9 +42,21 @@ const AddVariant = () => {
   };
 
   const handleAttributesCountChange = (e) => {
-    const count = parseInt(e.target.value, 10) || 0;
+    let value = e.target.value;
+    
+    // Limit to 2 digits maximum
+    if (value.length > 2) {
+      value = value.slice(0, 2);
+    }
+    
+    // Ensure it's a valid number between 0 and 99
+    const count = Math.min(Math.max(parseInt(value, 10) || 0, 0), 99);
+    
     setAttributesCount(count);
     setAttributes(new Array(count).fill({ enName: "", arName: "" }));
+    
+    // Update the input value to show only 2 digits
+    e.target.value = value;
   };
 
   const handleSave = async () => {
@@ -166,6 +178,7 @@ const AddVariant = () => {
               placeholder={t('addVariant.enterNumber')}
               onChange={handleAttributesCountChange}
               min={0}
+              max={99}
               mt={2}
             />
           </Box>

@@ -28,7 +28,7 @@ import { useGetVarientsQuery } from 'api/varientSlice';
 import Swal from 'sweetalert2';
 import { useDeleteVarientMutation } from 'api/varientSlice';
 import { useTranslation } from 'react-i18next';
-
+import { useEffect } from 'react';
 const columnHelper = createColumnHelper();
 
 const Variants = () => {
@@ -52,6 +52,10 @@ const Variants = () => {
       no_of_attributes: variant.numberOfAttributes, // Number of attributes
     }));
   }, [variantsResponse]);
+
+  useEffect(() => {
+    refetch();
+  }, [ refetch ]);
 
   // Handle delete variant
   const handleDelete = async (id) => {
@@ -165,7 +169,7 @@ const Variants = () => {
             cursor="pointer"
             onClick={() => navigate(`/admin/edit-variant/${info.getValue()}`)} // Edit action
           />
-          <Icon
+          {/* <Icon
             w="18px"
             h="18px"
             me="10px"
@@ -173,7 +177,7 @@ const Variants = () => {
             as={FaEye}
             cursor="pointer"
             onClick={() => navigate(`/admin/edit-variant/${info.getValue()}`)} // View attributes action
-          />
+          /> */}
         </Flex>
       ),
     }),

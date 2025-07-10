@@ -81,6 +81,7 @@
     "all": "All",
     "saveChanges": "Save Changes",
     "saving": "Saving...",
+    "saveProduct": "Save Product",
     "searchByName": "Search by name",
     "rowsPerPage": "Rows per page:",
     "pageOf": "Page {{page}} of {{totalPages}}",
@@ -105,7 +106,12 @@
     "createdSuccess": "Created successfully.",
     "createError": "Failed to create.",
     "notFound": "Not found.",
-    "deleteError": "Failed to delete."
+    "deleteError": "Failed to delete.",
+    "blockUser": "Block User",
+    "pleaseProvideReason": "Please provide a reason for blocking this user:",
+    "enterBlockReason": "Enter the reason for blocking this user...",
+    "characters": "characters",
+    "or": "or"
   },
   "auth": {
     "signIn": "Sign In",
@@ -351,7 +357,24 @@
     "editProduct": "Edit Product",
     "areYouSure": "Are you sure?",
     "irreversible": "This action cannot be undone.",
-    "yesDelete": "Yes, delete it!"
+    "yesDelete": "Yes, delete it!",
+    "addMoreImages": "Add More Images",
+    "clickToUpload": "click to upload",
+    "productImage": "Product Image",
+    "category": "Category",
+    "productType": "Product Type",
+    "sku": "SKU",
+    "lotNumber": "Lot Number",
+    "expiryDate": "Expiry Date",
+    "discount": "Discount",
+    "offerType": "Offer Type",
+    "howToUse": "How To Use",
+    "treatment": "Treatment",
+    "ingredients": "Ingredients",
+    "arabicName": "Arabic Name",
+    "arabicHowToUse": "Arabic How To Use",
+    "arabicTreatment": "Arabic Treatment",
+    "arabicIngredients": "Arabic Ingredients"
   },
   "order": {
     "orderNumber": "Order Number",
@@ -701,7 +724,7 @@
     "confirmDelete": "Are you sure?",
     "deleteWarning": "You won't be able to revert this!",
     "deleteSuccess": "The pharmacy has been deleted.",
-    "deleteError": "Failed to delete the pharmacy.",
+    "deleteError": "Failed to delete the pharmacy because it related to orders and products.",
     "submit": "Submit",
     "back": "Back",
     "loading": "Loading...",
@@ -1077,7 +1100,23 @@
     "lastUpdated": "Last Updated",
     "actions": "Actions",
     "editProduct": "Edit Product",
-    "deleteProduct": "Delete Product"
+    "deleteProduct": "Delete Product",
+    "productDetails": "Product Details",
+    "arabicTranslations": "Arabic Translations",
+    "howToUse": "How to Use",
+    "treatment": "Treatment",
+    "ingredients": "Ingredients",
+    "arabicName": "Arabic Name",
+    "arabicHowToUse": "Arabic How to Use",
+    "arabicTreatment": "Arabic Treatment",
+    "arabicIngredients": "Arabic Ingredients",
+    "category": "Category",
+    "productType": "Product Type",
+    "sku": "SKU",
+    "lotNumber": "Lot Number",
+    "expiryDate": "Expiry Date",
+    "discount": "Discount",
+    "offerType": "Offer Type"
   },
   "variantTable": {
     "id": "ID",
@@ -1094,7 +1133,9 @@
     "deleted": "Deleted!",
     "deletedMsg": "The variant has been deleted.",
     "error": "Error!",
-    "failedToDelete": "Failed to delete the variant."
+    "failedToDelete": "Failed to delete the variant.",
+    "deleteConfirmationTitle": "Are you sure?",
+    "deleteConfirmationText": "You won't be able to revert this!"
   },
   "addVariant": {
     "addNewVariant": "Add New Variant",

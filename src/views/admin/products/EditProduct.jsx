@@ -173,10 +173,7 @@ const EditProduct = () => {
             ? { name: variant.imageKey }
             : null,
           isActive: variant.isActive ?? true,
-          lotNumber: variant.lotNumber || '',
           expiryDate: variant.expiryDate || '',
-          discount: variant.discount != null ? variant.discount : '',
-          discountType: variant.discountType || '',
         }));
         setSelectedAttributes(attributes);
       }
@@ -391,10 +388,7 @@ const EditProduct = () => {
         quantity: parseInt(attr.quantity) || 0,
         imageKey: attr.imageKey || undefined,
         isActive: attr.isActive,
-        lotNumber: attr.lotNumber || undefined,
         expiryDate: attr.expiryDate || undefined,
-        discount: attr.discount != null ? parseFloat(attr.discount) : undefined,
-        discountType: attr.discountType ? attr.discountType.toUpperCase() : undefined,
       }));
 
       // Prepare product data
@@ -546,7 +540,11 @@ const EditProduct = () => {
                   value={descriptionEn}
                   onChange={(e) => setDescriptionEn(e.target.value)}
                   color={textColor}
+                  maxLength={500}
                 />
+                <Text fontSize="sm" color="gray.500" mt={1}>
+                  {descriptionEn.length}/500 {t('common.characters')}
+                </Text>
               </FormControl>
             </Box>
             <Box>
@@ -558,7 +556,11 @@ const EditProduct = () => {
                   onChange={(e) => setDescriptionAr(e.target.value)}
                   dir="rtl"
                   color={textColor}
+                  maxLength={500}
                 />
+                <Text fontSize="sm" color="gray.500" mt={1}>
+                  {descriptionAr.length}/500 {t('common.characters')}
+                </Text>
               </FormControl>
             </Box>
           </SimpleGrid>
@@ -598,7 +600,11 @@ const EditProduct = () => {
                   value={howToUseEn}
                   onChange={(e) => setHowToUseEn(e.target.value)}
                   color={textColor}
+                  maxLength={500}
                 />
+                <Text fontSize="sm" color="gray.500" mt={1}>
+                  {howToUseEn.length}/500 {t('common.characters')}
+                </Text>
               </FormControl>
             </Box>
             <Box>
@@ -610,7 +616,11 @@ const EditProduct = () => {
                   onChange={(e) => setHowToUseAr(e.target.value)}
                   dir="rtl"
                   color={textColor}
+                  maxLength={500}
                 />
+                <Text fontSize="sm" color="gray.500" mt={1}>
+                  {howToUseAr.length}/500 {t('common.characters')}
+                </Text>
               </FormControl>
             </Box>
           </SimpleGrid>
@@ -625,7 +635,11 @@ const EditProduct = () => {
                   value={treatmentEn}
                   onChange={(e) => setTreatmentEn(e.target.value)}
                   color={textColor}
+                  maxLength={500}
                 />
+                <Text fontSize="sm" color="gray.500" mt={1}>
+                  {treatmentEn.length}/500 {t('common.characters')}
+                </Text>
               </FormControl>
             </Box>
             <Box>
@@ -637,7 +651,11 @@ const EditProduct = () => {
                   onChange={(e) => setTreatmentAr(e.target.value)}
                   dir="rtl"
                   color={textColor}
+                  maxLength={500}
                 />
+                <Text fontSize="sm" color="gray.500" mt={1}>
+                  {treatmentAr.length}/500 {t('common.characters')}
+                </Text>
               </FormControl>
             </Box>
           </SimpleGrid>
@@ -652,7 +670,11 @@ const EditProduct = () => {
                   value={ingredientsEn}
                   onChange={(e) => setIngredientsEn(e.target.value)}
                   color={textColor}
+                  maxLength={500}
                 />
+                <Text fontSize="sm" color="gray.500" mt={1}>
+                  {ingredientsEn.length}/500 {t('common.characters')}
+                </Text>
               </FormControl>
             </Box>
             <Box>
@@ -664,7 +686,11 @@ const EditProduct = () => {
                   onChange={(e) => setIngredientsAr(e.target.value)}
                   dir="rtl"
                   color={textColor}
+                  maxLength={500}
                 />
+                <Text fontSize="sm" color="gray.500" mt={1}>
+                  {ingredientsAr.length}/500 {t('common.characters')}
+                </Text>
               </FormControl>
             </Box>
           </SimpleGrid>
@@ -758,6 +784,12 @@ const EditProduct = () => {
                   value={cost}
                   onChange={(e) => setCost(e.target.value)}
                   color={textColor}
+                  min="0"
+                  onKeyDown={(e) => {
+                    if (e.key === '-') {
+                      e.preventDefault();
+                    }
+                  }}
                 />
               </FormControl>
             </Box>
@@ -770,6 +802,12 @@ const EditProduct = () => {
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   color={textColor}
+                  min="0"
+                  onKeyDown={(e) => {
+                    if (e.key === '-') {
+                      e.preventDefault();
+                    }
+                  }}
                 />
               </FormControl>
             </Box>
@@ -780,13 +818,82 @@ const EditProduct = () => {
                   type="number"
                   placeholder={t('product.enterQuantity')}
                   value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= 5) {
+                      setQuantity(value);
+                    }
+                  }}
                   color={textColor}
+                  min="0"
+                  max="99999"
+                  onKeyDown={(e) => {
+                    if (e.key === '-') {
+                      e.preventDefault();
+                    }
+                  }}
                 />
               </FormControl>
             </Box>
           </SimpleGrid>
 
+          {/* SKU, Lot Number, Expiry Date, Discount (only if no variants) */}
+          <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
+              <Box>
+                <FormControl>
+                  <FormLabel>{t('product.sku')}</FormLabel>
+                  <Input
+                    type="text"
+                    placeholder={t('product.enterSKU')}
+                    value={sku}
+                    onChange={(e) => setSku(e.target.value)}
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl>
+                  <FormLabel>{t('product.lotNumber')}</FormLabel>
+                  <Input
+                    type="text"
+                    placeholder={t('product.enterLotNumber')}
+                    value={lotNumber}
+                    onChange={(e) => setLotNumber(e.target.value)}
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+              <Box>
+                <FormControl>
+                  <FormLabel>{t('product.expiryDate')}</FormLabel>
+                  <Input
+                    type="date"
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                    color={textColor}
+                  />
+                </FormControl>
+              </Box>
+               <Box>
+                <FormControl>
+                  <FormLabel>{t('product.discount')}</FormLabel>
+                  <Input
+                    type="number"
+                    placeholder={t('product.enterDiscountValue')}
+                    value={discount != null ? discount : ''}
+                    onChange={(e) => setDiscount(e.target.value)}
+                    color={textColor}
+                    min="0"
+                    onKeyDown={(e) => {
+                      if (e.key === '-') {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                </FormControl>
+              </Box>
+            </SimpleGrid>
+            
           {/* Offer Type */}
           <Box mb={4}>
             <FormLabel>{t('product.offerType')}</FormLabel>
@@ -901,6 +1008,12 @@ const EditProduct = () => {
                                 )
                               }
                               color={textColor}
+                              min="0"
+                              onKeyDown={(e) => {
+                                if (e.key === '-') {
+                                  e.preventDefault();
+                                }
+                              }}
                             />
                           </FormControl>
                           <FormControl isRequired>
@@ -916,6 +1029,12 @@ const EditProduct = () => {
                                 )
                               }
                               color={textColor}
+                              min="0"
+                              onKeyDown={(e) => {
+                                if (e.key === '-') {
+                                  e.preventDefault();
+                                }
+                              }}
                             />
                           </FormControl>
                           <FormControl>
@@ -923,14 +1042,24 @@ const EditProduct = () => {
                             <Input
                               type="number"
                               value={attr.quantity}
-                              onChange={(e) =>
-                                handleAttributeChange(
-                                  index,
-                                  'quantity',
-                                  e.target.value,
-                                )
-                              }
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value.length <= 5) {
+                                  handleAttributeChange(
+                                    index,
+                                    'quantity',
+                                    value,
+                                  );
+                                }
+                              }}
                               color={textColor}
+                              min="0"
+                              max="99999"
+                              onKeyDown={(e) => {
+                                if (e.key === '-') {
+                                  e.preventDefault();
+                                }
+                              }}
                             />
                           </FormControl>
                           <FormControl>
@@ -960,19 +1089,7 @@ const EditProduct = () => {
                             )}
                           </FormControl>
 
-                          {/* Variant Lot Number, Expiry Date, Discount */}
-                          <FormControl>
-                            <FormLabel>{t('product.lotNumber')}</FormLabel>
-                            <Input
-                              type="text"
-                              placeholder={t('product.enterLotNumber')}
-                              value={attr.lotNumber}
-                              onChange={(e) =>
-                                handleAttributeChange(index, 'lotNumber', e.target.value)
-                              }
-                              color={textColor}
-                            />
-                          </FormControl>
+                          {/* Variant Expiry Date */}
                           <FormControl>
                             <FormLabel>{t('product.expiryDate')}</FormLabel>
                             <Input
@@ -980,18 +1097,6 @@ const EditProduct = () => {
                               value={attr.expiryDate}
                               onChange={(e) =>
                                 handleAttributeChange(index, 'expiryDate', e.target.value)
-                              }
-                              color={textColor}
-                            />
-                          </FormControl>
-                          <FormControl>
-                            <FormLabel>{t('product.discount')}</FormLabel>
-                            <Input
-                              type="number"
-                              placeholder={t('product.enterDiscountValue')}
-                              value={attr.discount != null ? attr.discount : ''}
-                              onChange={(e) =>
-                                handleAttributeChange(index, 'discount', e.target.value)
                               }
                               color={textColor}
                             />
@@ -1024,51 +1129,21 @@ const EditProduct = () => {
                 mb={4}
               >
                 {(existingImages.length > 0 || images.length > 0) ? (
-                  <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
-                    {existingImages.map((img, index) => (
-                      <Box key={`existing-${index}`} position="relative" display="flex" flexDirection="column" alignItems="center">
-                        <Image
-                          src={img.imageKey}
-                          alt={`Product image ${index + 1}`}
-                          borderRadius="md"
-                          maxH="150px"
-                          border={index === mainImageIndex ? '2px solid' : '1px solid'}
-                          borderColor={index === mainImageIndex ? 'brand.500' : 'gray.300'}
-                          cursor="pointer"
-                          onClick={() => handleSetMainImage(index, true)}
-                        />
-                        {index === mainImageIndex && (
-                          <Badge position="absolute" top={2} left={2} colorScheme="brand">
-                            Main
-                          </Badge>
-                        )}
-                        <IconButton
-                          icon={<FaTrash />}
-                          aria-label="Remove image"
-                          size="sm"
-                          colorScheme="red"
-                          position="absolute"
-                          top={2}
-                          right={2}
-                          onClick={() => handleRemoveImage(index, true)}
-                        />
-                      </Box>
-                    ))}
-                    {images.map((img, index) => {
-                      const globalIndex = existingImages.length + index;
-                      return (
-                        <Box key={`new-${index}`} position="relative" display="flex" flexDirection="column" alignItems="center">
+                  <>
+                    <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} mb={4}>
+                      {existingImages.map((img, index) => (
+                        <Box key={`existing-${index}`} position="relative" display="flex" flexDirection="column" alignItems="center">
                           <Image
-                            src={img.preview}
-                            alt={`New image ${index + 1}`}
+                            src={img.imageKey}
+                            alt={`Product image ${index + 1}`}
                             borderRadius="md"
                             maxH="150px"
-                            border={globalIndex === mainImageIndex ? '2px solid' : '1px solid'}
-                            borderColor={globalIndex === mainImageIndex ? 'brand.500' : 'gray.300'}
+                            border={index === mainImageIndex ? '2px solid' : '1px solid'}
+                            borderColor={index === mainImageIndex ? 'brand.500' : 'gray.300'}
                             cursor="pointer"
-                            onClick={() => handleSetMainImage(globalIndex, false)}
+                            onClick={() => handleSetMainImage(index, true)}
                           />
-                          {globalIndex === mainImageIndex && (
+                          {index === mainImageIndex && (
                             <Badge position="absolute" top={2} left={2} colorScheme="brand">
                               Main
                             </Badge>
@@ -1081,12 +1156,73 @@ const EditProduct = () => {
                             position="absolute"
                             top={2}
                             right={2}
-                            onClick={() => handleRemoveImage(globalIndex, false)}
+                            onClick={() => handleRemoveImage(index, true)}
                           />
                         </Box>
-                      );
-                    })}
-                  </SimpleGrid>
+                      ))}
+                      {images.map((img, index) => {
+                        const globalIndex = existingImages.length + index;
+                        return (
+                          <Box key={`new-${index}`} position="relative" display="flex" flexDirection="column" alignItems="center">
+                            <Image
+                              src={img.preview}
+                              alt={`New image ${index + 1}`}
+                              borderRadius="md"
+                              maxH="150px"
+                              border={globalIndex === mainImageIndex ? '2px solid' : '1px solid'}
+                              borderColor={globalIndex === mainImageIndex ? 'brand.500' : 'gray.300'}
+                              cursor="pointer"
+                              onClick={() => handleSetMainImage(globalIndex, false)}
+                            />
+                            {globalIndex === mainImageIndex && (
+                              <Badge position="absolute" top={2} left={2} colorScheme="brand">
+                                Main
+                              </Badge>
+                            )}
+                            <IconButton
+                              icon={<FaTrash />}
+                              aria-label="Remove image"
+                              size="sm"
+                              colorScheme="red"
+                              position="absolute"
+                              top={2}
+                              right={2}
+                              onClick={() => handleRemoveImage(globalIndex, false)}
+                            />
+                          </Box>
+                        );
+                      })}
+                    </SimpleGrid>
+                    
+                    {/* Add More Images Section */}
+                    <Box 
+                      border="1px dashed" 
+                      borderColor="gray.300" 
+                      borderRadius="md" 
+                      p={4} 
+                      textAlign="center"
+                      backgroundColor="gray.50"
+                      cursor="pointer"
+                      onClick={() => document.getElementById('file-upload').click()}
+                      _hover={{ backgroundColor: 'gray.100' }}
+                    >
+                      <Icon as={FaUpload} w={6} h={6} color="#422afb" mb={2} />
+                      <Text color="gray.600" fontSize="sm">
+                        {t('product.addMoreImages')}
+                      </Text>
+                      <Text color="gray.500" fontSize="xs">
+                        {t('product.dragDropImageHere')} {t('common.or')} {t('product.clickToUpload')}
+                      </Text>
+                      <input
+                        type="file"
+                        id="file-upload"
+                        hidden
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => handleImageUpload(e.target.files)}
+                      />
+                    </Box>
+                  </>
                 ) : (
                   <>
                     <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
@@ -1094,7 +1230,7 @@ const EditProduct = () => {
                       {t('product.dragDropImageHere')}
                     </Text>
                     <Text color="gray.500" mb={2}>
-                      {t('product.or')}
+                      {t('common.or')}
                     </Text>
                     <Button
                       variant="outline"
@@ -1118,65 +1254,23 @@ const EditProduct = () => {
             </FormControl>
           </Box>
 
-          {/* SKU, Lot Number, Expiry Date, Discount (only if no variants) */}
-          {!hasVariants && (
-            <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
-              <Box>
-                <FormControl>
-                  <FormLabel>{t('product.sku')}</FormLabel>
-                  <Input
-                    type="text"
-                    placeholder={t('product.enterSKU')}
-                    value={sku}
-                    onChange={(e) => setSku(e.target.value)}
-                    color={textColor}
-                  />
-                </FormControl>
-              </Box>
-              <Box>
-                <FormControl>
-                  <FormLabel>{t('product.lotNumber')}</FormLabel>
-                  <Input
-                    type="text"
-                    placeholder={t('product.enterLotNumber')}
-                    value={lotNumber}
-                    onChange={(e) => setLotNumber(e.target.value)}
-                    color={textColor}
-                  />
-                </FormControl>
-              </Box>
-              <Box>
-                <FormControl>
-                  <FormLabel>{t('product.expiryDate')}</FormLabel>
-                  <Input
-                    type="date"
-                    value={expiryDate}
-                    onChange={(e) => setExpiryDate(e.target.value)}
-                    color={textColor}
-                  />
-                </FormControl>
-              </Box>
-               <Box>
-                <FormControl>
-                  <FormLabel>{t('product.discount')}</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder={t('product.enterDiscountValue')}
-                    value={discount != null ? discount : ''}
-                    onChange={(e) => setDiscount(e.target.value)}
-                    color={textColor}
-                  />
-                </FormControl>
-              </Box>
-            </SimpleGrid>
-          )}
-
           {/* Submit Buttons */}
           <Flex justify="flex-end" gap={4}>
-            <Button variant="outline" colorScheme="red" onClick={handleCancel}>
+            <Button 
+              variant="outline" 
+              colorScheme="red" 
+              onClick={handleCancel}
+              isDisabled={isUpdating}
+            >
               {t('product.cancel')}
             </Button>
-            <Button type="submit" colorScheme="blue" isLoading={isUpdating}>
+            <Button 
+              type="submit" 
+              colorScheme="blue" 
+              isLoading={isUpdating}
+              isDisabled={isUpdating}
+              loadingText={t('common.saving')}
+            >
               {t('product.updateProduct')}
             </Button>
           </Flex>

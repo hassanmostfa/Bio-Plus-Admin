@@ -15,6 +15,7 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
+  Select,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -32,12 +33,14 @@ import { FaEye, FaTrash } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { useGetRolesQuery, useDeleteRoleMutation } from 'api/roleSlice';
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from 'contexts/LanguageContext';
 import Swal from 'sweetalert2';
 
 const columnHelper = createColumnHelper();
 
 const Roles = () => {
   const { t } = useTranslation();
+  const { language } = useLanguage();
   const [page, setPage] = React.useState(1); // Current page
   const [limit, setLimit] = React.useState(10); // Items per page
   const [searchQuery, setSearchQuery] = React.useState(''); // Search query
@@ -59,6 +62,9 @@ const Roles = () => {
     page, 
     limit, 
     search: debouncedSearch 
+  }, {
+    // Refetch when parameters change
+    refetchOnMountOrArgChange: true,
   });
   const [deleteRole, { isError: isDeleteError, isLoading: isDeleteLoading }] = useDeleteRoleMutation();
 
@@ -69,10 +75,23 @@ const Roles = () => {
   const tableData = data?.data || [];
   const pagination = data?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
 
-  // Refetch data when page, limit, or search changes
+  // Debug logging for search and pagination
   React.useEffect(() => {
-    refetch();
-  }, [page, limit, debouncedSearch, refetch]);
+    console.log('Search query changed:', searchQuery);
+    console.log('Debounced search:', debouncedSearch);
+  }, [searchQuery, debouncedSearch]);
+
+  React.useEffect(() => {
+    console.log('Page changed:', page);
+    console.log('Limit changed:', limit);
+  }, [page, limit]);
+
+  // Debug API response
+  React.useEffect(() => {
+    console.log('API Response:', data);
+    console.log('Table Data:', tableData);
+    console.log('Pagination:', pagination);
+  }, [data, tableData, pagination]);
 
   // Define columns
   const columns = [
@@ -158,7 +177,7 @@ const Roles = () => {
   const handleDeleteRole = async (id) => {
     try {
       const result = await Swal.fire({
-        title: t('confirmDeleteRole'),
+        title: t('messages.confirmDelete'),
         text: t('deleteRoleWarning'),
         icon: 'warning',
         showCancelButton: true,
@@ -197,7 +216,7 @@ const Roles = () => {
   };
 
   return (
-    <div className="container">
+    <div className="container" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Card
         flexDirection="column"
         w="100%"
@@ -247,6 +266,12 @@ const Roles = () => {
                 placeholder={t('searchRoles')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+                dir="ltr"
+                _focus={{
+                  borderColor: 'blue.500',
+                  boxShadow: '0 0 0 1px #3182ce',
+                }}
               />
             </InputGroup>
           </div>
@@ -266,7 +291,27 @@ const Roles = () => {
         </Flex>
 
         <Box>
-          <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+          {isLoading ? (
+            <Flex justifyContent="center" alignItems="center" py="50px">
+              <Text color={textColor}>Loading roles...</Text>
+            </Flex>
+          ) : isError ? (
+            <Flex justifyContent="center" alignItems="center" py="50px">
+              <Text color="red.500">Error loading roles. Please try again.</Text>
+            </Flex>
+          ) : !tableData || tableData.length === 0 ? (
+            <Flex justifyContent="center" alignItems="center" py="50px">
+              <Text color={textColor}>No roles found.</Text>
+            </Flex>
+          ) : (
+            <Table 
+              variant="simple" 
+              color="gray.500" 
+              mb="24px" 
+              mt="12px"
+              className="roles-table"
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
+            >
             <Thead>
               {table.getHeaderGroups()?.map((headerGroup) => (
                 <Tr key={headerGroup.id}>
@@ -325,6 +370,7 @@ const Roles = () => {
               })}
             </Tbody>
           </Table>
+          )}
         </Box>
 
         {/* Pagination Controls */}
@@ -333,18 +379,24 @@ const Roles = () => {
             <Text color={textColor} fontSize="sm" mr="10px">
               {t('table.rowsPerPage')}
             </Text>
-            <select
+            <Select
               value={limit}
               onChange={handleLimitChange}
-              style={{ padding: '5px', borderRadius: '5px', border: '1px solid #ddd' }}
+              width="100px"
+              size="sm"
+              variant="outline"
+              borderRadius="md"
+              borderColor="gray.200"
+              _hover={{ borderColor: 'gray.300' }}
+              _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
               <option value={50}>50</option>
-            </select>
+            </Select>
           </Flex>
           <Text color={textColor} fontSize="sm">
-            {t('table.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
+            {t('table.pageOf', { page: pagination.page, totalPages: pagination.totalPages })} ({pagination.totalItems} total)
           </Text>
           <Flex>
             <Button
@@ -354,7 +406,7 @@ const Roles = () => {
               size="sm"
               mr="10px"
             >
-              <Icon as={ChevronLeftIcon} ml="5px" />
+              <Icon as={ChevronLeftIcon} mr="5px" />
               {t('table.previous')}
             </Button>
             <Button

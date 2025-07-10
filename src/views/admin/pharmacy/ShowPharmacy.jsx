@@ -57,6 +57,15 @@ const ShowPharmacy = () => {
   if (fetchError) return <Text>{t('pharmacy.errorFetching')}</Text>;
   if (!pharmacy) return <Text>{t('pharmacy.noData')}</Text>;
 
+  // All settings array with value
+  const allSettings = [
+    { label: t('pharmacy.deliveryAcrossZone'), value: pharmacy.deliveryAcrossZone },
+    { label: t('pharmacy.usuallyDispatchesOrders'), value: pharmacy.usuallyDispatchesOrders },
+    { label: t('pharmacy.deliveryFeeWillApply'), value: pharmacy.deliveryFeeWillApply },
+    { label: t('pharmacy.allOrdersWillBeDelivered'), value: pharmacy.allOrdersWillBeDelivered },
+    // Add more settings here as needed
+  ];
+
   return (
     <Box p={{ base: "20px", md: "30px" }} dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'} mt={10}>
       <Flex justify="space-between" align="center" mb="30px">
@@ -185,15 +194,7 @@ const ShowPharmacy = () => {
               <Stat>
                 <StatLabel color="gray.500">{t('pharmacy.iban')}</StatLabel>
                 <StatNumber fontSize="lg">{pharmacy.iban}</StatNumber>
-              </Stat>
-              <Divider />
-              <Stack spacing={3}>
-                <Text color="gray.500">{t('pharmacy.deliverySettings')}:</Text>
-                <Text>• {t('pharmacy.deliveryAcrossZone')}</Text>
-                <Text>• {t('pharmacy.usuallyDispatchesOrders')}</Text>
-                <Text>• {t('pharmacy.deliveryFeeWillApply')}</Text>
-                <Text>• {t('pharmacy.allOrdersWillBeDelivered')}</Text>
-              </Stack>
+              </Stat>              
             </Stack>
           </CardBody>
         </Card>
@@ -210,9 +211,6 @@ const ShowPharmacy = () => {
               <Card key={index} variant="outline" p={4}>
                 <Flex justify="space-between" align="center" mb={4}>
                   <Text fontSize="lg" fontWeight="bold">{t('pharmacy.branch')} {index + 1}</Text>
-                  <Badge colorScheme={branch.isActive ? "green" : "red"}>
-                    {branch.isActive ? t('pharmacy.active') : t('pharmacy.inactive')}
-                  </Badge>
                 </Flex>
                 <Stack spacing={4}>
                   <Stat>
@@ -235,7 +233,16 @@ const ShowPharmacy = () => {
                     <Stat>
                       <StatLabel color="gray.500">{t('pharmacy.locationLink')}</StatLabel>
                       <StatHelpText>
-                        <a href={branch.locationLink} target="_blank" rel="noopener noreferrer" style={{ color: 'teal' }}>
+                        <a
+                          href={
+                            branch.locationLink?.startsWith('http://') || branch.locationLink?.startsWith('https://')
+                              ? branch.locationLink
+                              : `https://${branch.locationLink}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: 'teal' }}
+                        >
                           {t('pharmacy.viewLocation')}
                         </a>
                       </StatHelpText>

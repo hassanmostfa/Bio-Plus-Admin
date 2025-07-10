@@ -107,7 +107,7 @@ const FileManger = () => {
             borderRadius='70px'
             px='24px'
             py='5px'
-            onClick={() => navigate(`/admin/pharmacy/${pharmacyId}/add-file`)}
+            onClick={() => navigate(`/admin/pharmacy/${pharmacyId}/add/file`)}
             width={'200px'}
           >
             {t('files.addFile')}

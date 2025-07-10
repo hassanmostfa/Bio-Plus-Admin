@@ -158,6 +158,12 @@ const EditPharmacy = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
+  const handleNumberInputKeyDown = (e) => {
+    if (e.key === '-') {
+      e.preventDefault();
+    }
+  };
+
   const handleTranslationChange = (languageId, field, value) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -490,7 +496,9 @@ const EditPharmacy = () => {
                 name="revenueShare"
                 value={formData.revenueShare}
                 onChange={handleChange}
+                onKeyDown={handleNumberInputKeyDown}
                 mt={2}
+                min={0}
               />
             </GridItem>
           ) : (
@@ -506,8 +514,10 @@ const EditPharmacy = () => {
                   name="fixedFees"
                   value={formData.fixedFees}
                   onChange={handleChange}
+                  onKeyDown={handleNumberInputKeyDown}
                   mt={2}
                   placeholder={t('pharmacy.fixedFees')}
+                  min={0}
                 />
               </GridItem>
               <GridItem mt={2}>

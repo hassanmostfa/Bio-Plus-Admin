@@ -15,6 +15,7 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
+  Select,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -31,19 +32,19 @@ import { useNavigate } from 'react-router-dom';
 import { useGetClinicsQuery, useDeleteClinicMutation } from 'api/clinicSlice';
 import Swal from 'sweetalert2';
 import { useTranslation } from 'react-i18next';
-import { useLanguage } from '../../../contexts/LanguageContext';
+import { useLanguage } from 'contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
 const Clinics = () => {
-  const [page, setPage] = React.useState(1);
-  const [limit, setLimit] = React.useState(10);
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [debouncedSearch, setDebouncedSearch] = React.useState('');
+  const { t } = useTranslation();
+  const { language } = useLanguage();
+  const [page, setPage] = React.useState(1); // Current page
+  const [limit, setLimit] = React.useState(10); // Items per page
+  const [searchQuery, setSearchQuery] = React.useState(''); // Search query
+  const [debouncedSearch, setDebouncedSearch] = React.useState(''); // Debounced search
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
-  const { t } = useTranslation();
-  const { currentLanguage } = useLanguage();
 
   // Debounce search query
   React.useEffect(() => {
@@ -55,72 +56,66 @@ const Clinics = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data: clinicsResponse, refetch, isLoading } = useGetClinicsQuery({ 
+  const { data, refetch, isError, isLoading } = useGetClinicsQuery({ 
     page, 
     limit, 
     search: debouncedSearch 
   });
-  const [deleteClinic, { isLoading: isDeleting }] = useDeleteClinicMutation();
+  const [deleteClinic, { isError: isDeleteError, isLoading: isDeleteLoading }] = useDeleteClinicMutation();
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
   // Extract table data and pagination info
-  const tableData = clinicsResponse?.data || [];
-  const pagination = clinicsResponse?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
+  const tableData = data?.data || [];
+  const pagination = data?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Clinics Debug:', {
+      page,
+      limit,
+      searchQuery,
+      debouncedSearch,
+      tableDataLength: tableData.length,
+      pagination,
+      isLoading,
+      isError
+    });
+  }, [page, limit, debouncedSearch, tableData.length, pagination, isLoading, isError]);
+
+  // Refetch data when page, limit, or search changes
   React.useEffect(() => {
     refetch();
   }, [page, limit, debouncedSearch, refetch]);
 
-  // Handle delete clinic
+  // Delete function
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: t('clinics.confirmDelete'),
+        title: t('messages.confirmDelete'),
         text: t('clinics.deleteWarning'),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: t('clinics.delete'),
+        confirmButtonText: t('messages.yesDelete'),
       });
 
       if (result.isConfirmed) {
-        await deleteClinic(id).unwrap();
-        refetch();
-        Swal.fire(t('clinics.deleteSuccess'), t('clinics.clinicDeleted'), 'success');
+        await deleteClinic(id).unwrap(); // Delete the clinic
+        refetch(); // Refetch the data
+        Swal.fire(t('messages.deleted'), t('clinics.deleteSuccess'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete clinic:', error);
-      Swal.fire(t('clinics.error'), t('clinics.deleteError'), 'error');
+      Swal.fire(t('messages.error'), t('clinics.deleteError'), 'error');
     }
   };
 
-  // Handle view action
-  const handleView = (id) => {
-    navigate(`/admin/show-clinic/${id}`);
-  };
+
 
   const columns = [
-    columnHelper.accessor('id', {
-      id: 'id',
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          {t('clinics.id')}
-        </Text>
-      ),
-      cell: (info) => (
-        <Flex align="center">
-          <Text color={textColor}>{info.getValue()}</Text>
-        </Flex>
-      ),
-    }),
     columnHelper.accessor('name', {
       id: 'name',
       header: () => (
@@ -177,7 +172,7 @@ const Clinics = () => {
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
-    columnHelper.accessor('id', {
+    columnHelper.accessor('row', {
       id: 'actions',
       header: () => (
         <Text
@@ -186,7 +181,7 @@ const Clinics = () => {
           fontSize={{ sm: '10px', lg: '12px' }}
           color="gray.400"
         >
-          {t('clinics.actions')}
+          {t('common.actions')}
         </Text>
       ),
       cell: (info) => (
@@ -198,7 +193,7 @@ const Clinics = () => {
             color="red.500"
             as={FaTrash}
             cursor="pointer"
-            onClick={() => handleDelete(info.getValue())}
+            onClick={() => handleDelete(info.row.original.id)}
           />
           <Icon
             w="18px"
@@ -207,7 +202,7 @@ const Clinics = () => {
             color="green.500"
             as={EditIcon}
             cursor="pointer"
-            onClick={() => navigate('/admin/edit-clinic/'+info.getValue())}
+            onClick={() => navigate(`/admin/edit-clinic/${info.row.original.id}`)}
           />
           <Icon
             w="18px"
@@ -216,15 +211,16 @@ const Clinics = () => {
             color="blue.500"
             as={FaEye}
             cursor="pointer"
-            onClick={() => handleView(info.getValue())}
+            onClick={() => navigate(`/admin/show-clinic/${info.row.original.id}`)}
           />
         </Flex>
       ),
     }),
   ];
 
+  // Table instance
   const table = useReactTable({
-    data: tableData,
+    data: tableData, // Use server-side data directly
     columns,
     state: {
       sorting,
@@ -250,11 +246,11 @@ const Clinics = () => {
 
   const handleLimitChange = (e) => {
     setLimit(Number(e.target.value));
-    setPage(1);
+    setPage(1); // Reset to the first page when changing the limit
   };
 
   return (
-    <div className="container">
+    <div className="container" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Card
         flexDirection="column"
         w="100%"
@@ -299,6 +295,8 @@ const Clinics = () => {
                 placeholder={t('clinics.searchClinics')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+                dir="ltr"
               />
             </InputGroup>
           </div>
@@ -318,86 +316,124 @@ const Clinics = () => {
           </Button>
         </Flex>
         <Box>
-          <Table variant="simple" color="gray.500" mb="24px" mt="12px">
-            <Thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <Tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
+          {isLoading ? (
+            <Flex justifyContent="center" alignItems="center" py="50px">
+              <Text color={textColor}>Loading clinics...</Text>
+            </Flex>
+          ) : isError ? (
+            <Flex justifyContent="center" alignItems="center" py="50px">
+              <Text color="red.500">Error loading clinics. Please try again.</Text>
+            </Flex>
+          ) : tableData.length === 0 ? (
+            <Flex justifyContent="center" alignItems="center" py="50px">
+              <Text color={textColor}>
+                {debouncedSearch ? `No clinics found matching "${debouncedSearch}"` : 'No clinics found.'}
+              </Text>
+            </Flex>
+          ) : (
+            <>
+              <Table 
+                variant="simple" 
+                color="gray.500" 
+                mb="24px" 
+                mt="12px" 
+                className="clinics-table"
+                dir={language === 'ar' ? 'rtl' : 'ltr'}
+              >
+                <Thead>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <Tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <Th
+                            key={header.id}
+                            colSpan={header.colSpan}
+                            pe="10px"
+                            borderColor={borderColor}
+                            cursor="pointer"
+                            onClick={header.column.getToggleSortingHandler()}
+                          >
+                            <Flex
+                              justifyContent="space-between"
+                              align="center"
+                              fontSize={{ sm: '10px', lg: '12px' }}
+                              color="gray.400"
+                            >
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                              {{
+                                asc: ' 🔼',
+                                desc: ' 🔽',
+                              }[header.column.getIsSorted()] ?? null}
+                            </Flex>
+                          </Th>
+                        );
+                      })}
+                    </Tr>
+                  ))}
+                </Thead>
+                <Tbody>
+                  {table.getRowModel().rows.map((row) => {
                     return (
-                      <Th
-                        key={header.id}
-                        colSpan={header.colSpan}
-                        pe="10px"
-                        borderColor={borderColor}
-                        cursor="pointer"
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        <Flex
-                          justifyContent="space-between"
-                          align="center"
-                          fontSize={{ sm: '10px', lg: '12px' }}
-                          color="gray.400"
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                          {{
-                            asc: ' 🔼',
-                            desc: ' 🔽',
-                          }[header.column.getIsSorted()] ?? null}
-                        </Flex>
-                      </Th>
+                      <Tr key={row.id}>
+                        {row.getVisibleCells().map((cell) => {
+                          return (
+                            <Td
+                              key={cell.id}
+                              fontSize={{ sm: '14px' }}
+                              minW={{ sm: '150px', md: '200px', lg: 'auto' }}
+                              borderColor="transparent"
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </Td>
+                          );
+                        })}
+                      </Tr>
                     );
                   })}
-                </Tr>
-              ))}
-            </Thead>
-            <Tbody>
-              {table.getRowModel().rows.map((row) => {
-                return (
-                  <Tr key={row.id}>
-                    {row.getVisibleCells().map((cell) => {
-                      return (
-                        <Td
-                          key={cell.id}
-                          fontSize={{ sm: '14px' }}
-                          minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                          borderColor="transparent"
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </Td>
-                      );
-                    })}
-                  </Tr>
-                );
-              })}
-            </Tbody>
-          </Table>
+                </Tbody>
+              </Table>
+            </>
+          )}
         </Box>
 
         {/* Pagination Controls */}
         <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
-              {t('clinics.rowsPerPage')}:
+              {t('table.rowsPerPage')}
             </Text>
-            <select
+            <Select
               value={limit}
               onChange={handleLimitChange}
-              style={{ padding: '5px', borderRadius: '5px', border: '1px solid #ddd' }}
+              width="100px"
+              size="sm"
+              variant="outline"
+              borderRadius="md"
+              borderColor="gray.200"
+              _hover={{ borderColor: 'gray.300' }}
+              _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
               <option value={50}>50</option>
-            </select>
+            </Select>
           </Flex>
-          <Text color={textColor} fontSize="sm">
-            {t('clinics.page')} {pagination.page} {t('clinics.of')} {pagination.totalPages}
-          </Text>
+          <Flex alignItems="center" gap={2}>
+            <Text color={textColor} fontSize="sm">
+              {t('table.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
+            </Text>
+            {pagination.totalItems > 0 && (
+              <Text color="gray.500" fontSize="sm">
+                ({pagination.totalItems} total items)
+              </Text>
+            )}
+          </Flex>
           <Flex>
             <Button
               onClick={handlePreviousPage}
@@ -407,7 +443,7 @@ const Clinics = () => {
               mr="10px"
             >
               <Icon as={ChevronLeftIcon} mr="5px" />
-              {t('clinics.previous')}
+              {t('table.previous')}
             </Button>
             <Button
               onClick={handleNextPage}
@@ -415,7 +451,7 @@ const Clinics = () => {
               variant="outline"
               size="sm"
             >
-              {t('clinics.next')}
+              {t('table.next')}
               <Icon as={ChevronRightIcon} ml="5px" />
             </Button>
           </Flex>

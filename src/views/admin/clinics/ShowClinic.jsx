@@ -130,18 +130,6 @@ const ShowClinic = () => {
                       <Text color="gray.500" fontSize="sm">{t('clinics.arabicName')}</Text>
                       <Text fontSize="md" dir="rtl">{locationArabicName || t('clinics.notAvailable')}</Text>
                     </Box>
-                    
-                    <Box>
-                      <Text color="gray.500" fontSize="sm">{t('clinics.status')}</Text>
-                      <Badge 
-                        colorScheme={location.isActive ? 'green' : 'red'} 
-                        fontSize="sm"
-                        p={1}
-                        borderRadius="md"
-                      >
-                        {location.isActive ? t('clinics.active') : t('clinics.inactive')}
-                      </Badge>
-                    </Box>
                   </Grid>
                 </Box>
               );

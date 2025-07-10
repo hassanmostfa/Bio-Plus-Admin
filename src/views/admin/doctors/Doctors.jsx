@@ -163,26 +163,6 @@ const Doctors = () => {
   };
 
   const columns = [
-    columnHelper.accessor('id', {
-      id: 'id',
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          {t('doctors.id')}
-        </Text>
-      ),
-      cell: (info) => (
-        <Flex align="center">
-          <Text color={textColor} fontSize="sm">
-            {info.getValue().substring(0, 8)}...
-          </Text>
-        </Flex>
-      ),
-    }),
     columnHelper.accessor('firstName', {
       id: 'firstName',
       header: () => (
@@ -260,7 +240,7 @@ const Doctors = () => {
         </Badge>
       ),
     }),
-    columnHelper.accessor('actions', {
+    columnHelper.accessor('row', {
       id: 'actions',
       header: () => (
         <Text

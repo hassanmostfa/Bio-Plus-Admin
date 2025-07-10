@@ -31,7 +31,6 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
-  getFilteredRowModel,
 } from "@tanstack/react-table";
 import { FaEye, FaTrash, FaFileExport, FaFileImport, FaDownload, FaUpload } from "react-icons/fa6";
 import { EditIcon, PlusSquareIcon, ChevronDownIcon } from "@chakra-ui/icons";
@@ -51,8 +50,13 @@ const columnHelper = createColumnHelper();
 const Products = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [globalFilter, setGlobalFilter] = useState('');
-  const { data: productsResponse, isLoading, isFetching, refetch } = useGetProductsQuery({ page, limit });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const { data: productsResponse, isLoading, isFetching, refetch } = useGetProductsQuery({ 
+    page, 
+    limit, 
+    search: debouncedSearchTerm 
+  });
   const [deleteProduct] = useDeleteProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const { data: templateData, isLoading: isTemplateLoading } = useDownloadTemplateQuery();
@@ -72,6 +76,21 @@ const Products = () => {
     totalItems: 0,
     totalPages: 1
   };
+
+  // Debounce search term
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      setPage(1); // Reset to first page on new search
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Reset to first page when limit changes
+  React.useEffect(() => {
+    setPage(1);
+  }, [limit]);
 
   // Trigger refetch when component mounts (navigates to)
   React.useEffect(() => {
@@ -286,7 +305,7 @@ const Products = () => {
         />
       ),
     }),
-    columnHelper.accessor("actions", {
+    columnHelper.accessor("row", {
       id: "actions",
       header: () => <Text color="gray.400">{t('common.actions')}</Text>,
       cell: (info) => (
@@ -326,14 +345,8 @@ const Products = () => {
   const table = useReactTable({
     data: products,
     columns,
-    state: {
-      globalFilter,
-    },
-    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    globalFilterFn: 'includesString',
   });
 
   return (
@@ -438,8 +451,8 @@ const Products = () => {
             </InputLeftElement>
             <Input
               placeholder={t('product.searchPlaceholder')}
-              value={globalFilter ?? ''}
-              onChange={(e) => setGlobalFilter(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               borderRadius="20px"
             />
           </InputGroup>
@@ -467,15 +480,23 @@ const Products = () => {
                   ))}
                 </Thead>
                 <Tbody>
-                  {table.getRowModel().rows.map((row) => (
-                    <Tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
-                        <Td key={cell.id} borderColor="transparent">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </Td>
-                      ))}
+                  {table.getRowModel().rows.length > 0 ? (
+                    table.getRowModel().rows.map((row) => (
+                      <Tr key={row.id}>
+                        {row.getVisibleCells().map((cell) => (
+                          <Td key={cell.id} borderColor="transparent">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </Td>
+                        ))}
+                      </Tr>
+                    ))
+                  ) : (
+                    <Tr>
+                      <Td colSpan={columns.length} textAlign="center" py="40px">
+                        <Text color={textColor}>{t('common.noData')}</Text>
+                      </Td>
                     </Tr>
-                  ))}
+                  )}
                 </Tbody>
               </Table>
               

@@ -43,6 +43,11 @@ const EditVariant = () => {
   const { t } = useTranslation();
   const { currentLanguage } = useLanguage();
 
+  useEffect(() => {
+    refetch();
+  }, [ refetch ]);
+
+  
   // Populate form fields with existing data when variantData is fetched
   useEffect(() => {
     if (response?.data) {
@@ -87,9 +92,21 @@ const EditVariant = () => {
   };
 
   const handleAttributesCountChange = (e) => {
-    const count = parseInt(e.target.value, 10) || 0;
+    let value = e.target.value;
+    
+    // Limit to 2 digits maximum
+    if (value.length > 2) {
+      value = value.slice(0, 2);
+    }
+    
+    // Ensure it's a valid number between 0 and 99
+    const count = Math.min(Math.max(parseInt(value, 10) || 0, 0), 99);
+    
     setAttributesCount(count);
     setAttributes(new Array(count).fill({ enName: "", arName: "", options: "" }));
+    
+    // Update the input value to show only 2 digits
+    e.target.value = value;
   };
 
   const validateForm = () => {
@@ -226,7 +243,6 @@ const EditVariant = () => {
               <Stack direction="row">
                 <Radio value="dropdown">{t('editVariant.dropdown')}</Radio>
                 <Radio value="radio">{t('editVariant.radio')}</Radio>
-                <Radio value="text">{t('editVariant.text')}</Radio>
               </Stack>
             </RadioGroup>
           </Box>
@@ -259,6 +275,7 @@ const EditVariant = () => {
               value={attributesCount}
               onChange={handleAttributesCountChange}
               min={0}
+              max={99}
               mt={2}
             />
           </Box>

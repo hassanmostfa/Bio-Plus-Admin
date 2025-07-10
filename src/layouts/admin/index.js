@@ -40,13 +40,14 @@ const getBreadcrumbPath = (pathname, routes) => {
   const pathSegments = segments.slice(adminIndex + 1); // Get everything after "/admin/"
   const cleanedSegments = pathSegments.filter(segment => segment.toLowerCase() !== "undefined"); // Remove "undefined"
 
-  // Remove the ID segment from the path
-  const pathWithoutId = removeIdFromPath(cleanedSegments.join("/"));
+  // Remove any ID segments (UUID or numeric) from the path
+  const idRegex = /^\d+$|^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+  const pathSegmentsNoIds = cleanedSegments.filter(segment => !idRegex.test(segment));
 
   let breadcrumb = [];
   let currentPath = "/admin";
 
-  pathWithoutId.split("/").forEach(segment => {
+  pathSegmentsNoIds.forEach(segment => {
     currentPath += `/${segment}`;
 
     // Find the matching route name

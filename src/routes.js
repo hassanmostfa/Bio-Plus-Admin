@@ -234,7 +234,7 @@ const getRoutes = (t) => {
     {
       name: t('sidebar.pharmacyManagement'),
       layout: '/admin',
-      path: '/show-pharmacy/:id',
+      path: '/show/pharmacy/:id',
       component: <ShowPharmacy />,
       showInSidebar: false,
     },
@@ -262,7 +262,7 @@ const getRoutes = (t) => {
     {
       name: 'Pharmacy add file',
       layout: '/admin',
-      path: '/pharmacy/:pharmacyId/add-file',
+      path: '/pharmacy/:pharmacyId/add/file',
       component: <AddFile />,
       showInSidebar: false,
     },

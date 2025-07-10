@@ -29,8 +29,8 @@ export default function UserReports() {
   const boxBg = useColorModeValue("secondaryGray.300", "whiteAlpha.100");
 
   const { data, isLoading , refetch } = useGetStatsQuery();
+  console.log(data);
   const stats = data?.data;
-
   useEffect(() => {
     refetch();
   }, [refetch , isLoading]);

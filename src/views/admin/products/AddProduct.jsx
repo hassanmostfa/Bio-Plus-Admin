@@ -252,6 +252,62 @@ const AddProduct = () => {
       if (!price) {
         throw new Error(t('forms.priceRequired'));
       }
+
+      // Validate variants if hasVariants is true
+      if (hasVariants && selectedAttributes.length === 0) {
+        throw new Error('Please add at least one variant when hasVariants is enabled');
+      }
+
+      // Validate variant fields if hasVariants is true
+      if (hasVariants && selectedAttributes.length > 0) {
+        for (let i = 0; i < selectedAttributes.length; i++) {
+          const attr = selectedAttributes[i];
+          if (!attr.price || parseFloat(attr.price) <= 0) {
+            throw new Error(`Price is required for variant ${i + 1}`);
+          }
+          if (!attr.cost || parseFloat(attr.cost) <= 0) {
+            throw new Error(`Cost is required for variant ${i + 1}`);
+          }
+          if (!attr.quantity || parseInt(attr.quantity) <= 0) {
+            throw new Error(`Quantity is required for variant ${i + 1}`);
+          }
+        }
+      }
+
+      // Prepare variants data if hasVariants is true
+      let variantsData = undefined;
+      if (hasVariants && selectedAttributes.length > 0) {
+        // Upload variant images first
+        const variantUploadPromises = selectedAttributes.map(async (attr) => {
+          let imageKey = undefined;
+          if (attr.image && attr.image instanceof File) {
+            const formData = new FormData();
+            formData.append('file', attr.image);
+            
+            try {
+              const uploadResponse = await addFile(formData).unwrap();
+              if (uploadResponse.success && uploadResponse.data.uploadedFiles.length > 0) {
+                imageKey = uploadResponse.data.uploadedFiles[0].url;
+              }
+            } catch (error) {
+              console.error('Failed to upload variant image:', error);
+            }
+          }
+          
+          return {
+            variantId: attr.variantId,
+            attributeId: attr.attributeId,
+            cost: parseFloat(attr.cost) || 0,
+            price: parseFloat(attr.price) || 0,
+            quantity: parseInt(attr.quantity) || 0,
+            imageKey: imageKey || attr.imageKey || undefined,
+            isActive: attr.isActive,
+            expiryDate: attr.expiryDate || undefined,
+          };
+        });
+        
+        variantsData = await Promise.all(variantUploadPromises);
+      }
   
       const productData = {
         name: nameEn,
@@ -275,7 +331,8 @@ const AddProduct = () => {
         isActive,
         isPublished,
         translations: translations,
-        images: uploadedImages
+        images: uploadedImages,
+        variants: variantsData
       };
   
       // Only include offerType and offerPercentage if offerType is not "NONE"
@@ -366,6 +423,7 @@ const AddProduct = () => {
                     value={nameEn}
                     onChange={(e) => setNameEn(e.target.value)}
                     color={textColor}
+                    textAlign="left"
                   />
                 </FormControl>
               </Box>
@@ -378,6 +436,7 @@ const AddProduct = () => {
                     onChange={(e) => setNameAr(e.target.value)}
                     dir="rtl"
                     color={textColor}
+                    textAlign="left"
                   />
                 </FormControl>
               </Box>
@@ -393,7 +452,12 @@ const AddProduct = () => {
                     value={descriptionEn}
                     onChange={(e) => setDescriptionEn(e.target.value)}
                     color={textColor}
+                    textAlign="left"
+                    maxLength={500}
                   />
+                  <Text fontSize="sm" color="gray.500" mt={1}>
+                    {descriptionEn.length}/500 {t('common.characters')}
+                  </Text>
                 </FormControl>
               </Box>
               <Box>
@@ -405,7 +469,12 @@ const AddProduct = () => {
                     onChange={(e) => setDescriptionAr(e.target.value)}
                     dir="rtl"
                     color={textColor}
+                    textAlign="left"
+                    maxLength={500}
                   />
+                  <Text fontSize="sm" color="gray.500" mt={1}>
+                    {descriptionAr.length}/500 {t('common.characters')}
+                  </Text>
                 </FormControl>
               </Box>
 
@@ -441,7 +510,12 @@ const AddProduct = () => {
                     value={howToUseEn}
                     onChange={(e) => setHowToUseEn(e.target.value)}
                     color={textColor}
+                    textAlign="left"
+                    maxLength={500}
                   />
+                  <Text fontSize="sm" color="gray.500" mt={1}>
+                    {howToUseEn.length}/500 {t('common.characters')}
+                  </Text>
                 </FormControl>
               </Box>
               <Box>
@@ -453,7 +527,12 @@ const AddProduct = () => {
                     onChange={(e) => setHowToUseAr(e.target.value)}
                     dir="rtl"
                     color={textColor}
+                    textAlign="left"
+                    maxLength={500}
                   />
+                  <Text fontSize="sm" color="gray.500" mt={1}>
+                    {howToUseAr.length}/500 {t('common.characters')}
+                  </Text>
                 </FormControl>
               </Box>
 
@@ -466,7 +545,12 @@ const AddProduct = () => {
                     value={treatmentEn}
                     onChange={(e) => setTreatmentEn(e.target.value)}
                     color={textColor}
+                    textAlign="left"
+                    maxLength={500}
                   />
+                  <Text fontSize="sm" color="gray.500" mt={1}>
+                    {treatmentEn.length}/500 {t('common.characters')}
+                  </Text>
                 </FormControl>
               </Box>
               <Box>
@@ -478,7 +562,12 @@ const AddProduct = () => {
                     onChange={(e) => setTreatmentAr(e.target.value)}
                     dir="rtl"
                     color={textColor}
+                    textAlign="left"
+                    maxLength={500}
                   />
+                  <Text fontSize="sm" color="gray.500" mt={1}>
+                    {treatmentAr.length}/500 {t('common.characters')}
+                  </Text>
                 </FormControl>
               </Box>
 
@@ -491,7 +580,12 @@ const AddProduct = () => {
                     value={ingredientsEn}
                     onChange={(e) => setIngredientsEn(e.target.value)}
                     color={textColor}
+                    textAlign="left"
+                    maxLength={500}
                   />
+                  <Text fontSize="sm" color="gray.500" mt={1}>
+                    {ingredientsEn.length}/500 {t('common.characters')}
+                  </Text>
                 </FormControl>
               </Box>
               <Box>
@@ -503,7 +597,12 @@ const AddProduct = () => {
                     onChange={(e) => setIngredientsAr(e.target.value)}
                     dir="rtl"
                     color={textColor}
+                    textAlign="left"
+                    maxLength={500}
                   />
+                  <Text fontSize="sm" color="gray.500" mt={1}>
+                    {ingredientsAr.length}/500 {t('common.characters')}
+                  </Text>
                 </FormControl>
               </Box>
             </SimpleGrid>
@@ -520,6 +619,7 @@ const AddProduct = () => {
                       value={sku}
                       onChange={(e) => setSku(e.target.value)}
                       color={textColor}
+                      textAlign="left"
                     />
                   </FormControl>
                 </Box>
@@ -532,6 +632,7 @@ const AddProduct = () => {
                       value={lotNumber}
                       onChange={(e) => setLotNumber(e.target.value)}
                       color={textColor}
+                      textAlign="left"
                     />
                   </FormControl>
                 </Box>
@@ -543,6 +644,7 @@ const AddProduct = () => {
                       value={expiryDate}
                       onChange={(e) => setExpiryDate(e.target.value)}
                       color={textColor}
+                      textAlign="left"
                     />
                   </FormControl>
                 </Box>
@@ -636,6 +738,13 @@ const AddProduct = () => {
                     value={cost}
                     onChange={(e) => setCost(e.target.value)}
                     color={textColor}
+                    textAlign="left"
+                    min="0"
+                    onKeyDown={(e) => {
+                      if (e.key === '-') {
+                        e.preventDefault();
+                      }
+                    }}
                   />
                 </FormControl>
               </Box>
@@ -648,6 +757,13 @@ const AddProduct = () => {
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     color={textColor}
+                    textAlign="left"
+                    min="0"
+                    onKeyDown={(e) => {
+                      if (e.key === '-') {
+                        e.preventDefault();
+                      }
+                    }}
                   />
                 </FormControl>
               </Box>
@@ -658,8 +774,21 @@ const AddProduct = () => {
                     type="number"
                     placeholder={t('forms.enterQuantity')}
                     value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value.length <= 5) {
+                        setQuantity(value);
+                      }
+                    }}
                     color={textColor}
+                    textAlign="left"
+                    min="0"
+                    max="99999"
+                    onKeyDown={(e) => {
+                      if (e.key === '-') {
+                        e.preventDefault();
+                      }
+                    }}
                   />
                 </FormControl>
               </Box>
@@ -686,6 +815,7 @@ const AddProduct = () => {
                       value={offerPercentage}
                       onChange={(e) => setOfferPercentage(e.target.value)}
                       color={textColor}
+                      textAlign="left"
                     />
                   </FormControl>
                 </Box>
@@ -704,6 +834,13 @@ const AddProduct = () => {
                       value={discount != null ? discount : ''}
                       onChange={(e) => setDiscount(e.target.value)}
                       color={textColor}
+                      textAlign="left"
+                      min="0"
+                      onKeyDown={(e) => {
+                        if (e.key === '-') {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                   </FormControl>
                 </Box>
@@ -807,6 +944,13 @@ const AddProduct = () => {
                                   )
                                 }
                                 color={textColor}
+                                textAlign="left"
+                                min="0"
+                                onKeyDown={(e) => {
+                                  if (e.key === '-') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                             </FormControl>
                             <FormControl isRequired>
@@ -822,6 +966,13 @@ const AddProduct = () => {
                                   )
                                 }
                                 color={textColor}
+                                textAlign="left"
+                                min="0"
+                                onKeyDown={(e) => {
+                                  if (e.key === '-') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                             </FormControl>
                             <FormControl isRequired>
@@ -829,14 +980,25 @@ const AddProduct = () => {
                               <Input
                                 type="number"
                                 value={attr.quantity}
-                                onChange={(e) =>
-                                  handleAttributeChange(
-                                    index,
-                                    'quantity',
-                                    e.target.value,
-                                  )
-                                }
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (value.length <= 5) {
+                                    handleAttributeChange(
+                                      index,
+                                      'quantity',
+                                      value,
+                                    );
+                                  }
+                                }}
                                 color={textColor}
+                                textAlign="left"
+                                min="0"
+                                max="99999"
+                                onKeyDown={(e) => {
+                                  if (e.key === '-') {
+                                    e.preventDefault();
+                                  }
+                                }}
                               />
                             </FormControl>
                             <FormControl>
@@ -866,6 +1028,7 @@ const AddProduct = () => {
                                   }
                                 }}
                                 color={textColor}
+                                textAlign="left"
                               />
                               {attr.image && (
                                 <Image
@@ -877,23 +1040,7 @@ const AddProduct = () => {
                               )}
                             </FormControl>
 
-                            {/* Variant Lot Number and Expiry Date */}
-                            <FormControl>
-                              <FormLabel>{t('product.lotNumber')}</FormLabel>
-                              <Input
-                                type="text"
-                                placeholder={t('forms.enterLotNumber')}
-                                value={attr.lotNumber}
-                                onChange={(e) =>
-                                  handleAttributeChange(
-                                    index,
-                                    'lotNumber',
-                                    e.target.value,
-                                  )
-                                }
-                                color={textColor}
-                              />
-                            </FormControl>
+                            {/* Variant Expiry Date */}
                             <FormControl>
                               <FormLabel>{t('product.expiryDate')}</FormLabel>
                               <Input
@@ -908,35 +1055,6 @@ const AddProduct = () => {
                                 }
                                 color={textColor}
                               />
-                            </FormControl>
-
-                            {/* Variant Discount Fields */}
-                            <FormControl>
-                              <FormLabel>{t('product.discount')}</FormLabel>
-                              <Input
-                                type="number"
-                                placeholder={t('forms.enterDiscountValue')}
-                                value={attr.discount != null ? attr.discount : ''}
-                                onChange={(e) =>
-                                  handleAttributeChange(index, 'discount', e.target.value)
-                                }
-                                color={textColor}
-                              />
-                            </FormControl>
-                            <FormControl>
-                              <FormLabel>{t('product.discountType')}</FormLabel>
-                              <Select
-                                placeholder={t('forms.selectDiscountType')}
-                                value={attr.discountType || ''}
-                                onChange={(e) =>
-                                  handleAttributeChange(index, 'discountType', e.target.value)
-                                }
-                                color={textColor}
-                                style={{ direction: 'ltr' }}
-                              >
-                                <option value="PERCENTAGE">{t('forms.percentage')}</option>
-                                <option value="FIXED">{t('forms.fixed')}</option>
-                              </Select>
                             </FormControl>
                           </SimpleGrid>
                         </CardBody>
@@ -1031,10 +1149,21 @@ const AddProduct = () => {
             </Box>
             {/* Submit Buttons */}
             <Flex justify="flex-end" gap={4}>
-              <Button variant="outline" colorScheme="red" onClick={handleCancel}>
+              <Button 
+                variant="outline" 
+                colorScheme="red" 
+                onClick={handleCancel}
+                isDisabled={isLoading}
+              >
                 {t('common.cancel')}
               </Button>
-              <Button type="submit" colorScheme="blue" isLoading={isLoading}>
+              <Button 
+                type="submit" 
+                colorScheme="blue" 
+                isLoading={isLoading}
+                isDisabled={isLoading}
+                loadingText={t('common.saving')}
+              >
                 {t('common.saveProduct')}
               </Button>
             </Flex>

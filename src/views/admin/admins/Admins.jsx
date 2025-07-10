@@ -56,10 +56,24 @@ const Admins = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Debug logging for search and pagination
+  React.useEffect(() => {
+    console.log('Search query changed:', searchQuery);
+    console.log('Debounced search:', debouncedSearch);
+  }, [searchQuery, debouncedSearch]);
+
+  React.useEffect(() => {
+    console.log('Page changed:', page);
+    console.log('Limit changed:', limit);
+  }, [page, limit]);
+
   const { data, refetch, isError, isLoading } = useGetAdminsQuery({ 
     page, 
     limit, 
     search: debouncedSearch 
+  }, {
+    // Refetch when parameters change
+    refetchOnMountOrArgChange: true,
   });
   const [deleteUser, { isError: isDeleteError, isLoading: isDeleteLoading }] = useDeleteUserMutation();
 
@@ -70,10 +84,14 @@ const Admins = () => {
   const tableData = data?.data?.data || [];
   const pagination = data?.data?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
 
-  // Refetch data when page, limit, or search changes
+  // Debug API response
   React.useEffect(() => {
-    refetch();
-  }, [page, limit, debouncedSearch, refetch]);
+    console.log('API Response:', data);
+    console.log('Data Structure:', data?.data);
+    console.log('Table Data:', tableData);
+    console.log('Pagination:', pagination);
+    console.log('Data Length:', tableData?.length);
+  }, [data, tableData, pagination]);
 
   // Columns definition
   const columns = [
@@ -300,8 +318,17 @@ const Admins = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="search-input"
                 dir="ltr"
+                _focus={{
+                  borderColor: 'blue.500',
+                  boxShadow: '0 0 0 1px #3182ce',
+                }}
               />
             </InputGroup>
+            {debouncedSearch && (
+              <Text fontSize="sm" color="blue.500">
+                Searching: "{debouncedSearch}" {isLoading && "(Loading...)"}
+              </Text>
+            )}
           </div>
           <Button
             variant='darkBrand'
@@ -318,72 +345,84 @@ const Admins = () => {
           </Button>
         </Flex>
         <Box>
-          <Table 
-            variant="simple" 
-            color="gray.500" 
-            mb="24px" 
-            mt="12px" 
-            className="admin-table"
-            dir={language === 'ar' ? 'rtl' : 'ltr'}
-          >
-            <Thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <Tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <Th
-                        key={header.id}
-                        colSpan={header.colSpan}
-                        pe="10px"
-                        borderColor={borderColor}
-                        cursor="pointer"
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        <Flex
-                          justifyContent="space-between"
-                          align="center"
-                          fontSize={{ sm: '10px', lg: '12px' }}
-                          color="gray.400"
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                          {{
-                            asc: ' 🔼',
-                            desc: ' 🔽',
-                          }[header.column.getIsSorted()] ?? null}
-                        </Flex>
-                      </Th>
-                    );
-                  })}
-                </Tr>
-              ))}
-            </Thead>
-            <Tbody>
-              {table.getRowModel().rows.map((row) => {
-                return (
-                  <Tr key={row.id}>
-                    {row.getVisibleCells().map((cell) => {
+          
+          {isLoading ? (
+            <Flex justifyContent="center" alignItems="center" py="50px">
+              <Text color={textColor}>Loading admins...</Text>
+            </Flex>
+          ) : isError ? (
+            <Flex justifyContent="center" alignItems="center" py="50px">
+              <Text color="red.500">Error loading admins. Please try again.</Text>
+            </Flex>
+          )
+          : (
+            <Table 
+              variant="simple" 
+              color="gray.500" 
+              mb="24px" 
+              mt="12px" 
+              className="admin-table"
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
+            >
+              <Thead>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <Tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
                       return (
-                        <Td
-                          key={cell.id}
-                          fontSize={{ sm: '14px' }}
-                          minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                          borderColor="transparent"
+                        <Th
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          pe="10px"
+                          borderColor={borderColor}
+                          cursor="pointer"
+                          onClick={header.column.getToggleSortingHandler()}
                         >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )}
-                        </Td>
+                          <Flex
+                            justifyContent="space-between"
+                            align="center"
+                            fontSize={{ sm: '10px', lg: '12px' }}
+                            color="gray.400"
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                            {{
+                              asc: ' 🔼',
+                              desc: ' 🔽',
+                            }[header.column.getIsSorted()] ?? null}
+                          </Flex>
+                        </Th>
                       );
                     })}
                   </Tr>
-                );
-              })}
-            </Tbody>
-          </Table>
+                ))}
+              </Thead>
+              <Tbody>
+                {table.getRowModel().rows.map((row) => {
+                  return (
+                    <Tr key={row.id}>
+                      {row.getVisibleCells().map((cell) => {
+                        return (
+                          <Td
+                            key={cell.id}
+                            fontSize={{ sm: '14px' }}
+                            minW={{ sm: '150px', md: '200px', lg: 'auto' }}
+                            borderColor="transparent"
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </Td>
+                        );
+                      })}
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          )}
         </Box>
 
         {/* Pagination Controls */}
@@ -409,7 +448,7 @@ const Admins = () => {
             </Select>
           </Flex>
           <Text color={textColor} fontSize="sm">
-            {t('table.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
+            {t('table.pageOf', { page: pagination.page, totalPages: pagination.totalPages })} ({pagination.totalItems} total)
           </Text>
           <Flex>
             <Button

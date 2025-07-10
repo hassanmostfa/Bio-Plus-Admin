@@ -16,6 +16,14 @@ import {
   Select,
   Image,
   useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
 } from '@chakra-ui/react';
 import { FaUpload, FaTrash, FaPlus } from 'react-icons/fa6';
 import { IoMdArrowBack } from 'react-icons/io';
@@ -30,16 +38,26 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 
 const AddDoctor = () => {
   const [addDoctor] = useAddDoctorMutation();
-  const { data: clinicsResponse } = useGetClinicsQuery({});
+  const { data: clinicsResponse } = useGetClinicsQuery({}); // Get all clinics without pagination
   const { data: specializationsResponse } = useGetSpecializationsQuery({});
   const toast = useToast();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { currentLanguage } = useLanguage();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const clinics = clinicsResponse?.data || [];
   const specializations = specializationsResponse?.data || [];
   const [addFile] = useAddFileMutation();
+
+  // Debug logging for clinics
+  React.useEffect(() => {
+    console.log('Clinics Debug:', {
+      clinicsCount: clinics.length,
+      clinicsData: clinics,
+      clinicsResponse
+    });
+  }, [clinics, clinicsResponse]);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -60,7 +78,7 @@ const AddDoctor = () => {
     specializationId: '',
   });
 
-  const [languages, setLanguages] = useState([{ language: '', isActive: true }]);
+  const [languages, setLanguages] = useState([{ language: '' }]);
   const [phones, setPhones] = useState([{ phoneNumber: '' }]);
   const [selectedClinics, setSelectedClinics] = useState([]);
   const [image, setImage] = useState(null);
@@ -85,6 +103,13 @@ const AddDoctor = () => {
       ...formData,
       [name]: type === 'checkbox' ? checked : value,
     });
+  };
+
+  // Handle number input key down to prevent minus sign
+  const handleNumberInputKeyDown = (e) => {
+    if (e.key === '-') {
+      e.preventDefault();
+    }
   };
 
   // Handle toggle switches
@@ -144,8 +169,10 @@ const AddDoctor = () => {
   };
 
   const handlePhoneChange = (index, value) => {
+    // Only allow digits and limit to 8 characters
+    const numericValue = value.replace(/\D/g, '').slice(0, 8);
     const newPhones = [...phones];
-    newPhones[index].phoneNumber = value;
+    newPhones[index].phoneNumber = numericValue;
     setPhones(newPhones);
   };
 
@@ -156,7 +183,7 @@ const AddDoctor = () => {
 
   // Language handlers
   const handleAddLanguage = () => {
-    setLanguages([...languages, { language: '', isActive: true }]);
+    setLanguages([...languages, { language: '' }]);
   };
 
   const handleLanguageChange = (index, field, value) => {
@@ -179,6 +206,21 @@ const AddDoctor = () => {
     );
   };
 
+  const handleSelectAllClinics = () => {
+    if (selectedClinics.length === clinics.length) {
+      setSelectedClinics([]);
+    } else {
+      setSelectedClinics(clinics.map(clinic => clinic.id));
+    }
+  };
+
+  const getSelectedClinicsNames = () => {
+    return selectedClinics
+      .map(id => clinics.find(clinic => clinic.id === id)?.name)
+      .filter(name => name)
+      .join(', ');
+  };
+
   // Certificate handlers
   const handleDeleteCertificate = (index) => {
     const newCertificates = certificates.filter((_, i) => i !== index);
@@ -188,6 +230,19 @@ const AddDoctor = () => {
   // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate phone numbers
+    const invalidPhones = phones.filter(phone => phone.phoneNumber.length !== 8);
+    if (invalidPhones.length > 0) {
+      toast({
+        title: t('doctors.error'),
+        description: t('doctors.phoneNumberMustBe8Digits'),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
 
     try {
       let imageKey = formData.imageKey;
@@ -441,11 +496,13 @@ const AddDoctor = () => {
                 name="clinicFees"
                 value={formData.clinicFees}
                 onChange={handleInputChange}
+                onKeyDown={handleNumberInputKeyDown}
                 bg={inputBg}
                 color={textColor}
                 borderColor={inputBorder}
                 required
                 mt="8px"
+                min={0}
               />
             </Box>
 
@@ -458,11 +515,13 @@ const AddDoctor = () => {
                 name="onlineFees"
                 value={formData.onlineFees}
                 onChange={handleInputChange}
+                onKeyDown={handleNumberInputKeyDown}
                 bg={inputBg}
                 color={textColor}
                 borderColor={inputBorder}
                 required
                 mt="8px"
+                min={0}
               />
             </Box>
 
@@ -480,7 +539,11 @@ const AddDoctor = () => {
                 borderColor={inputBorder}
                 required
                 mt="8px"
+                maxLength={500}
               />
+              <Text fontSize="xs" color="gray.500" mt={1}>
+                {formData.aboutEn.length}/500 {t('doctors.characters')}
+              </Text>
             </Box>
 
             <Box gridColumn="1 / -1">
@@ -496,7 +559,11 @@ const AddDoctor = () => {
                 borderColor={inputBorder}
                 required
                 mt="8px"
+                maxLength={500}
               />
+              <Text fontSize="xs" color="gray.500" mt={1}>
+                {formData.aboutAr.length}/500 {t('doctors.characters')}
+              </Text>
             </Box>
 
             {/* Toggles */}
@@ -554,7 +621,7 @@ const AddDoctor = () => {
                 <Flex key={index} align="center" mt="8px" mb={2}>
                   <Input
                     type="text"
-                    placeholder={`${t('doctors.phone')} ${index + 1}`}
+                    placeholder={`${t('doctors.phone')} ${index + 1} (8 digits)`}
                     value={phone.phoneNumber}
                     onChange={(e) => handlePhoneChange(index, e.target.value)}
                     bg={inputBg}
@@ -563,6 +630,7 @@ const AddDoctor = () => {
                     required={index === 0}
                     flex="1"
                     mr={2}
+                    maxLength={8}
                   />
                   {phones.length > 1 && (
                     <Icon
@@ -612,20 +680,6 @@ const AddDoctor = () => {
                     flex="1"
                     mr={2}
                   />
-                  <FormControl display="flex" alignItems="center" width="auto">
-                    <FormLabel htmlFor={`active-${index}`} mb="0" mr={2} color={textColor}>
-                      {t('doctors.active')}
-                    </FormLabel>
-                    <Switch
-                      id={`active-${index}`}
-                      isChecked={lang.isActive}
-                      onChange={(e) =>
-                        handleLanguageChange(index, 'isActive', e.target.checked)
-                      }
-                      colorScheme="brand"
-                      dir='ltr'
-                    />
-                  </FormControl>
                   {languages.length > 1 && (
                     <Icon
                       as={FaTrash}
@@ -657,22 +711,78 @@ const AddDoctor = () => {
             {/* Clinics */}
             <Box gridColumn="1 / -1" mb={3}>
               <Text color={textColor} fontSize="sm" fontWeight="700" mb="1">
-                {t('doctors.clinics')}
+                {t('doctors.clinics')} ({clinics.length} available)
               </Text>
-              <Flex wrap="wrap" gap={4} mt={2}>
-                {clinics.map((clinic) => (
-                  <Checkbox
-                    key={clinic.id}
-                    isChecked={selectedClinics.includes(clinic.id)}
-                    onChange={() => handleClinicSelection(clinic.id)}
-                    colorScheme="brand"
-                    color={textColor}
-                  >
-                    {clinic.name}
-                  </Checkbox>
-                ))}
-              </Flex>
+              <Button
+                onClick={onOpen}
+                variant="outline"
+                colorScheme="teal"
+                size="sm"
+                mt="8px"
+                width="100%"
+                justifyContent="space-between"
+              >
+                <Text>
+                  {selectedClinics.length > 0 
+                    ? `${selectedClinics.length} ${t('doctors.clinicsSelected')}`
+                    : t('doctors.selectClinics')
+                  }
+                </Text>
+                <Text fontSize="xs" color="gray.500">
+                  {selectedClinics.length > 0 ? getSelectedClinicsNames() : ''}
+                </Text>
+              </Button>
             </Box>
+
+            {/* Clinics Selection Modal */}
+            <Modal isOpen={isOpen} onClose={onClose} size="lg">
+              <ModalOverlay />
+              <ModalContent>
+                <ModalHeader>{t('doctors.selectClinics')}</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                  <Box mb={4}>
+                    <Checkbox
+                      isChecked={selectedClinics.length === clinics.length && clinics.length > 0}
+                      isIndeterminate={selectedClinics.length > 0 && selectedClinics.length < clinics.length}
+                      onChange={handleSelectAllClinics}
+                      colorScheme="teal"
+                      mb={3}
+                    >
+                      <Text fontWeight="bold">{t('doctors.selectAllClinics')}</Text>
+                    </Checkbox>
+                    <Text fontSize="sm" color="gray.500">
+                      {selectedClinics.length} of {clinics.length} {t('doctors.clinicsSelected')}
+                    </Text>
+                  </Box>
+                  
+                  <Box maxH="400px" overflowY="auto">
+                    <Grid templateColumns="repeat(1, 1fr)" gap={3}>
+                      {clinics.map((clinic) => (
+                        <Checkbox
+                          key={clinic.id}
+                          isChecked={selectedClinics.includes(clinic.id)}
+                          onChange={() => handleClinicSelection(clinic.id)}
+                          colorScheme="teal"
+                        >
+                          <Box>
+                            <Text fontWeight="medium">{clinic.name}</Text>
+                            <Text fontSize="sm" color="gray.500">
+                              {clinic.email}
+                            </Text>
+                          </Box>
+                        </Checkbox>
+                      ))}
+                    </Grid>
+                  </Box>
+                </ModalBody>
+                <ModalFooter>
+                  <Button colorScheme="teal" onClick={onClose}>
+                    {t('doctors.confirmSelection')}
+                  </Button>
+                </ModalFooter>
+              </ModalContent>
+            </Modal>
 
             {/* Doctor Image */}
             <Box gridColumn="1 / -1" mb={3}>

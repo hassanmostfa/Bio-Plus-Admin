@@ -22,6 +22,15 @@ import {
   InputLeftElement,
   Select,
   HStack,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  useDisclosure,
+  Textarea,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -50,6 +59,9 @@ const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [blockedReason, setBlockedReason] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   const { data: usersData, isLoading, refetch } = useGetUsersQuery({
     page:1,
@@ -115,6 +127,56 @@ const Users = () => {
     }
   };
 
+  const handleBlockUser = (userId) => {
+    setSelectedUserId(userId);
+    setBlockedReason("");
+    onOpen();
+  };
+
+  const handleConfirmBlock = async () => {
+    if (!blockedReason.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please provide a reason for blocking the user',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    try {
+      await updateStatus({ 
+        id: selectedUserId, 
+        data: { 
+          status: 'BLOCKED',
+          blockedReason: blockedReason.trim()
+        } 
+      }).unwrap();
+      
+      await refetch();
+      onClose();
+      setBlockedReason("");
+      setSelectedUserId(null);
+      
+      toast({
+        title: 'User blocked',
+        description: 'User has been blocked successfully',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error blocking user',
+        description: error.message || 'Failed to block user',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   const columns = [
     columnHelper.accessor("name", {
       id: "name",
@@ -150,7 +212,7 @@ const Users = () => {
         </Text>
       ),
     }),
-    columnHelper.accessor("actions", {
+    columnHelper.accessor("row", {
       id: "actions",
       header: () => <Text color="gray.400">{t('common.actions')}</Text>,
       cell: (info) => (
@@ -179,7 +241,7 @@ const Users = () => {
               <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'PENDING')}>{t('common.pending')}</MenuItem>
               <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'ACTIVE')}>{t('common.active')}</MenuItem>
               <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'SUSPENDED')}>{t('common.suspended')}</MenuItem>
-              <MenuItem onClick={() => handleStatusUpdate(info.row.original.id, 'BLOCKED')}>{t('common.blocked')}</MenuItem>
+              <MenuItem onClick={() => handleBlockUser(info.row.original.id)}>{t('common.blocked')}</MenuItem>
             </MenuList>
           </Menu>
         </Flex>
@@ -306,6 +368,36 @@ const Users = () => {
           </Flex>
         </Box>
       </Card>
+
+      {/* Block User Modal */}
+      <Modal isOpen={isOpen} onClose={onClose} width="500px" height="500px">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{t('common.blockUser')}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text mb={4} color={textColor}>
+              {t('common.pleaseProvideReason')}
+            </Text>
+            <Textarea
+              value={blockedReason}
+              onChange={(e) => setBlockedReason(e.target.value)}
+              placeholder={t('common.enterBlockReason')}
+              size="md"
+              resize="vertical"
+              minH="120px"
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="red" mr={3} onClick={handleConfirmBlock}>
+              {t('common.blockUser')}
+            </Button>
+            <Button variant="ghost" onClick={onClose}>
+              {t('common.cancel')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

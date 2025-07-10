@@ -42,6 +42,8 @@ const ShowProduct = () => {
   const { data: productResponse, isLoading ,refetch} = useGetProductQuery(id);
   const { t } = useTranslation();
   const isRTL = i18n.language === 'ar';
+  const [selectedImage, setSelectedImage] = React.useState(null);
+  
   useEffect(() => {
     refetch();
   }, []);
@@ -54,10 +56,14 @@ const ShowProduct = () => {
   if (isLoading) return <Text>Loading...</Text>;
   if (!product) return <Text>Product not found</Text>;
 
-  const mainImage = product.images.find(img => img.isMain) || product.images[0];
+  const mainImage = selectedImage || product.images.find(img => img.isMain) || product.images[0];
   const arabicTranslation = product.translations.find(t => t.languageId === 'ar');
 
   const handleBack = () => navigate(-1);
+
+  const handleImageClick = (image) => {
+    setSelectedImage(image);
+  };
 
   return (
     <Box p={4} maxW="1400px" mx="auto" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -80,7 +86,12 @@ const ShowProduct = () => {
           </CardHeader>
           <CardBody>
             <Flex direction="column" gap={4}>
-              <Box border="1px dashed" borderColor={borderColor} borderRadius="md" p={2}>
+              <Box 
+                border="1px dashed" 
+                borderColor={borderColor} 
+                borderRadius="md" 
+                p={2}
+              >
                 <Image 
                   src={mainImage?.imageKey} 
                   alt={product.name} 
@@ -97,10 +108,12 @@ const ShowProduct = () => {
                     <Box 
                       key={image.id} 
                       border="1px solid" 
-                      borderColor={image.isMain ? accentColor : borderColor}
+                      borderColor={selectedImage?.id === image.id ? accentColor : image.isMain ? accentColor : borderColor}
                       borderRadius="md" 
                       p={1}
                       cursor="pointer"
+                      onClick={() => handleImageClick(image)}
+                      _hover={{ opacity: 0.8 }}
                     >
                       <Image 
                         src={image.imageKey} 
@@ -135,6 +148,11 @@ const ShowProduct = () => {
           <CardBody>
             <Stack spacing={4}>
               <Flex justify="space-between">
+                <Text fontWeight="bold">{t('productForm.category')}:</Text>
+                <Text>{product.categoryName}</Text>
+              </Flex>
+              
+              <Flex justify="space-between">
                 <Text fontWeight="bold">{t('productForm.brand')}:</Text>
                 <Text>{product.brandName}</Text>
               </Flex>
@@ -145,18 +163,14 @@ const ShowProduct = () => {
               </Flex>
               
               <Flex justify="space-between">
+                <Text fontWeight="bold">{t('productForm.productType')}:</Text>
+                <Text>{product.productTypeName}</Text>
+              </Flex>
+              
+              <Flex justify="space-between">
                 <Text fontWeight="bold">{t('productForm.price')}:</Text>
                 <Text>${product.price}</Text>
               </Flex>
-              
-              {product.offerPercentage && (
-                <Flex justify="space-between">
-                  <Text fontWeight="bold">{t('productForm.offer')}:</Text>
-                  <Text color="green.500">
-                    {product.offerPercentage}% ({product.offerType.replace('_', ' ')})
-                  </Text>
-                </Flex>
-              )}
               
               <Flex justify="space-between">
                 <Text fontWeight="bold">{t('productForm.cost')}:</Text>
@@ -168,6 +182,44 @@ const ShowProduct = () => {
                 <Text>{product.quantity}</Text>
               </Flex>
               
+              {product.sku && (
+                <Flex justify="space-between">
+                  <Text fontWeight="bold">{t('productForm.sku')}:</Text>
+                  <Text>{product.sku}</Text>
+                </Flex>
+              )}
+              
+              {product.lotNumber && (
+                <Flex justify="space-between">
+                  <Text fontWeight="bold">{t('productForm.lotNumber')}:</Text>
+                  <Text>{product.lotNumber}</Text>
+                </Flex>
+              )}
+              
+              {product.expiryDate && (
+                <Flex justify="space-between">
+                  <Text fontWeight="bold">{t('productForm.expiryDate')}:</Text>
+                  <Text>{new Date(product.expiryDate).toLocaleDateString()}</Text>
+                </Flex>
+              )}
+              
+              {product.discount && (
+                <Flex justify="space-between">
+                  <Text fontWeight="bold">{t('productForm.discount')}:</Text>
+                  <Text>${product.discount} ({product.discountType})</Text>
+                </Flex>
+              )}
+              
+              {product.offerType && (
+                <Flex justify="space-between">
+                  <Text fontWeight="bold">{t('productForm.offerType')}:</Text>
+                  <Text color="green.500">
+                    {product.offerType.replace('_', ' ')}
+                    {product.offerPercentage && ` (${product.offerPercentage}%)`}
+                  </Text>
+                </Flex>
+              )}
+              
               <Divider />
               
               <Box>
@@ -175,12 +227,7 @@ const ShowProduct = () => {
                 <Text>{product.description}</Text>
               </Box>
               
-              {arabicTranslation && (
-                <Box>
-                  <Text fontWeight="bold" mb={2}>{t('productForm.arabicDescription')}:</Text>
-                  <Text dir="rtl" textAlign="right">{arabicTranslation.description}</Text>
-                </Box>
-              )}
+
             </Stack>
           </CardBody>
         </Card>
@@ -205,7 +252,6 @@ const ShowProduct = () => {
                         <Th isNumeric>{t('productForm.price')}</Th>
                         <Th isNumeric>{t('productForm.cost')}</Th>
                         <Th isNumeric>{t('productForm.stock')}</Th>
-                        <Th>{t('productForm.status')}</Th>
                       </Tr>
                     </Thead>
                     <Tbody>
@@ -220,6 +266,9 @@ const ShowProduct = () => {
                                   alt={variant.attributeValue} 
                                   boxSize="40px"
                                   objectFit="contain"
+                                  cursor="pointer"
+                                  onClick={() => handleImageClick({ imageKey: variant.imageKey, id: `variant-${variant.id}` })}
+                                  _hover={{ opacity: 0.8 }}
                                 />
                               )}
                               <Text>{variant.attributeValue}</Text>
@@ -228,16 +277,6 @@ const ShowProduct = () => {
                           <Td isNumeric>${variant.price}</Td>
                           <Td isNumeric>${variant.cost}</Td>
                           <Td isNumeric>{variant.quantity}</Td>
-                          <Td>
-                            <Tag 
-                              size="sm" 
-                              colorScheme={variant.isActive ? 'green' : 'red'}
-                            >
-                              <TagLabel>
-                                {variant.isActive ? t('productForm.statusActive') : t('productForm.statusInactive')}
-                              </TagLabel>
-                            </Tag>
-                          </Td>
                         </Tr>
                       ))}
                     </Tbody>
@@ -251,6 +290,86 @@ const ShowProduct = () => {
           
           <TabPanel p={0} pt={4}>
             <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={4}>
+              <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
+                <CardHeader>
+                  <Heading size="sm">{t('productForm.productDetails')}</Heading>
+                </CardHeader>
+                <CardBody>
+                  <Stack spacing={4}>
+                    {product.howToUse && (
+                      <Box>
+                        <Text fontWeight="bold" mb={2}>{t('productForm.howToUse')}:</Text>
+                        <Text>{product.howToUse}</Text>
+                      </Box>
+                    )}
+                    
+                    {product.treatment && (
+                      <Box>
+                        <Text fontWeight="bold" mb={2}>{t('productForm.treatment')}:</Text>
+                        <Text>{product.treatment}</Text>
+                      </Box>
+                    )}
+                    
+                    {product.ingredient && (
+                      <Box>
+                        <Text fontWeight="bold" mb={2}>{t('productForm.ingredients')}:</Text>
+                        <Text>{product.ingredient}</Text>
+                      </Box>
+                    )}
+                  </Stack>
+                </CardBody>
+              </Card>
+              
+              <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
+                <CardHeader>
+                  <Heading size="sm">{t('productForm.arabicTranslations')}</Heading>
+                </CardHeader>
+                <CardBody>
+                  <Stack spacing={4}>
+                    {arabicTranslation && (
+                      <>
+                        {arabicTranslation.name && (
+                          <Box>
+                            <Text fontWeight="bold" mb={2}>{t('productForm.arabicName')}:</Text>
+                            <Text dir="rtl" textAlign="right">{arabicTranslation.name}</Text>
+                          </Box>
+                        )}
+                        
+                        {arabicTranslation.description && (
+                          <Box>
+                            <Text fontWeight="bold" mb={2}>{t('productForm.arabicDescription')}:</Text>
+                            <Text dir="rtl" textAlign="right">{arabicTranslation.description}</Text>
+                          </Box>
+                        )}
+                        
+                        {arabicTranslation.howToUse && (
+                          <Box>
+                            <Text fontWeight="bold" mb={2}>{t('productForm.arabicHowToUse')}:</Text>
+                            <Text dir="rtl" textAlign="right">{arabicTranslation.howToUse}</Text>
+                          </Box>
+                        )}
+                        
+                        {arabicTranslation.treatment && (
+                          <Box>
+                            <Text fontWeight="bold" mb={2}>{t('productForm.arabicTreatment')}:</Text>
+                            <Text dir="rtl" textAlign="right">{arabicTranslation.treatment}</Text>
+                          </Box>
+                        )}
+                        
+                        {arabicTranslation.ingredient && (
+                          <Box>
+                            <Text fontWeight="bold" mb={2}>{t('productForm.arabicIngredients')}:</Text>
+                            <Text dir="rtl" textAlign="right">{arabicTranslation.ingredient}</Text>
+                          </Box>
+                        )}
+                      </>
+                    )}
+                  </Stack>
+                </CardBody>
+              </Card>
+            </Grid>
+            
+            <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={4} mt={4}>
               <Card bg={bgColor} border="1px solid" borderColor={borderColor}>
                 <CardHeader>
                   <Heading size="sm">{t('productForm.creationDetails')}</Heading>
@@ -318,6 +437,8 @@ const ShowProduct = () => {
           </TabPanel>
         </TabPanels>
       </Tabs>
+
+
     </Box>
   );
 };
