@@ -25,7 +25,7 @@ export const PromocodeApi = createApi({
     getPromocodes: builder.query({
       query: (params) => ({
         url: '/admin/promo-codes',
-        params: params, // Sends { page: 1, limit: 10 } as query params
+        params: params, // Sends { page: 1, limit: 10, search: "query" } as query params
       }),
     }),
     

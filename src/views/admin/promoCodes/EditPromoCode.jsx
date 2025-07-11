@@ -35,7 +35,7 @@ const EditPromoCode = () => {
   const inputBg = useColorModeValue('gray.100', 'gray.700');
   
   // Fetch all promo codes
-  const { data: promocodesResponse, isLoading: isFetching } = useGetPromocodesQuery({});
+  const { data: promocodesResponse, isLoading: isFetching  , refetch} = useGetPromocodesQuery({});
   const [updatePromocode, { isLoading: isUpdating }] = useUpdatePromocodeMutation();
 
   // State for the promo code being edited
@@ -48,6 +48,11 @@ const EditPromoCode = () => {
     maxUsage: '',
     isActive: true,
   });
+
+  useEffect(()=>{
+    refetch();
+  },[refetch, id]);
+
 
   // Find the specific promo code when data loads
   useEffect(() => {
@@ -68,7 +73,7 @@ const EditPromoCode = () => {
         navigate('/admin/promo-codes');
       }
     }
-  }, [promocodesResponse, id, navigate]);
+  }, [promocodesResponse, id, navigate, refetch]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -326,8 +331,25 @@ const EditPromoCode = () => {
 
           {/* Action Buttons */}
           <Flex justify="center" mt={8} gap={4}>
-           
-           
+            <Button
+              type="button"
+              onClick={() => navigate('/admin/promo-codes')}
+              colorScheme="gray"
+              size="sm"
+              px={8}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              colorScheme="blue"
+              size="sm"
+              px={8}
+              isLoading={isUpdating}
+              loadingText={t('common.updating')}
+            >
+              {t('common.update')}
+            </Button>
           </Flex>
         </form>
       </Box>

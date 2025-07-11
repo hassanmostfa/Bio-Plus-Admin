@@ -54,7 +54,8 @@ const Reports = () => {
   const { currentLanguage } = useLanguage();
   const [activeTab, setActiveTab] = React.useState(0);
   const [tableData, setTableData] = React.useState([]);
-  const [globalFilter, setGlobalFilter] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = React.useState('');
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
   const toast = useToast();
@@ -74,10 +75,35 @@ const Reports = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
-  // Fetch data using RTK Query hooks
-  const { data: inventoryData, isLoading: isInventoryLoading, isError: isInventoryError, error: inventoryError } = useGetProductsStockReportQuery({ page: inventoryPage, limit: inventoryLimit });
-  const { data: pharmacyData, isLoading: isPharmacyLoading, isError: isPharmacyError, error: pharmacyError } = useGetPharmaciesRevenueReportQuery({ page: pharmacyPage, limit: pharmacyLimit });
-  const { data: clinicData, isLoading: isClinicLoading, isError: isClinicError, error: clinicError } = useGetClinicsReportQuery({ page: clinicPage, limit: clinicLimit });
+  // Debounce search query
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+      // Reset to first page when searching
+      setInventoryPage(1);
+      setPharmacyPage(1);
+      setClinicPage(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch data using RTK Query hooks with search parameter
+  const { data: inventoryData, isLoading: isInventoryLoading, isError: isInventoryError, error: inventoryError } = useGetProductsStockReportQuery({ 
+    page: inventoryPage, 
+    limit: inventoryLimit, 
+    search: debouncedSearchQuery 
+  });
+  const { data: pharmacyData, isLoading: isPharmacyLoading, isError: isPharmacyError, error: pharmacyError } = useGetPharmaciesRevenueReportQuery({ 
+    page: pharmacyPage, 
+    limit: pharmacyLimit, 
+    search: debouncedSearchQuery 
+  });
+  const { data: clinicData, isLoading: isClinicLoading, isError: isClinicError, error: clinicError } = useGetClinicsReportQuery({ 
+    page: clinicPage, 
+    limit: clinicLimit, 
+    search: debouncedSearchQuery 
+  });
 
   // Update table data when tab changes or data is fetched
   React.useEffect(() => {
@@ -98,7 +124,6 @@ const Reports = () => {
         break;
     }
     setTableData(newData);
-    setGlobalFilter(''); // Reset search filter when changing tabs
   }, [activeTab, inventoryData, pharmacyData, clinicData]);
 
   const handleDownload = () => {
@@ -331,14 +356,10 @@ const Reports = () => {
     columns: getColumns(),
     state: {
       sorting,
-      globalFilter,
     },
     onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    globalFilterFn: 'includesString',
   });
 
   return (
@@ -382,8 +403,8 @@ const Reports = () => {
               <Input
                 borderRadius={"20px"}
                 placeholder={t('common.search')}
-                value={globalFilter ?? ''}
-                onChange={(e) => setGlobalFilter(e.target.value)}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
                 pl="30px"
                 pr="30px"

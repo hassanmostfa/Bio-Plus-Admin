@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Flex,
@@ -34,7 +34,7 @@ import { useNavigate } from "react-router-dom";
 import { useGetPromocodesQuery } from "api/promocodeSlice";
 import Swal from "sweetalert2";
 import { FaSearch } from "react-icons/fa";
-import { useDeletePromocodeMutation } from "api/promocodeSlice";
+import { useDeletePromocodeMutation, useUpdatePromocodeMutation } from "api/promocodeSlice";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "contexts/LanguageContext";
 
@@ -47,12 +47,29 @@ const PromoCodes = () => {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   
-  const { data: promocodesResponse, isLoading, refetch } = useGetPromocodesQuery({ page, limit });
-    useEffect(()=>{
-        refetch();
-    },[]);
-    const bg = useColorModeValue('secondaryGray.300', 'gray.700'); 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+      setPage(1); // Reset to first page when searching
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const { data: promocodesResponse, isLoading, refetch } = useGetPromocodesQuery({ 
+    page, 
+    limit, 
+    search: debouncedSearchQuery 
+  });
+  
+  useEffect(()=>{
+    refetch();
+  },[refetch]);
+  
+  const bg = useColorModeValue('secondaryGray.300', 'gray.700'); 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
   
@@ -60,32 +77,24 @@ const PromoCodes = () => {
   const tableData = promocodesResponse?.data || [];
   const pagination = promocodesResponse?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
   const [deletePromoCode] = useDeletePromocodeMutation();
-  // Filter data based on search query
-  const filteredData = React.useMemo(() => {
-    if (!searchQuery) return tableData;
-    return tableData.filter((promo) =>
-      Object.values(promo).some((value) =>
-        String(value).toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [tableData, searchQuery]);
+  const [updatePromoCode] = useUpdatePromocodeMutation();
 
   // Function to toggle status
-//   const toggleStatus = async (id, currentStatus) => {
-//     try {
-//       const newStatus = !currentStatus;
-//       await updateStatus({ id, isActive: newStatus }).unwrap();
-//       refetch();
-//       Swal.fire(
-//         'Success!',
-//         `Promo code ${newStatus ? 'activated' : 'deactivated'} successfully.`,
-//         'success'
-//       );
-//     } catch (error) {
-//       console.error('Failed to update status:', error);
-//       Swal.fire('Error!', 'Failed to update promo code status.', 'error');
-//     }
-//   };
+  const handleToggleStatus = async (id, currentStatus) => {
+    try {
+      const newStatus = !currentStatus;
+      await updatePromoCode({ id, data: { isActive: newStatus } }).unwrap();
+      refetch();
+      Swal.fire(
+        'Success!',
+        `Promo code ${newStatus ? 'activated' : 'deactivated'} successfully.`,
+        'success'
+      );
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      Swal.fire('Error!', 'Failed to update promo code status.', 'error');
+    }
+  };
 
   const columns = [
     columnHelper.accessor("code", {
@@ -147,7 +156,7 @@ const PromoCodes = () => {
         <Switch
           colorScheme="green"
           isChecked={info.getValue()}
-        //   onChange={() => toggleStatus(info.row.original.id, info.getValue())}
+          onChange={() => handleToggleStatus(info.row.original.id, info.getValue())}
         />
       ),
     }),
@@ -189,7 +198,7 @@ const PromoCodes = () => {
   ];
   
   const table = useReactTable({
-    data: filteredData,
+    data: tableData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),

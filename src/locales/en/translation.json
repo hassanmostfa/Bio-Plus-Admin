@@ -1397,7 +1397,7 @@
     "enterMaxUsage": "Enter maximum usage",
     "fixedAmount": "Fixed Amount",
     "percentage": "Percentage",
-    "createPromoCode": "Create Promo Code",
+    "createPromoCode": "Create",
     "createdSuccess": "Promo code created successfully.",
     "createError": "Failed to create promo code.",
     "updatedSuccess": "Promo code updated successfully.",

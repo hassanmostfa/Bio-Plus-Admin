@@ -44,6 +44,7 @@ import { CiSearch } from "react-icons/ci";
 
 import { useAssignDocumentMutation } from 'api/documentSlice';
 import { useRejectDocumentMutation } from 'api/documentSlice';
+import { useGetPharmaciesQuery } from 'api/pharmacySlice';
 import Swal from 'sweetalert2';
 import { useGetDocumentsQuery } from 'api/documentSlice';
 import { useTranslation } from 'react-i18next';
@@ -99,11 +100,6 @@ const Prescriptions = () => {
   const { currentLanguage } = useLanguage();
   const timeoutRef = useRef(null);
 
-  // Manual pharmacy state management
-  const [pharmacies, setPharmacies] = useState([]);
-  const [pharmaciesLoading, setPharmaciesLoading] = useState(false);
-  const [pharmaciesError, setPharmaciesError] = useState(null);
-
   // Pagination state
   const [pagination, setPagination] = useState({
     page: 1,
@@ -122,6 +118,12 @@ const Prescriptions = () => {
     ...filters
   });
 
+  // Fetch pharmacies using RTK Query
+  const { data: pharmaciesResponse, isLoading: pharmaciesLoading, error: pharmaciesError, refetch: refetchPharmacies } = useGetPharmaciesQuery({
+    page: 1,
+    limit: 1000, // Get all pharmacies for the modal
+  });
+
   const [assignDocument] = useAssignDocumentMutation();
   const [rejectDocument] = useRejectDocumentMutation();
 
@@ -129,38 +131,10 @@ const Prescriptions = () => {
   const documents = documentsResponse?.data?.items || [];
   const totalItems = documentsResponse?.data?.total || 0;
   const totalPages = documentsResponse?.data?.totalPages || 1;
+  const pharmacies = pharmaciesResponse?.data?.items || [];
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-
-  // Manual pharmacy fetch function
-  const fetchPharmacies = useCallback(async () => {
-    if (pharmacies.length > 0) return; // Don't refetch if already loaded
-    
-    setPharmaciesLoading(true);
-    setPharmaciesError(null);
-    
-    try {
-      const response = await fetch('/api/pharmacies?page=1&limit=1000');
-      if (!response.ok) {
-        throw new Error('Failed to fetch pharmacies');
-      }
-      const data = await response.json();
-      setPharmacies(data.data?.items || []);
-    } catch (error) {
-      setPharmaciesError(error.message);
-      console.error('Error fetching pharmacies:', error);
-    } finally {
-      setPharmaciesLoading(false);
-    }
-  }, [pharmacies.length]);
-
-  // Load pharmacies when modal opens
-  useEffect(() => {
-    if (isOpen && pharmacies.length === 0) {
-      fetchPharmacies();
-    }
-  }, [isOpen, fetchPharmacies]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -575,8 +549,8 @@ const Prescriptions = () => {
                     </Flex>
                   ) : pharmaciesError ? (
                     <Flex direction="column" justify="center" align="center" py="20px" gap="10px">
-                      <Text color="red.500">Error loading pharmacies.</Text>
-                      <Button size="sm" onClick={fetchPharmacies}>
+                      <Text color="red.500">Error loading pharmacies: {pharmaciesError.message}</Text>
+                      <Button size="sm" onClick={refetchPharmacies}>
                         Retry
                       </Button>
                     </Flex>

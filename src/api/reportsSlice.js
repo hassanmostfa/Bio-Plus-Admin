@@ -11,23 +11,23 @@
    endpoints: (builder) => ({
       // 1. Get Products Stock Report
       getProductsStockReport: builder.query({
-         query: ({ page = 1, limit = 10 }) => ({
+         query: ({ page = 1, limit = 10, search = '' }) => ({
          url: '/admin/reports/products/stock',
-         params: { page, limit },
+         params: { page, limit, search },
          }),
       }),
       // 2. Get Pharmacies Revenue Report
       getPharmaciesRevenueReport: builder.query({
-         query: ({ page = 1, limit = 10 }) => ({
+         query: ({ page = 1, limit = 10, search = '' }) => ({
          url: '/admin/reports/pharmacies/revenue',
-         params: { page, limit },
+         params: { page, limit, search },
          }),
       }),
       // 3. Get Clinics Report
       getClinicsReport: builder.query({
-         query: ({ page = 1, limit = 10 }) => ({
+         query: ({ page = 1, limit = 10, search = '' }) => ({
          url: '/admin/reports/clinics',
-         params: { page, limit },
+         params: { page, limit, search },
          }),
       }),
    }),
