@@ -19,6 +19,7 @@ import {
   Badge,
   Spinner,
   Select,
+  Image,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -49,7 +50,11 @@ const Specialization = () => {
   const [limit, setLimit] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
   
-  const { data: specializations, isLoading, refetch } = useGetSpecializationsQuery({ page, limit });
+  const { data: specializations, isLoading, refetch } = useGetSpecializationsQuery({ 
+    page, 
+    limit, 
+    search: searchQuery 
+  });
   const [deleteSpecialization, { isLoading: isDeleting }] = useDeleteSpecializationMutation();
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
@@ -62,15 +67,9 @@ const Specialization = () => {
   useEffect(()=>{
     refetch();
   },[]);
-  // Filter data based on search query
-  const filteredData = React.useMemo(() => {
-    if (!searchQuery) return tableData;
-    return tableData.filter((tag) =>
-      Object.values(tag).some((value) =>
-        String(value).toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [tableData, searchQuery]);
+  
+  // Use server-side data directly since search is handled by the API
+  const filteredData = tableData;
 
   // Handle delete tag
   const handleDelete = async (id) => {
@@ -97,10 +96,32 @@ const Specialization = () => {
   };
 
   const columns = [
-    columnHelper.accessor('id', {
-      id: 'id',
-      header: () => <Text color="gray.400">{t('specializations.id')}</Text>,
-      cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
+    columnHelper.accessor('icon', {
+      id: 'icon',
+      header: () => <Text color="gray.400">{t('specializations.icon')}</Text>,
+      cell: (info) => (
+        info.getValue() ? (
+          <Image
+            src={info.getValue()}
+            alt="Specialization icon"
+            boxSize="40px"
+            objectFit="cover"
+            borderRadius="md"
+            fallbackSrc="https://via.placeholder.com/40x40?text=No+Icon"
+          />
+        ) : (
+          <Box
+            boxSize="40px"
+            bg="gray.200"
+            borderRadius="md"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Text fontSize="xs" color="gray.500">No Icon</Text>
+          </Box>
+        )
+      ),
     }),
     columnHelper.accessor('name', {
       id: 'en_title',
@@ -174,6 +195,11 @@ const Specialization = () => {
     setPage(1);
   };
 
+  // Reset to first page when search query changes
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery]);
+
   if (isLoading) {
     return (
       <Flex justify="center" align="center" height="100vh">
@@ -207,6 +233,11 @@ const Specialization = () => {
                 placeholder={t('specializations.search')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                  }
+                }}
               />
             </InputGroup>
             

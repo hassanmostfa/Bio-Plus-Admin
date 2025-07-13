@@ -95,11 +95,6 @@ const Tags = () => {
   };
 
   const columns = [
-    columnHelper.accessor('id', {
-      id: 'id',
-      header: () => <Text color="gray.400">{t('tags.table.id')}</Text>,
-      cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
-    }),
     columnHelper.accessor('name', {
       id: 'en_title',
       header: () => <Text color="gray.400">{t('tags.table.englishTitle')}</Text>,

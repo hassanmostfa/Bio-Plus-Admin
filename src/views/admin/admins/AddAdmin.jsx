@@ -48,10 +48,20 @@ const AddAdmin = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    
+    // For phone number, only allow numeric characters
+    if (name === 'phoneNumber') {
+      const numericValue = value.replace(/[^\d]/g, '');
+      setFormData({
+        ...formData,
+        [name]: numericValue,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSelect = (role) => {

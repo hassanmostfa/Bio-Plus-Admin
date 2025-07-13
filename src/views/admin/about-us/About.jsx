@@ -62,24 +62,6 @@ const About = () => {
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
   const columns = [
-    columnHelper.accessor('id', {
-      id: 'id',
-      header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          ID
-        </Text>
-      ),
-      cell: (info) => (
-        <Flex align="center">
-          <Text color={textColor}>{info.getValue()}</Text>
-        </Flex>
-      ),
-    }),
     columnHelper.accessor('phone', {
       id: 'phone',
       header: () => (

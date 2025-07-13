@@ -177,19 +177,6 @@ const Blogs = () => {
     //     />
     //   ),
     // }),
-    columnHelper.accessor('id', {
-      id: 'id',
-      header: () => (
-        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">
-          {t('blogs.table.id')}
-        </Text>
-      ),
-      cell: (info) => (
-        <Text color={textColor} fontSize="sm">
-          {info.getValue()}
-        </Text>
-      ),
-    }),
     columnHelper.accessor('imageKey', {
       id: 'image',
       header: () => (

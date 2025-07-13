@@ -45,10 +45,20 @@ const AboutPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // For phone number, only allow numeric characters
+    if (name === 'phone') {
+      const numericValue = value.replace(/[^\d]/g, '');
+      setFormData(prev => ({
+        ...prev,
+        [name]: numericValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -99,7 +109,7 @@ const AboutPage = () => {
               <span className="text-danger mx-1">*</span>
             </Text>
             <Input
-              type="text"
+              type="tel"
               name="phone"
               placeholder={t('about.enterPhone')}
               value={formData.phone}
@@ -107,6 +117,7 @@ const AboutPage = () => {
               required
               mt="8px"
               dir={language === 'ar' ? 'rtl' : 'ltr'}
+              pattern="[0-9]*"
             />
           </div>
 

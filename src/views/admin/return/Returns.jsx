@@ -95,11 +95,6 @@ const Returns = () => {
   };
 
   const columns = [
-    columnHelper.accessor('id', {
-      id: 'id',
-      header: () => <Text color="gray.400">{t('returns.id')}</Text>,
-      cell: (info) => <Text color={textColor}>{info.getValue().substring(0, 8)}...</Text>,
-    }),
     columnHelper.accessor('contentEn', {
       id: 'contentEn',
       header: () => <Text color="gray.400">{t('returns.englishContent')}</Text>,

@@ -25,7 +25,7 @@ const EditAdmin = () => {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const { data: roles, isLoading: isRolesLoading, isError: isRolesError } = useGetRolesQuery();
-  const { data: admin, isLoading: isAdminLoading, isError: isAdminError } = useGetUserProfileQuery(id);
+  const { data: admin, isLoading: isAdminLoading, isError: isAdminError , refetch } = useGetUserProfileQuery(id);
   const [editAdmin, { isLoading: isCreating }] = useUpdateUserMutation();
   const navigate = useNavigate();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
@@ -41,9 +41,14 @@ const EditAdmin = () => {
     roleId: '',
   });
 
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
   // Update formData when admin data is available
   useEffect(() => {
     if (admin?.data) {
+      console.log('Admin data loaded:', admin.data);
       setFormData({
         name: admin.data.name,
         email: admin.data.email,
@@ -70,10 +75,20 @@ const EditAdmin = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    
+    // For phone number, only allow numeric characters
+    if (name === 'phoneNumber') {
+      const numericValue = value.replace(/[^\d]/g, '');
+      setFormData({
+        ...formData,
+        [name]: numericValue,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSelect = (role) => {
@@ -129,8 +144,14 @@ const EditAdmin = () => {
     return <div>{t('messages.loading')}</div>;
   }
 
-  if (isAdminError || isRolesError) {
+  // Only show error if admin query has failed (roles can fail without blocking the form)
+  if (!isAdminLoading && isAdminError) {
     return <div>{t('admin.loadError')}</div>;
+  }
+
+  // If admin data is not available yet, show loading
+  if (!admin?.data) {
+    return <div>{t('messages.loading')}</div>;
   }
 
   return (
@@ -243,6 +264,11 @@ const EditAdmin = () => {
                       {role.name}
                     </MenuItem>
                   ))}
+                  {isRolesError && (
+                    <MenuItem disabled color="red.500">
+                      {t('admin.rolesLoadError')}
+                    </MenuItem>
+                  )}
                 </MenuList>
               </Menu>
             </Box>
