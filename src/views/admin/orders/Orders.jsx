@@ -328,96 +328,199 @@ const Orders = () => {
 
   // Separate function to perform PDF export with fetched data
   const performExportToPdf = (data) => {
-     // Logic to capture table HTML and generate PDF
-       const tempDiv = document.createElement('div');
-       tempDiv.style.position = 'absolute';
-       tempDiv.style.left = '-9999px'; // Position off-screen
-       // Set a reasonable width for rendering the single order view
-       tempDiv.style.width = '190mm'; // slightly less than A4 width for margins
-       document.body.appendChild(tempDiv);
+    // Create a temporary div for rendering
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.width = '1200px'; // Wider for landscape
+    tempDiv.style.padding = '20px';
+    tempDiv.style.backgroundColor = 'white';
+    tempDiv.style.color = 'black';
+    tempDiv.style.fontSize = '12px'; // Bigger font for better readability
+    document.body.appendChild(tempDiv);
 
-       const pdf = new jsPDF('portrait', 'mm', 'a4'); // Portrait mode
-       const margin = 10; // mm
-       const pageWidth = pdf.internal.pageSize.getWidth();
+    // Generate HTML content for PDF
+    const pdfContent = `
+      <div style="font-family: Arial, sans-serif;">
+        <h1 style="text-align: center; color: #333; margin-bottom: 20px; font-size: 22px;margin-top: 20px;">Orders Report</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 20px; font-size: 14px;">Generated on ${new Date().toLocaleDateString()}</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 11px;margin-top: 20px;">
+          <thead>
+            <tr style="background-color: #f8f9fa;">
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px;">Order #</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px;">Date</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px;">Customer</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px;">Phone</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px;">Pharmacy</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px;">Status</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px;">Payment Status</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px;">Payment Method</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px;">Subtotal</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px;">Delivery Fee</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.map(order => `
+              <tr>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 11px;">${order.orderNumber || 'N/A'}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 11px;">${formatDate(order.createdAt)}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 11px;">${order.user?.name || 'N/A'}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 11px;">${order.user?.phoneNumber || 'N/A'}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 11px;">${order.pharmacy?.name || 'N/A'}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 11px;">
+                  <span style="
+                    padding: 3px 8px;
+                    border-radius: 4px;
+                    font-size: 10px;
+                  ">${order.status}</span>
+                </td>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 11px;">
+                  <span style="
+                    padding: 3px 8px;
+                    border-radius: 4px;
+                    font-size: 10px;
+                  ">${order.paymentStatus}</span>
+                </td>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 11px;">${order.paymentMethod || 'N/A'}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 11px;">${order.subtotal || '0'}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 11px;">${order.deliveryFee || '0'}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; font-size: 11px; font-weight: bold;">${order.total || '0'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        
+        <div style="margin-top: 20px; text-align: center; color: #666; font-size: 14px;">
+          <p><strong>Total Orders:</strong> ${data.length}</p>
+          <p><strong>Total Revenue:</strong> ${data.reduce((sum, order) => sum + parseFloat(order.total || 0), 0).toFixed(2)} KWD</p>
+          <p><strong>Average Order Value:</strong> ${(data.reduce((sum, order) => sum + parseFloat(order.total || 0), 0) / data.length).toFixed(2)} KWD</p>
+        </div>
+      </div>
+    `;
 
-       const processOrders = async () => {
-           for (let i = 0; i < data.length; i++) {
-               const order = data[i];
+    tempDiv.innerHTML = pdfContent;
 
-               if (i > 0) {
-                   pdf.addPage();
-               }
+    // Generate PDF using html2canvas and jsPDF
+    html2canvas(tempDiv, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      width: 1200,
+      height: tempDiv.scrollHeight
+    }).then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('landscape', 'mm', 'a4');
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth - 20; // Leave 10mm margin on each side
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Check if content fits on one page
+      if (imgHeight <= pageHeight - 20) {
+        // Single page
+        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+      } else {
+        // Multiple pages needed - use a simpler approach for consistent sizing
+        const maxHeightPerPage = pageHeight - 20;
+        let currentY = 10;
+        let currentPage = 0;
+        
+        while (currentY < imgHeight) {
+          if (currentPage > 0) {
+            pdf.addPage();
+          }
+          
+          const remainingHeight = imgHeight - currentY;
+          const heightToShow = Math.min(maxHeightPerPage, remainingHeight);
+          
+          // Calculate the source Y position in the canvas
+          const sourceY = (currentY / imgHeight) * canvas.height;
+          const sourceHeight = (heightToShow / imgHeight) * canvas.height;
+          
+          // Create a temporary canvas for this page
+          const tempCanvas = document.createElement('canvas');
+          const tempCtx = tempCanvas.getContext('2d');
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = sourceHeight;
+          
+          // Draw the portion of the image for this page
+          tempCtx.drawImage(
+            canvas,
+            0, sourceY, canvas.width, sourceHeight,
+            0, 0, canvas.width, sourceHeight
+          );
+          
+          const pageImgData = tempCanvas.toDataURL('image/png');
+          pdf.addImage(pageImgData, 'PNG', 10, 10, imgWidth, heightToShow);
+          
+          currentY += maxHeightPerPage;
+          currentPage++;
+        }
+      }
+      
+      // Save the PDF
+      const fileName = `Orders_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+      pdf.save(fileName);
+      
+      // Clean up
+      document.body.removeChild(tempDiv);
+      
+      toast({
+        title: t('orders.exportSuccessful'),
+        description: t('orders.ordersExportedToPdf'),
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    }).catch(error => {
+      console.error('Error generating PDF:', error);
+      document.body.removeChild(tempDiv);
+      
+      toast({
+        title: t('orders.errorExportingToPdf'),
+        description: t('orders.failedToGeneratePdf'),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    });
+  };
 
-               // Generate HTML for a single order's details
-               const orderHtml = `
-                   <div style="padding: ${margin}mm;">\n
-                       <h2 style="font-size: 1.2em; font-weight: bold; margin-bottom: 15px;">Order Details - #${order.orderNumber}</h2>\n
-                       <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">\n                           <div style="flex: 1;">\n                               <p style="font-size: 0.9em; color: gray;">Date</p>\n                               <p>${formatDate(order.createdAt)}</p>\n                           </div>\n                           <div style="flex: 1;">\n                               <p style="font-size: 0.9em; color: gray;">Status</p>\n                               <span style="background-color: ${order.status === 'PENDING' || order.status === 'PROCESSING' ? '#fbd38d' /* yellow */ : order.status === 'SHIPPED' || order.status === 'DELIVERED' ? '#90cdf4' /* blue */ : order.status === 'COMPLETED' ? '#9ae6b4' /* green */ : order.status === 'CANCELLED' ? '#feb2b2' /* red */ : '#e2e8f0' /* gray */}; padding: 2px 8px; border-radius: 5px; color: black;">${order.status}</span>\n                           </div>\n                           <div style="flex: 1;">\n                               <p style="font-size: 0.9em; color: gray;">Payment Status</p>\n                               <span style="background-color: ${order.paymentStatus === 'PAID' ? '#9ae6b4' /* green */ : order.paymentStatus === 'UNPAID' ? '#fed7d7' /* orange */ : order.paymentStatus === 'REFUNDED' ? '#feb2b2' /* red */ : '#e2e8f0' /* gray */}; padding: 2px 8px; border-radius: 5px; color: black;">${order.paymentStatus}</span>\n                           </div>\n                       </div>\n
-                       <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">\n                           <div style="flex: 1;">\n                               <p style="font-size: 0.9em; color: gray;">Customer</p>\n                               <p>${order.user?.name || 'N/A'}</p>\n                               <p>${order.user?.phoneNumber || 'N/A'}</p>\n                           </div>\n                           <div style="flex: 1;">\n                               <p style="font-size: 0.9em; color: gray;">Pharmacy</p>\n                               <p>${order.pharmacy?.name || 'N/A'}</p>\n                           </div>\n                           <div style="flex: 1;">\n                               <p style="font-size: 0.9em; color: gray;">Payment Method</p>\n                               <p>${order.paymentMethod}</p>\n                           </div>\n                       </div>\n
-                       <div style="margin-bottom: 15px;">\n                           <p style="font-size: 0.9em; color: gray;">Address</p>\n                           ${order.address ? `
-                               <p>${order.address.buildingNo} ${order.address.street}, ${order.address.city}</p>
-                           ` : '<p>N/A</p>'}\n                       </div>\n
-                       <div style="margin-bottom: 15px;">\n                           <h3 style="font-size: 1.1em; font-weight: bold; margin-bottom: 10px;">Items</h3>\n                           ${order.items?.map(item => `
-                               <div style="display: flex; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0;">\n                                   ${item.imageUrl ? `<img src="${item.imageUrl}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px;"/>` : '<div style="width: 40px; height: 40px; margin-right: 10px; background-color: #e2e8f0;"></div>'}\n                                   <div style="flex: 1;">\n                                       <p style="font-weight: bold;">${item.name}</p>\n                                       <p style="font-size: 0.9em; color: gray;">Qty: ${item.quantity}</p>
-                                   </div>\n                                   <div style="text-align: right;">\n                                       <p>kwd ${item.price}</p>
-                                   </div>\n                               </div>
-                           `).join('') || '<p>No items found</p>'}\n                       </div>\n
-                       <div style="display: flex; justify-content: flex-end;">\n                           <div style="text-align: right;">\n                               <p>Subtotal: kwd ${order.subtotal}</p>
-                               <p>Delivery Fee: kwd ${order.deliveryFee}</p>
-                               <p style="font-weight: bold; font-size: 1.1em;">Total: kwd ${order.total}</p>
-                           </div>
-                       </div>
-                   </div>
-               `;
+  // Helper function to get status color
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'PENDING':
+      case 'PROCESSING':
+        return '#fbd38d';
+      case 'SHIPPED':
+      case 'DELIVERED':
+        return '#90cdf4';
+      case 'COMPLETED':
+        return '#9ae6b4';
+      case 'CANCELLED':
+        return '#feb2b2';
+      default:
+        return '#e2e8f0';
+    }
+  };
 
-               tempDiv.innerHTML = orderHtml;
-
-               // Give images/content a moment to render
-               await new Promise(resolve => setTimeout(resolve, 150)); // Increased delay slightly
-
-               const canvas = await html2canvas(tempDiv, { scale: 3 }); // Increased scale for better quality
-               const imgData = canvas.toDataURL('image/png');
-
-               const imgWidth = pageWidth - 2 * margin;
-               const imgHeight = canvas.height * imgWidth / canvas.width;
-
-               // Add image to PDF. Ensure it fits on the page.
-               // This simple approach assumes the content for one order fits on one page.
-               // For content spanning multiple pages, a more advanced approach with jspdf autoTable or similar is needed.
-               pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
-           }
-
-           // After processing all orders, save the PDF and clean up
-           pdf.save(`Orders_Details_${new Date().toISOString().slice(0, 10)}.pdf`);
-
-           // Clean up the temporary div
-           document.body.removeChild(tempDiv);
-
-           toast({
-               title: t('orders.exportSuccessful'),
-               description: t('orders.ordersExportedToPdf'),
-               status: 'success',
-               duration: 3000,
-               isClosable: true,
-           });
-       };
-
-       // Start the async process
-       processOrders().catch(err => {
-           toast({
-               title: t('orders.errorExportingToPdf'),
-               description: err.message || t('orders.failedToGeneratePdf'),
-               status: 'error',
-               duration: 5000,
-               isClosable: true,
-           });
-           console.error('Error generating PDF:', err);
-           // Clean up the temporary div even on error
-           if(document.body.contains(tempDiv)) {
-               document.body.removeChild(tempDiv);
-           }
-       });
-   };
+  // Helper function to get payment status color
+  const getPaymentStatusColor = (paymentStatus) => {
+    switch (paymentStatus) {
+      case 'PAID':
+        return '#9ae6b4';
+      case 'UNPAID':
+        return '#fed7d7';
+      case 'REFUNDED':
+        return '#feb2b2';
+      default:
+        return '#e2e8f0';
+    }
+  };
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');

@@ -184,48 +184,101 @@ const Products = () => {
   };
 
   // Export to Excel function
-  const exportToExcel = () => {
-    const data = products.map(product => ({
-      'Product ID': product.id,
-      'Name (English)': product.name,
-      'Description (English)': product.descriptionEn,
-      'Description (Arabic)': product.descriptionAr,
-      'Category': product.categoryName,
-      'Product Type': product.productTypeName,
-      'Brand': product.brandName,
-      'SKU': product.sku,
-      'Price': product.price,
-      'Discount': product.discount,
-      'Discount Type': product.discountType,
-      'Stock Quantity': product.quantity,
-      'Lot Number': product.lotNumber,
-      'Expiry Date': product.expiryDate,
-      'Guide Line (English)': product.guideLineEn,
-      'Guide Line (Arabic)': product.guideLineAr,
-      'How To Use (English)': product.howToUseEn,
-      'How To Use (Arabic)': product.howToUseAr,
-      'Treatment (English)': product.treatmentEn,
-      'Treatment (Arabic)': product.treatmentAr,
-      'Ingredients (English)': product.ingredientsEn,
-      'Ingredients (Arabic)': product.ingredientsAr,
-      'Status': product.isActive ? 'Active' : 'Inactive',
-      'Published': product.isPublished ? 'Yes' : 'No',
-      'Created At': product.createdAt,
-      'Updated At': product.updatedAt,
-    }));
+  const exportToExcel = async () => {
+    try {
+      // Show loading toast
+      toast({
+        title: t('product.exportingTitle'),
+        description: t('product.exportingText'),
+        status: 'info',
+        duration: 2000,
+        isClosable: true,
+      });
 
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
-    XLSX.writeFile(workbook, "Products.xlsx");
-    
-    toast({
-      title: t('product.exportSuccessTitle'),
-      description: t('product.exportSuccessText'),
-      status: 'success',
-      duration: 3000,
-      isClosable: true,
-    });
+      // Fetch all products for export (with a large limit to get all products)
+      const allProductsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'https://back.biopluskw.com/api/v1'}/admin/products?page=1&limit=10000&search=${debouncedSearchTerm}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!allProductsResponse.ok) {
+        throw new Error('Failed to fetch all products');
+      }
+
+      const allProductsData = await allProductsResponse.json();
+      const allProducts = allProductsData.data || [];
+
+      // Debug: Log the first product to see actual field names
+      if (allProducts.length > 0) {
+        console.log('Sample product data structure:', allProducts[0]);
+      }
+
+      if (allProducts.length === 0) {
+        toast({
+          title: t('product.noDataToExport'),
+          description: t('product.noProductsFound'),
+          status: 'warning',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      const data = allProducts.map(product => ({
+        'Product ID': product.id,
+        'Name (English)': product.name,
+        'Description (English)': product.description || product.descriptionEn || '',
+        'Description (Arabic)': product.descriptionAr || product.arabicDescription || '',
+        'Category': product.categoryName || product.category?.name || '',
+        'Product Type': product.productTypeName || product.productType?.name || '',
+        'Brand': product.brandName || product.brand?.name || '',
+        'SKU': product.sku || '',
+        'Price': product.price || 0,
+        'Discount': product.discount || 0,
+        'Discount Type': product.discountType || '',
+        'Stock Quantity': product.quantity || product.stockQuantity || 0,
+        'Lot Number': product.lotNumber || '',
+        'Expiry Date': product.expiryDate || '',
+        'How To Use (English)': product.howToUse || product.howToUseEn || '',
+        'How To Use (Arabic)': product.howToUseAr || product.arabicHowToUse || '',
+        'Treatment (English)': product.treatment || product.treatmentEn || '',
+        'Treatment (Arabic)': product.treatmentAr || product.arabicTreatment || '',
+        'Ingredients (English)': product.ingredients || product.ingredientsEn || '',
+        'Ingredients (Arabic)': product.ingredientsAr || product.arabicIngredients || '',
+        'Status': product.isActive ? 'Active' : 'Inactive',
+        'Published': product.isPublished ? 'Yes' : 'No',
+        'Created At': product.createdAt || '',
+        'Updated At': product.updatedAt || '',
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
+
+      // Generate filename with current date
+      const date = new Date().toISOString().slice(0, 10);
+      const fileName = `Products_${date}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+      
+      toast({
+        title: t('product.exportSuccessTitle'),
+        description: `${t('product.exportSuccessText')} (${allProducts.length} products)`,
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: t('product.exportErrorTitle'),
+        description: t('product.exportErrorText'),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   // Import from Excel function
