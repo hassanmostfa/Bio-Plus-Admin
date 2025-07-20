@@ -22,7 +22,7 @@ import FormWrapper from 'components/FormWrapper';
 
 const AddAdmin = () => {
   const { t, i18n } = useTranslation();
-  const { data: roles, isLoading, isError } = useGetRolesQuery();
+  const { data: roles, isLoading, isError, error } = useGetRolesQuery({ page: 1, limit: 100, search: '' });
   const [createAdmin, { isLoading: isCreating }] = useCreateUserMutation();
   const navigate = useNavigate();
   const textColor = useColorModeValue('secondaryGray.900', 'white');
@@ -38,6 +38,15 @@ const AddAdmin = () => {
     phoneNumber: '',
     roleId: '',
   });
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Roles data:', roles);
+    console.log('Roles data structure:', JSON.stringify(roles, null, 2));
+    console.log('Roles loading:', isLoading);
+    console.log('Roles error:', isError);
+    console.log('Roles error details:', error);
+  }, [roles, isLoading, isError, error]);
 
   // Update selectedRole when language changes
   useEffect(() => {
@@ -221,19 +230,45 @@ const AddAdmin = () => {
                   textAlign="left"
                   color={textColor}
                   className="menu-button role-dropdown"
+                  isLoading={isLoading}
+                  loadingText={t('messages.loading')}
                 >
                   {selectedRole}
                 </MenuButton>
                 <MenuList className="role-dropdown">
-                  {roles?.data?.map((role) => (
-                    <MenuItem
-                      key={role.id}
-                      onClick={() => handleSelect(role)}
-                      color={textColor}
-                    >
-                      {role.name}
+                  {isLoading ? (
+                    <MenuItem disabled color="gray.500">
+                      {t('messages.loading')}
                     </MenuItem>
-                  ))}
+                  ) : isError ? (
+                    <MenuItem disabled color="red.500">
+                      {t('admin.errorLoadingData')}
+                    </MenuItem>
+                  ) : roles?.data && Array.isArray(roles.data) && roles.data.length > 0 ? (
+                    roles.data.map((role) => (
+                      <MenuItem
+                        key={role.id}
+                        onClick={() => handleSelect(role)}
+                        color={textColor}
+                      >
+                        {role.name}
+                      </MenuItem>
+                    ))
+                  ) : roles?.data?.data && Array.isArray(roles.data.data) && roles.data.data.length > 0 ? (
+                    roles.data.data.map((role) => (
+                      <MenuItem
+                        key={role.id}
+                        onClick={() => handleSelect(role)}
+                        color={textColor}
+                      >
+                        {role.name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled color="gray.500">
+                      {t('common.noData')}
+                    </MenuItem>
+                  )}
                 </MenuList>
               </Menu>
             </Box>

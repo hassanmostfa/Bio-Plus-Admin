@@ -24,7 +24,7 @@ import FormWrapper from 'components/FormWrapper';
 const EditAdmin = () => {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
-  const { data: roles, isLoading: isRolesLoading, isError: isRolesError } = useGetRolesQuery();
+  const { data: roles, isLoading: isRolesLoading, isError: isRolesError, error: rolesError } = useGetRolesQuery({ page: 1, limit: 100, search: '' });
   const { data: admin, isLoading: isAdminLoading, isError: isAdminError , refetch } = useGetUserProfileQuery(id);
   const [editAdmin, { isLoading: isCreating }] = useUpdateUserMutation();
   const navigate = useNavigate();
@@ -41,6 +41,14 @@ const EditAdmin = () => {
     roleId: '',
   });
 
+  // Debug logging for roles
+  useEffect(() => {
+    console.log('Roles data:', roles);
+    console.log('Roles loading:', isRolesLoading);
+    console.log('Roles error:', isRolesError);
+    console.log('Roles error details:', rolesError);
+  }, [roles, isRolesLoading, isRolesError, rolesError]);
+
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -56,12 +64,16 @@ const EditAdmin = () => {
         phoneNumber: admin.data.phoneNumber,
         roleId: admin.data.roleId,
       });
-      // Set the selected role name
-      const role = roles?.data?.find((r) => r.id === admin.data.roleId);
-      if (role) {
-        setSelectedRole(role.name);
+      // Set the selected role name - try roleName from admin data first, then find in roles
+      if (admin.data.roleName) {
+        setSelectedRole(admin.data.roleName);
       } else {
-        setSelectedRole(t('admin.selectRole'));
+        const role = roles?.data?.find((r) => r.id === admin.data.roleId);
+        if (role) {
+          setSelectedRole(role.name);
+        } else {
+          setSelectedRole(t('admin.selectRole'));
+        }
       }
     }
   }, [admin, roles, t]);
@@ -251,22 +263,43 @@ const EditAdmin = () => {
                   textAlign="left"
                   color={textColor}
                   className="menu-button role-dropdown"
+                  isLoading={isRolesLoading}
+                  loadingText={t('messages.loading')}
                 >
                   {selectedRole}
                 </MenuButton>
                 <MenuList className="role-dropdown">
-                  {roles?.data?.map((role) => (
-                    <MenuItem
-                      key={role.id}
-                      onClick={() => handleSelect(role)}
-                      color={textColor}
-                    >
-                      {role.name}
+                  {isRolesLoading ? (
+                    <MenuItem disabled color="gray.500">
+                      {t('messages.loading')}
                     </MenuItem>
-                  ))}
-                  {isRolesError && (
+                  ) : isRolesError ? (
                     <MenuItem disabled color="red.500">
-                      {t('admin.rolesLoadError')}
+                      {t('admin.errorLoadingData')}
+                    </MenuItem>
+                  ) : roles?.data && Array.isArray(roles.data) && roles.data.length > 0 ? (
+                    roles.data.map((role) => (
+                      <MenuItem
+                        key={role.id}
+                        onClick={() => handleSelect(role)}
+                        color={textColor}
+                      >
+                        {role.name}
+                      </MenuItem>
+                    ))
+                  ) : roles?.data?.data && Array.isArray(roles.data.data) && roles.data.data.length > 0 ? (
+                    roles.data.data.map((role) => (
+                      <MenuItem
+                        key={role.id}
+                        onClick={() => handleSelect(role)}
+                        color={textColor}
+                      >
+                        {role.name}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled color="gray.500">
+                      {t('common.noData')}
                     </MenuItem>
                   )}
                 </MenuList>

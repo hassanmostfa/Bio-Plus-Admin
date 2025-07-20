@@ -21,7 +21,7 @@ const ShowAdmin = () => {
   const { data: admin, isLoading: isAdminLoading, isError: isAdminError } =
     useGetUserProfileQuery(id);
   const { data: roles, isLoading: isRolesLoading, isError: isRolesError } =
-    useGetRolesQuery();
+    useGetRolesQuery({ page: 1, limit: 10, search: '' });
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const cardBg = useColorModeValue("white", "navy.700");
@@ -31,19 +31,24 @@ const ShowAdmin = () => {
   const [selectedRole, setSelectedRole] = useState("");
 
   useEffect(() => {
-    if (admin?.data && roles?.data) {
-      const role = roles.data.find((r) => r.id === admin.data?.roleId);
-      if (role) {
-        setSelectedRole(role.name);
+    if (admin?.data) {
+      // Use roleName from admin data if available, otherwise try to find it in roles
+      if (admin.data.roleName) {
+        setSelectedRole(admin.data.roleName);
+      } else if (roles?.data) {
+        const role = roles.data.find((r) => r.id === admin.data?.roleId);
+        if (role) {
+          setSelectedRole(role.name);
+        }
       }
     }
   }, [admin, roles]);
 
-  if (isAdminLoading || isRolesLoading) {
+  if (isAdminLoading) {
     return <Box textAlign="center" p="20px">{t('admin.loading')}</Box>;
   }
 
-  if (isAdminError || isRolesError) {
+  if (isAdminError) {
     return <Box textAlign="center" p="20px" color="red.500">{t('admin.errorLoadingData')}</Box>;
   }
 
@@ -67,6 +72,12 @@ const ShowAdmin = () => {
             <Tr>
               <Th w="30%" textAlign={i18n.language === 'ar' ? 'right' : 'left'}>{t('admin.email')}</Th>
               <Td>{admin.data?.email}</Td>
+            </Tr>
+
+            {/* Phone Field */}
+            <Tr>
+              <Th w="30%" textAlign={i18n.language === 'ar' ? 'right' : 'left'}>{t('admin.phone')}</Th>
+              <Td>{admin.data?.phoneNumber}</Td>
             </Tr>
 
             {/* Role Field */}

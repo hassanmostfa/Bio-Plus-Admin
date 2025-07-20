@@ -154,7 +154,7 @@ const Roles = () => {
             color="blue.500"
             as={FaEye}
             cursor="pointer"
-            onClick={() => navigate(`/admin/edit/rule/${info.getValue()}`)}
+            onClick={() => navigate(`/admin/edit/role/${info.getValue()}`)}
           />
         </Flex>
       ),
