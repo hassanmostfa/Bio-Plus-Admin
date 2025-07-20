@@ -33,7 +33,7 @@ const EditBrand = () => {
   const { currentLanguage } = useLanguage();
 
   // API hooks
-  const { data: brandResponse, isLoading: isFetching } = useGetBrandQuery(id);
+  const { data: brandResponse, isLoading: isFetching , refetch } = useGetBrandQuery(id);
   const [updateBrand, { isLoading: isUpdating }] = useUpdateBrandMutation();
   const [addFile] = useAddFileMutation();
 
@@ -61,6 +61,10 @@ const EditBrand = () => {
       setIsActive(brandResponse.data.isActive);
     }
   }, [brandResponse]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   // Clean up object URLs
   useEffect(() => {

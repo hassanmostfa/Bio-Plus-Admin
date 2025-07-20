@@ -64,21 +64,21 @@ const Users = () => {
   const [selectedUserId, setSelectedUserId] = useState(null);
 
   const { data: usersData, isLoading, refetch } = useGetUsersQuery({
-    page:1,
-    limit:10000000000,
+    page,
+    limit,
     search: debouncedSearchTerm,
     status: statusFilter,
   });
   const [updateStatus] = useUpdateUserMutation();
 
-  const allUsers = usersData?.data || [];
-  const totalPages = usersData?.totalPages || 1;
+  const users = usersData?.data || [];
   const totalItems = usersData?.totalItems || 0;
+  const totalPages = usersData?.totalPages || 1;
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
 
-  // Debounce search term
+  // Debounce search term to avoid too many API calls
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -88,6 +88,16 @@ const Users = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  // Reset to first page when status filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter]);
+
+  
   // Reset to first page when status filter changes
   useEffect(() => {
     setPage(1);
@@ -250,7 +260,7 @@ const Users = () => {
   ];
 
   const table = useReactTable({
-    data: allUsers,
+    data: users,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -346,7 +356,11 @@ const Users = () => {
           {/* Pagination Controls */}
           <Flex justifyContent="space-between" alignItems="center" px="25px" pb="20px">
             <Text color={textColor}>
-              Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, totalItems)} of {totalItems} entries
+              {totalItems > 0 ? (
+                `Showing ${((page - 1) * limit) + 1} to ${Math.min(page * limit, totalItems)} of ${totalItems} entries`
+              ) : (
+                'No entries to show'
+              )}
             </Text>
             <HStack spacing={2}>
               <Button

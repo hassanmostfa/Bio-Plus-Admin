@@ -19,7 +19,7 @@ import { useLanguage } from 'contexts/LanguageContext';
 const AddPrivcy = () => {
   const { t } = useTranslation();
   const { language } = useLanguage();
-  const { data: privacyData, isLoading: isFetching } = useGetPrivacyQuery();
+  const { data: privacyData, isLoading: isFetching , refetch } = useGetPrivacyQuery();
   const [updatePrivacyPolicy, { isLoading: isUpdating }] = useAddPrivacyMutation();
   const navigate = useNavigate();
   const textColor = useColorModeValue("secondaryGray.900", "white");
@@ -38,6 +38,10 @@ const AddPrivcy = () => {
       });
     }
   }, [privacyData]);
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,7 +81,7 @@ const AddPrivcy = () => {
 
   return (
     <div className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+      <div className="add-admin-card shadow p-4 w-100">
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -88,15 +92,6 @@ const AddPrivcy = () => {
           >
             {privacyData ? t('privacy.editTitle') : t('privacy.addTitle')}
           </Text>
-          <Button
-            type="button"
-            onClick={() => navigate(-1)}
-            colorScheme="teal"
-            size="sm"
-            leftIcon={<IoMdArrowBack />}
-          >
-            {t('privacy.back')}
-          </Button>
         </div>
         
         <form onSubmit={handleSubmit}>
@@ -144,14 +139,6 @@ const AddPrivcy = () => {
 
           {/* Action Buttons */}
           <Flex justify="center" mt={6} gap={4}>
-            <Button
-              variant="outline"
-              colorScheme="red"
-              onClick={() => navigate(-1)}
-              width="120px"
-            >
-              {t('privacy.cancel')}
-            </Button>
             <Button
               variant='darkBrand'
               color='white'

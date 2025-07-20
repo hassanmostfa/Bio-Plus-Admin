@@ -417,26 +417,27 @@ const AddProduct = () => {
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>{t('product.productName')} (English)</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.productName')} (English)</FormLabel>
                   <Input
                     placeholder={t('forms.enterProductName')}
                     value={nameEn}
                     onChange={(e) => setNameEn(e.target.value)}
                     color={textColor}
+                    dir="ltr"
                     textAlign="left"
                   />
                 </FormControl>
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>{t('product.productName')} (Arabic)</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.productName')} (Arabic)</FormLabel>
                   <Input
                     placeholder={t('forms.enterProductNameAr')}
                     value={nameAr}
                     onChange={(e) => setNameAr(e.target.value)}
                     dir="rtl"
                     color={textColor}
-                    textAlign="left"
+                    textAlign="right"
                   />
                 </FormControl>
               </Box>
@@ -446,12 +447,13 @@ const AddProduct = () => {
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>{t('product.descriptionEn')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.descriptionEn')}</FormLabel>
                   <Textarea
                     placeholder={t('forms.enterDescription')}
                     value={descriptionEn}
                     onChange={(e) => setDescriptionEn(e.target.value)}
                     color={textColor}
+                    dir="ltr"
                     textAlign="left"
                     maxLength={500}
                   />
@@ -462,14 +464,14 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>{t('product.descriptionAr')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.descriptionAr')}</FormLabel>
                   <Textarea
                     placeholder={t('forms.enterDescriptionAr')}
                     value={descriptionAr}
                     onChange={(e) => setDescriptionAr(e.target.value)}
                     dir="rtl"
                     color={textColor}
-                    textAlign="left"
+                    textAlign="right"
                     maxLength={500}
                   />
                   <Text fontSize="sm" color="gray.500" mt={1}>
@@ -504,12 +506,13 @@ const AddProduct = () => {
               {/* How To Use */}
               <Box>
                 <FormControl>
-                  <FormLabel>{t('product.howToUseEn')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.howToUseEn')}</FormLabel>
                   <Textarea
                     placeholder={t('forms.enterHowToUse')}
                     value={howToUseEn}
                     onChange={(e) => setHowToUseEn(e.target.value)}
                     color={textColor}
+                    dir="ltr"
                     textAlign="left"
                     maxLength={500}
                   />
@@ -520,14 +523,14 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>{t('product.howToUseAr')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.howToUseAr')}</FormLabel>
                   <Textarea
                     placeholder={t('forms.enterHowToUseAr')}
                     value={howToUseAr}
                     onChange={(e) => setHowToUseAr(e.target.value)}
                     dir="rtl"
                     color={textColor}
-                    textAlign="left"
+                    textAlign="right"
                     maxLength={500}
                   />
                   <Text fontSize="sm" color="gray.500" mt={1}>
@@ -539,12 +542,13 @@ const AddProduct = () => {
               {/* Treatment */}
               <Box>
                 <FormControl>
-                  <FormLabel>{t('product.treatmentEn')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.treatmentEn')}</FormLabel>
                   <Textarea
                     placeholder={t('forms.enterTreatmentInformation')}
                     value={treatmentEn}
                     onChange={(e) => setTreatmentEn(e.target.value)}
                     color={textColor}
+                    dir="ltr"
                     textAlign="left"
                     maxLength={500}
                   />
@@ -555,14 +559,14 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>{t('product.treatmentAr')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.treatmentAr')}</FormLabel>
                   <Textarea
                     placeholder={t('forms.enterTreatmentAr')}
                     value={treatmentAr}
                     onChange={(e) => setTreatmentAr(e.target.value)}
                     dir="rtl"
                     color={textColor}
-                    textAlign="left"
+                    textAlign="right"
                     maxLength={500}
                   />
                   <Text fontSize="sm" color="gray.500" mt={1}>
@@ -574,12 +578,13 @@ const AddProduct = () => {
               {/* Ingredients */}
               <Box>
                 <FormControl>
-                  <FormLabel>{t('product.ingredientsEn')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.ingredientsEn')}</FormLabel>
                   <Textarea
                     placeholder={t('forms.enterIngredients')}
                     value={ingredientsEn}
                     onChange={(e) => setIngredientsEn(e.target.value)}
                     color={textColor}
+                    dir="ltr"
                     textAlign="left"
                     maxLength={500}
                   />
@@ -590,14 +595,14 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>{t('product.ingredientsAr')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.ingredientsAr')}</FormLabel>
                   <Textarea
                     placeholder={t('forms.enterIngredientsAr')}
                     value={ingredientsAr}
                     onChange={(e) => setIngredientsAr(e.target.value)}
                     dir="rtl"
                     color={textColor}
-                    textAlign="left"
+                    textAlign="right"
                     maxLength={500}
                   />
                   <Text fontSize="sm" color="gray.500" mt={1}>
@@ -612,7 +617,7 @@ const AddProduct = () => {
               <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
                 <Box>
                   <FormControl>
-                    <FormLabel>{t('product.sku')}</FormLabel>
+                    <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.sku')}</FormLabel>
                     <Input
                       type="text"
                       placeholder={t('forms.enterSku')}
@@ -625,7 +630,7 @@ const AddProduct = () => {
                 </Box>
                 <Box>
                   <FormControl>
-                    <FormLabel>{t('product.lotNumber')}</FormLabel>
+                    <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.lotNumber')}</FormLabel>
                     <Input
                       type="text"
                       placeholder={t('forms.enterLotNumber')}
@@ -638,7 +643,7 @@ const AddProduct = () => {
                 </Box>
                 <Box>
                   <FormControl>
-                    <FormLabel>{t('product.expiryDate')}</FormLabel>
+                    <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.expiryDate')}</FormLabel>
                     <Input
                       type="date"
                       value={expiryDate}
@@ -655,7 +660,7 @@ const AddProduct = () => {
             <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>{t('product.category')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.category')}</FormLabel>
                   <Select
                     placeholder={t('forms.selectCategory')}
                     value={categoryId}
@@ -674,7 +679,7 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>{t('product.brand')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.brand')}</FormLabel>
                   <Select
                     placeholder={t('forms.selectBrand')}
                     value={brandId}
@@ -692,7 +697,7 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>{t('product.pharmacy')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.pharmacy')}</FormLabel>
                   <Select
                     placeholder={t('forms.selectPharmacy')}
                     value={pharmacyId}
@@ -710,7 +715,7 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl>
-                  <FormLabel>{t('product.productType')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.productType')}</FormLabel>
                   <Select
                     placeholder={t('forms.selectProductType')}
                     value={productTypeId}
@@ -731,7 +736,7 @@ const AddProduct = () => {
             <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>{t('product.cost')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.cost')}</FormLabel>
                   <Input
                     type="number"
                     placeholder={t('forms.enterCost')}
@@ -740,17 +745,13 @@ const AddProduct = () => {
                     color={textColor}
                     textAlign="left"
                     min="0"
-                    onKeyDown={(e) => {
-                      if (e.key === '-') {
-                        e.preventDefault();
-                      }
-                    }}
+                    step="0.01"
                   />
                 </FormControl>
               </Box>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>{t('product.price')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.price')}</FormLabel>
                   <Input
                     type="number"
                     placeholder={t('forms.enterPrice')}
@@ -769,7 +770,7 @@ const AddProduct = () => {
               </Box>
               <Box>
                 <FormControl isRequired>
-                  <FormLabel>{t('product.quantity')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.quantity')}</FormLabel>
                   <Input
                     type="number"
                     placeholder={t('forms.enterQuantity')}
@@ -797,9 +798,9 @@ const AddProduct = () => {
 
             {/* Offer Type */}
             <Box mb={4}>
-              <FormLabel>{t('product.offerType')}</FormLabel>
-              <RadioGroup value={offerType} onChange={setOfferType}>
-                <Stack direction="row">
+              <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.offerType')}</FormLabel>
+              <RadioGroup value={offerType} onChange={setOfferType} textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>
+                <Stack direction={currentLanguage === 'ar' ? 'row-reverse' : 'row'} justifyContent={currentLanguage === 'ar' ? 'flex-start' : 'flex-end'}>
                   <Radio value="MONTHLY_OFFER">{t('forms.monthlyOffer')}</Radio>
                   <Radio value="NEW_ARRIVAL">{t('forms.newArrival')}</Radio>
                   <Radio value="NONE">{t('forms.none')}</Radio>
@@ -808,7 +809,7 @@ const AddProduct = () => {
               {offerType === 'MONTHLY_OFFER' && (
                 <Box mt={2}>
                   <FormControl>
-                    <FormLabel>{t('forms.offerPercentage')}</FormLabel>
+                    <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('forms.offerPercentage')}</FormLabel>
                     <Input
                       type="number"
                       placeholder={t('forms.enterOfferPercentage')}
@@ -827,7 +828,7 @@ const AddProduct = () => {
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
                 <Box>
                   <FormControl>
-                    <FormLabel>{t('product.discount')}</FormLabel>
+                    <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.discount')}</FormLabel>
                     <Input
                       type="number"
                       placeholder={t('forms.enterDiscountValue')}
@@ -846,7 +847,7 @@ const AddProduct = () => {
                 </Box>
                 <Box>
                   <FormControl>
-                    <FormLabel>{t('product.discountType')}</FormLabel>
+                    <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.discountType')}</FormLabel>
                     <Select
                       placeholder={t('forms.selectDiscountType')}
                       value={discountType || ''}
@@ -865,7 +866,7 @@ const AddProduct = () => {
             {/* Status Switches */}
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
             <FormControl display="flex" alignItems="center">
-                <FormLabel mb="0">{t('product.isPublished')}</FormLabel>
+                <FormLabel mb="0" textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.isPublished')}</FormLabel>
                 <Switch
                   isChecked={isPublished}
                   onChange={() => setIsPublished(!isPublished)}
@@ -874,7 +875,7 @@ const AddProduct = () => {
               </FormControl>
 
               <FormControl display="flex" alignItems="center">
-                <FormLabel mb="0">{t('product.isActive')}</FormLabel>
+                <FormLabel mb="0" textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.isActive')}</FormLabel>
                 <Switch
                   isChecked={isActive}
                   onChange={() => setIsActive(!isActive)}
@@ -883,7 +884,7 @@ const AddProduct = () => {
               </FormControl>
               
               <FormControl display="flex" alignItems="center">
-                <FormLabel mb="0">{t('product.hasVariants')}</FormLabel>
+                <FormLabel mb="0" textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.hasVariants')}</FormLabel>
                 <Switch
                   isChecked={hasVariants}
                   onChange={() => setHasVariants(!hasVariants)}
@@ -896,7 +897,7 @@ const AddProduct = () => {
             {hasVariants && (
               <Box mb={4}>
                 <FormControl mb={4}>
-                  <FormLabel>{t('product.selectVariant')}</FormLabel>
+                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.selectVariant')}</FormLabel>
                   <Select
                     placeholder={t('forms.selectVariant')}
                     onChange={handleVariantSelect}
@@ -932,7 +933,7 @@ const AddProduct = () => {
                         <CardBody>
                           <SimpleGrid columns={2} spacing={2}>
                             <FormControl isRequired>
-                              <FormLabel>{t('product.cost')}</FormLabel>
+                              <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.cost')}</FormLabel>
                               <Input
                                 type="number"
                                 value={attr.cost}
@@ -946,15 +947,11 @@ const AddProduct = () => {
                                 color={textColor}
                                 textAlign="left"
                                 min="0"
-                                onKeyDown={(e) => {
-                                  if (e.key === '-') {
-                                    e.preventDefault();
-                                  }
-                                }}
+                                step="0.01"
                               />
                             </FormControl>
                             <FormControl isRequired>
-                              <FormLabel>{t('product.price')}</FormLabel>
+                              <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.price')}</FormLabel>
                               <Input
                                 type="number"
                                 value={attr.price}
@@ -976,7 +973,7 @@ const AddProduct = () => {
                               />
                             </FormControl>
                             <FormControl isRequired>
-                              <FormLabel>{t('product.quantity')}</FormLabel>
+                              <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.quantity')}</FormLabel>
                               <Input
                                 type="number"
                                 value={attr.quantity}
@@ -1002,7 +999,7 @@ const AddProduct = () => {
                               />
                             </FormControl>
                             <FormControl>
-                              <FormLabel>{t('product.variantImage')}</FormLabel>
+                              <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.variantImage')}</FormLabel>
                               <Input
                                 type="file"
                                 accept="image/*"
@@ -1042,7 +1039,7 @@ const AddProduct = () => {
 
                             {/* Variant Expiry Date */}
                             <FormControl>
-                              <FormLabel>{t('product.expiryDate')}</FormLabel>
+                              <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.expiryDate')}</FormLabel>
                               <Input
                                 type="date"
                                 value={attr.expiryDate}
@@ -1068,7 +1065,7 @@ const AddProduct = () => {
             {/* Product Images */}
             <Box mb={4}>
               <FormControl isRequired={images.length === 0}>
-                <FormLabel>
+                <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>
                   {t('product.productImages')}
                   {images.length === 0 && <span style={{ color: 'red' }}>*</span>}
                 </FormLabel>
@@ -1148,7 +1145,7 @@ const AddProduct = () => {
               </FormControl>
             </Box>
             {/* Submit Buttons */}
-            <Flex justify="flex-end" gap={4}>
+            <Flex justify={currentLanguage === 'ar' ? 'flex-start' : 'flex-end'} gap={4}>
               <Button 
                 variant="outline" 
                 colorScheme="red" 

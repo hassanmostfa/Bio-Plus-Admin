@@ -68,7 +68,7 @@ const ShowClinic = () => {
             
             <Box mb={3}>
               <Text color="gray.500" fontSize="sm">{t('clinics.arabicName')}</Text>
-              <Text fontSize="md" dir="rtl">{arabicTranslation?.name || t('clinics.notAvailable')}</Text>
+              <Text fontSize="md" textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{arabicTranslation?.name || t('clinics.notAvailable')}</Text>
             </Box>
             
             <Box mb={3}>
@@ -128,7 +128,7 @@ const ShowClinic = () => {
                     
                     <Box>
                       <Text color="gray.500" fontSize="sm">{t('clinics.arabicName')}</Text>
-                      <Text fontSize="md" dir="rtl">{locationArabicName || t('clinics.notAvailable')}</Text>
+                      <Text fontSize="md" textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{locationArabicName || t('clinics.notAvailable')}</Text>
                     </Box>
                   </Grid>
                 </Box>

@@ -19,10 +19,19 @@ import { useLanguage } from 'contexts/LanguageContext';
 const AboutPage = () => {
   const { t } = useTranslation();
   const { language } = useLanguage();
-  const { data: aboutData, isLoading: isFetching } = useGetAboutQuery();
+  const { data: aboutData, isLoading: isFetching, refetch } = useGetAboutQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
   const [updateAbout, { isLoading: isUpdating }] = useAddAboutMutation();
   const navigate = useNavigate();
   const textColor = useColorModeValue("secondaryGray.900", "white");
+  const cardBg = useColorModeValue("white", "navy.700");
+  const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
+  const inputBg = useColorModeValue("white", "gray.700");
+  const inputBorderColor = useColorModeValue("gray.300", "whiteAlpha.200");
+  const inputHoverBorderColor = useColorModeValue("gray.400", "whiteAlpha.300");
 
   const [formData, setFormData] = useState({
     phone: "",
@@ -42,6 +51,10 @@ const AboutPage = () => {
       });
     }
   }, [aboutData]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -66,7 +79,24 @@ const AboutPage = () => {
     
     try {
       await updateAbout(formData).unwrap();
-      Swal.fire(t('about.success'), t('about.savedSuccessfully'), 'success');
+      
+      // Show success message
+      Swal.fire({
+        title: t('about.success'),
+        text: t('about.savedSuccessfully'),
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: true,
+      });
+      
+      // Refetch data to get the latest updates
+      await refetch();
+      
+      // Navigate back to the list after a short delay
+      setTimeout(() => {
+        navigate('/admin/undefined/cms/about-us');
+      }, 1000);
+      
     } catch (error) {
       console.error('Failed to save about:', error);
       Swal.fire(
@@ -87,7 +117,15 @@ const AboutPage = () => {
 
   return (
     <div className="container add-admin-container w-100" dir={language === 'ar' ? 'rtl' : 'ltr'}>
-      <div className="add-admin-card shadow p-4 bg-white w-100">
+      <div 
+        className="add-admin-card shadow p-4 w-100"
+        style={{
+          backgroundColor: cardBg,
+          border: `1px solid ${borderColor}`,
+          borderRadius: '12px',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+        }}
+      >
         <div className="mb-3 d-flex justify-content-between align-items-center">
           <Text
             color={textColor}
@@ -109,6 +147,7 @@ const AboutPage = () => {
               <span className="text-danger mx-1">*</span>
             </Text>
             <Input
+              color={textColor}
               type="tel"
               name="phone"
               placeholder={t('about.enterPhone')}
@@ -118,6 +157,14 @@ const AboutPage = () => {
               mt="8px"
               dir={language === 'ar' ? 'rtl' : 'ltr'}
               pattern="[0-9]*"
+              bg={inputBg}
+              borderColor={inputBorderColor}
+              _hover={{ borderColor: inputHoverBorderColor }}
+              _focus={{ 
+                borderColor: 'blue.500',
+                boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)'
+              }}
+              borderRadius="md"
             />
           </div>
 
@@ -128,6 +175,7 @@ const AboutPage = () => {
               <span className="text-danger mx-1">*</span>
             </Text>
             <Textarea
+              color={textColor}
               name="location"
               placeholder={t('about.enterLocation')}
               value={formData.location}
@@ -136,6 +184,14 @@ const AboutPage = () => {
               mt="8px"
               rows={3}
               dir={language === 'ar' ? 'rtl' : 'ltr'}
+              bg={inputBg}
+              borderColor={inputBorderColor}
+              _hover={{ borderColor: inputHoverBorderColor }}
+              _focus={{ 
+                borderColor: 'blue.500',
+                boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)'
+              }}
+              borderRadius="md"
             />
           </div>
 
@@ -146,6 +202,7 @@ const AboutPage = () => {
               <span className="text-danger mx-1">*</span>
             </Text>
             <Input
+              color={textColor}
               type="text"
               name="mapUrl"
               placeholder={t('about.enterMapUrl')}
@@ -154,6 +211,14 @@ const AboutPage = () => {
               required
               mt="8px"
               dir={language === 'ar' ? 'rtl' : 'ltr'}
+              bg={inputBg}
+              borderColor={inputBorderColor}
+              _hover={{ borderColor: inputHoverBorderColor }}
+              _focus={{ 
+                borderColor: 'blue.500',
+                boxShadow: '0 0 0 1px var(--chakra-colors-blue-500)'
+              }}
+              borderRadius="md"
             />
           </div>
 
@@ -171,6 +236,11 @@ const AboutPage = () => {
               isLoading={isUpdating}
               loadingText={t('about.saving')}
               mt='30px'
+              _hover={{ 
+                transform: 'translateY(-1px)',
+                boxShadow: 'lg'
+              }}
+              transition="all 0.2s"
             >
               {aboutData ? t('about.update') : t('about.save')}
             </Button>

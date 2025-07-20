@@ -31,35 +31,24 @@ import { useGetAboutQuery } from 'api/aboutSlice';
 const columnHelper = createColumnHelper();
 
 const About = () => {
-  const {data:about} = useGetAboutQuery();
-  console.log(about);
+  const { data: aboutResponse, isLoading, refetch } = useGetAboutQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
   
-  const [data, setData] = React.useState([
-    {
-      id: 1,
-      phone:'010254036584',
-      location: 'Cairo ,Egypt',
-      map_url: 'https://linkout.com',
-    },
-    {
-      id: 2,
-      phone:'010254036584',
-      location: 'Cairo ,Egypt',
-      map_url: 'https://linkout.com',
-    },
-    {
-      id: 3,
-      phone:'010254036584',
-      location: 'Cairo ,Egypt',
-      map_url: 'https://linkout.com',
-    },
-  ]);
+  // Use API data if available, otherwise use empty array
+  const data = aboutResponse?.data ? [aboutResponse.data] : [];
 
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const tableHeaderBg = useColorModeValue('gray.50', 'gray.700');
+  const tableRowHoverBg = useColorModeValue('gray.50', 'whiteAlpha.50');
+  const tableHeaderHoverBg = useColorModeValue('gray.100', 'gray.600');
 
   const columns = [
     columnHelper.accessor('phone', {
@@ -116,34 +105,49 @@ const About = () => {
           Actions
         </Text>
       ),
-      cell: (info) => (
-        <Flex align="center">
-          <Icon
-            w="18px"
-            h="18px"
-            me="10px"
-            color="red.500"
-            as={FaTrash}
-            cursor="pointer"
-          />
-          <Icon
-            w="18px"
-            h="18px"
-            me="10px"
-            color="green.500"
-            as={EditIcon}
-            cursor="pointer"
-          />
-          <Icon
-            w="18px"
-            h="18px"
-            me="10px"
-            color="blue.500"
-            as={FaEye}
-            cursor="pointer"
-          />
-        </Flex>
-      ),
+              cell: (info) => (
+          <Flex align="center" gap={2}>
+            <Icon
+              w="20px"
+              h="20px"
+              color="red.500"
+              as={FaTrash}
+              cursor="pointer"
+              _hover={{ 
+                color: 'red.600',
+                transform: 'scale(1.1)'
+              }}
+              transition="all 0.2s"
+              title="Delete"
+            />
+            <Icon
+              w="20px"
+              h="20px"
+              color="green.500"
+              as={EditIcon}
+              cursor="pointer"
+              _hover={{ 
+                color: 'green.600',
+                transform: 'scale(1.1)'
+              }}
+              transition="all 0.2s"
+              title="Edit"
+            />
+            <Icon
+              w="20px"
+              h="20px"
+              color="blue.500"
+              as={FaEye}
+              cursor="pointer"
+              _hover={{ 
+                color: 'blue.600',
+                transform: 'scale(1.1)'
+              }}
+              transition="all 0.2s"
+              title="View"
+            />
+          </Flex>
+        ),
     }),
   ];
 
@@ -159,6 +163,54 @@ const About = () => {
     debugTable: true,
   });
 
+  // Refetch data when component mounts or when navigating back
+  React.useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  // Refetch data when the component becomes visible (focus)
+  React.useEffect(() => {
+    const handleFocus = () => {
+      refetch();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [refetch]);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="container">
+        <Card
+          flexDirection="column"
+          w="100%"
+          px="0px"
+          overflowX={{ sm: 'scroll', lg: 'hidden' }}
+          bg={cardBg}
+          borderWidth="1px"
+          borderColor={borderColor}
+          borderRadius="lg"
+          boxShadow="lg"
+        >
+          <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
+            <Text
+              color={textColor}
+              fontSize="22px"
+              fontWeight="700"
+              lineHeight="100%"
+            >
+              All About-us
+            </Text>
+          </Flex>
+          <Box p="20px" textAlign="center">
+            <Text color={textColor}>Loading...</Text>
+          </Box>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container">
       <Card
@@ -166,6 +218,11 @@ const About = () => {
         w="100%"
         px="0px"
         overflowX={{ sm: 'scroll', lg: 'hidden' }}
+        bg={cardBg}
+        borderWidth="1px"
+        borderColor={borderColor}
+        borderRadius="lg"
+        boxShadow="lg"
       >
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text
@@ -186,6 +243,11 @@ const About = () => {
             py="5px"
             onClick={() => navigate('/admin/cms/add-about')}
             width={'200px'}
+            _hover={{ 
+              transform: 'translateY(-1px)',
+              boxShadow: 'lg'
+            }}
+            transition="all 0.2s"
           >
             <PlusSquareIcon me="10px" />
             Create New About-us
@@ -198,14 +260,17 @@ const About = () => {
                 <Tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <Th
-                        key={header.id}
-                        colSpan={header.colSpan}
-                        pe="10px"
-                        borderColor={borderColor}
-                        cursor="pointer"
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
+                                              <Th
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          pe="10px"
+                          borderColor={borderColor}
+                          cursor="pointer"
+                          onClick={header.column.getToggleSortingHandler()}
+                          bg={tableHeaderBg}
+                          _hover={{ bg: tableHeaderHoverBg }}
+                          transition="background 0.2s"
+                        >
                         <Flex
                           justifyContent="space-between"
                           align="center"
@@ -233,14 +298,19 @@ const About = () => {
                 .rows.slice(0, 11)
                 .map((row) => {
                   return (
-                    <Tr key={row.id}>
+                    <Tr 
+                      key={row.id}
+                      _hover={{ bg: tableRowHoverBg }}
+                      transition="background 0.2s"
+                    >
                       {row.getVisibleCells().map((cell) => {
                         return (
                           <Td
                             key={cell.id}
                             fontSize={{ sm: '14px' }}
                             minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                            borderColor="transparent"
+                            borderColor={borderColor}
+                            py={3}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,

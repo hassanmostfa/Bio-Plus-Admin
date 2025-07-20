@@ -58,7 +58,7 @@ const AddTag = () => {
   const handleCancel = () => {
     setName("");
     setArabicName("");
-    navigate('/admin/tags');
+    navigate('/admin/undefined/tags');
   };
 
   return (

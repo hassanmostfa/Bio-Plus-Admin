@@ -29,44 +29,48 @@ import {
   const columnHelper = createColumnHelper();
 
 const PrivcyAndPolicy = () => {
-const [data, setData] = React.useState([
-      {
-        id: 1,
-        image:'https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fnotification&psig=AOvVaw0QAHPv4Zb3oMgEgVjvpcKm&ust=1738692903658000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCJCHtPmNqIsDFQAAAAAdAAAAABAE',
-        ar_title:' مرحبا مستخدم جديد',
-        en_title: 'New user registered',
-        ar_description: 'مرحبا مستخدم جديد',
-        en_description: 'New user registered',
-        date: '2023-10-01',
-        status: 'Unread',
-      },
-      {
-        id: 2,
-        image:'https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fnotification&psig=AOvVaw0QAHPv4Zb3oMgEgVjvpcKm&ust=1738692903658000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCJCHtPmNqIsDFQAAAAAdAAAAABAE',
-        ar_title:' مرحبا مستخدم جديد',
-        en_title: 'New user registered',
-        ar_description: 'مرحبا مستخدم جديد',
-        en_description: 'New user registered',
-        date: '2023-10-01',
-        status: 'reed',
-      },
-      {
-        id: 3,
-        image:'https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fnotification&psig=AOvVaw0QAHPv4Zb3oMgEgVjvpcKm&ust=1738692903658000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCJCHtPmNqIsDFQAAAAAdAAAAABAE',
-        ar_title:' مرحبا مستخدم جديد',
-        en_title: 'New user registered',
-        ar_description: 'مرحبا مستخدم جديد',
-        en_description: 'New user registered',
-        date: '2023-10-01',
-        status: 'Unread',
-      },
-    ]);
-  
-    const navigate = useNavigate();
-    const [sorting, setSorting] = React.useState([]);
-  
-    const textColor = useColorModeValue('secondaryGray.900', 'white');
-    const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const [data, setData] = React.useState([
+    {
+      id: 1,
+      image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop',
+      ar_title: 'مرحبا مستخدم جديد',
+      en_title: 'New user registered',
+      ar_description: 'مرحبا مستخدم جديد في نظامنا',
+      en_description: 'New user registered in our system',
+      date: '2023-10-01',
+      status: 'Unread',
+    },
+    {
+      id: 2,
+      image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop',
+      ar_title: 'مرحبا مستخدم جديد',
+      en_title: 'New user registered',
+      ar_description: 'مرحبا مستخدم جديد في نظامنا',
+      en_description: 'New user registered in our system',
+      date: '2023-10-01',
+      status: 'Read',
+    },
+    {
+      id: 3,
+      image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop',
+      ar_title: 'مرحبا مستخدم جديد',
+      en_title: 'New user registered',
+      ar_description: 'مرحبا مستخدم جديد في نظامنا',
+      en_description: 'New user registered in our system',
+      date: '2023-10-01',
+      status: 'Unread',
+    },
+  ]);
+
+  const navigate = useNavigate();
+  const [sorting, setSorting] = React.useState([]);
+
+  const textColor = useColorModeValue('secondaryGray.900', 'white');
+  const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const cardBg = useColorModeValue('white', 'navy.700');
+  const tableHeaderBg = useColorModeValue('gray.50', 'gray.700');
+  const tableRowHoverBg = useColorModeValue('gray.50', 'whiteAlpha.50');
+  const tableHeaderHoverBg = useColorModeValue('gray.100', 'gray.600');
   
     const columns = [
       columnHelper.accessor('id', {
@@ -83,8 +87,8 @@ const [data, setData] = React.useState([
         ),
         cell: (info) => (
           <Flex align="center">
-            <Text color={textColor}>
-              {info.getValue()}
+            <Text color={textColor} fontWeight="600">
+              #{info.getValue()}
             </Text>
           </Flex>
         ),
@@ -102,8 +106,8 @@ const [data, setData] = React.useState([
           </Text>
         ),
         cell: (info) => (
-          <Text color={textColor}>
-            {info.getValue().slice(0, 20) + '...'}
+          <Text color={textColor} fontSize="sm" lineHeight="1.4">
+            {info.getValue().length > 25 ? info.getValue().slice(0, 25) + '...' : info.getValue()}
           </Text>
         ),
       }),
@@ -120,8 +124,8 @@ const [data, setData] = React.useState([
           </Text>
         ),
         cell: (info) => (
-          <Text color={textColor}>
-            {info.getValue().slice(0, 15) + '...'}
+          <Text color={textColor} fontSize="sm" lineHeight="1.4" dir="rtl">
+            {info.getValue().length > 20 ? info.getValue().slice(0, 20) + '...' : info.getValue()}
           </Text>
         ),
       }),
@@ -138,31 +142,45 @@ const [data, setData] = React.useState([
           </Text>
         ),
         cell: (info) => (
-          <Flex align="center">
+          <Flex align="center" gap={2}>
             <Icon
-              w="18px"
-              h="18px"
-              me="10px"
+              w="20px"
+              h="20px"
               color="red.500"
               as={FaTrash}
               cursor="pointer"
+              _hover={{ 
+                color: 'red.600',
+                transform: 'scale(1.1)'
+              }}
+              transition="all 0.2s"
+              title="Delete"
             />
             <Icon
-              w="18px"
-              h="18px"
-              me="10px"
+              w="20px"
+              h="20px"
               color="green.500"
               as={EditIcon}
               cursor="pointer"
+              _hover={{ 
+                color: 'green.600',
+                transform: 'scale(1.1)'
+              }}
+              transition="all 0.2s"
+              title="Edit"
             />
             <Icon
-              w="18px"
-              h="18px"
-              me="10px"
+              w="20px"
+              h="20px"
               color="blue.500"
               as={FaEye}
               cursor="pointer"
-              title = "Send Notification"
+              _hover={{ 
+                color: 'blue.600',
+                transform: 'scale(1.1)'
+              }}
+              transition="all 0.2s"
+              title="View"
             />
           </Flex>
         ),
@@ -188,6 +206,11 @@ const [data, setData] = React.useState([
           w="100%"
           px="0px"
           overflowX={{ sm: 'scroll', lg: 'hidden' }}
+          bg={cardBg}
+          borderWidth="1px"
+          borderColor={borderColor}
+          borderRadius="lg"
+          boxShadow="lg"
         >
           <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
             <Text
@@ -208,6 +231,11 @@ const [data, setData] = React.useState([
               py='5px'
               onClick={() => navigate('/admin/cms/add-privcy')}
               width={'200px'}
+              _hover={{ 
+                transform: 'translateY(-1px)',
+                boxShadow: 'lg'
+              }}
+              transition="all 0.2s"
             >
               <PlusSquareIcon me="10px" />
               Add New Field
@@ -227,6 +255,9 @@ const [data, setData] = React.useState([
                           borderColor={borderColor}
                           cursor="pointer"
                           onClick={header.column.getToggleSortingHandler()}
+                          bg={tableHeaderBg}
+                          _hover={{ bg: tableHeaderHoverBg }}
+                          transition="background 0.2s"
                         >
                           <Flex
                             justifyContent="space-between"
@@ -255,14 +286,19 @@ const [data, setData] = React.useState([
                   .rows.slice(0, 11)
                   .map((row) => {
                     return (
-                      <Tr key={row.id}>
+                      <Tr 
+                        key={row.id}
+                        _hover={{ bg: tableRowHoverBg }}
+                        transition="background 0.2s"
+                      >
                         {row.getVisibleCells().map((cell) => {
                           return (
                             <Td
                               key={cell.id}
                               fontSize={{ sm: '14px' }}
                               minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                              borderColor="transparent"
+                              borderColor={borderColor}
+                              py={3}
                             >
                               {flexRender(
                                 cell.column.columnDef.cell,

@@ -785,11 +785,7 @@ const EditProduct = () => {
                   onChange={(e) => setCost(e.target.value)}
                   color={textColor}
                   min="0"
-                  onKeyDown={(e) => {
-                    if (e.key === '-') {
-                      e.preventDefault();
-                    }
-                  }}
+                  step="0.01"
                 />
               </FormControl>
             </Box>
@@ -1009,11 +1005,7 @@ const EditProduct = () => {
                               }
                               color={textColor}
                               min="0"
-                              onKeyDown={(e) => {
-                                if (e.key === '-') {
-                                  e.preventDefault();
-                                }
-                              }}
+                              step="0.01"
                             />
                           </FormControl>
                           <FormControl isRequired>

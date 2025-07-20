@@ -264,19 +264,25 @@ const Ads = () => {
     const { page: currentPage, totalPages } = adsResponse.pagination;
     
     return (
-      <Flex justifyContent="center" mt={4} gap={2}>
+      <Flex justifyContent="center" alignItems="center" mt={4} gap={4}>
         <Button
           onClick={() => setPage(prev => Math.max(prev - 1, 1))}
           isDisabled={currentPage === 1}
+          size="sm"
+          variant="outline"
         >
           {t('ads.previous')}
         </Button>
-        <Text>
-          {t('ads.page')} {currentPage} {t('ads.of')} {totalPages}
-        </Text>
+        <Flex alignItems="center" gap={1}>
+          <Text color={textColor} fontSize="sm">
+            {t('ads.page')} {currentPage} {t('ads.of')} {totalPages}
+          </Text>
+        </Flex>
         <Button
           onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
           isDisabled={currentPage === totalPages}
+          size="sm"
+          variant="outline"
         >
           {t('ads.next')}
         </Button>

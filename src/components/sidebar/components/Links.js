@@ -65,7 +65,12 @@ export function SidebarLinks(props) {
         route.layout === "/rtl"
       ) {
         return (
-          <NavLink key={index} to={route.layout + route.path} 
+          <NavLink 
+            key={index} 
+            to={route.layout + route.path}
+            style={{
+              marginBottom: route.name === 'Backup And Restore' ? '10px' : '0px'
+            }}
           >
             {route.icon ? (
               <Box>

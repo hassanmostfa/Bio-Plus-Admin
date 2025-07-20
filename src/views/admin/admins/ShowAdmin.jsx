@@ -65,7 +65,7 @@ const ShowAdmin = () => {
             {/* Name Field */}
             <Tr>
               <Th w="30%" textAlign={i18n.language === 'ar' ? 'right' : 'left'}>{t('admin.name')}</Th>
-              <Td>{admin.data?.name}</Td>
+              <Td textAlign="right">{admin.data?.name}</Td>
             </Tr>
 
             {/* Email Field */}

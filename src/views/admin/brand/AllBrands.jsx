@@ -15,7 +15,7 @@ import {
   InputGroup,
   InputLeftElement,
   IconButton,
-  HStack,
+  Select,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -32,15 +32,14 @@ import { useNavigate } from 'react-router-dom';
 import { useGetBrandsQuery, useDeleteBrandMutation } from 'api/brandSlice';
 import Swal from 'sweetalert2';
 import { useTranslation } from 'react-i18next';
-import { useLanguage } from 'contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
 const AllBrands = () => {
-  const [page, setPage] = React.useState(1);
-  const [limit, setLimit] = React.useState(10);
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = React.useState('');
+  const [page, setPage] = React.useState(1); // Current page
+  const [limit, setLimit] = React.useState(10); // Items per page
+  const [searchQuery, setSearchQuery] = React.useState(''); // Search query
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = React.useState(''); // Debounced search for server
   const { data: brandsResponse, refetch, isError, isLoading } = useGetBrandsQuery({ 
     page, 
     limit, 
@@ -49,44 +48,23 @@ const AllBrands = () => {
   const [deleteBrand, { isLoading: isDeleting }] = useDeleteBrandMutation();
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
-  const { t } = useTranslation();
-  const { currentLanguage } = useLanguage();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
-  const inputBg = useColorModeValue("white", "gray.700");
 
   // Extract table data and pagination info
   const tableData = brandsResponse?.data || [];
   
   // Check if API returned pagination data, if not implement client-side pagination
   const hasServerPagination = brandsResponse?.pagination;
-  const serverPagination = brandsResponse?.pagination || { page: 1, limit: 10, totalItems: 0, totalPages: 1 };
-  
-  // Calculate client-side pagination if server doesn't provide it
-  const totalItems = hasServerPagination ? serverPagination.totalItems : tableData.length;
-  const totalPages = hasServerPagination ? serverPagination.totalPages : Math.ceil(tableData.length / limit);
-  
-  // Slice data for client-side pagination if needed
-  const paginatedData = hasServerPagination ? tableData : tableData.slice((page - 1) * limit, page * limit);
-  
-  // Use the appropriate data source
-  const displayData = hasServerPagination ? tableData : paginatedData;
+  const pagination = brandsResponse?.pagination || { page: 1, limit: 10, totalItems: tableData.length, totalPages: Math.ceil(tableData.length / limit) };
 
-  // Debug pagination
-  console.log('Pagination Debug:', {
-    page,
-    limit,
-    searchQuery: debouncedSearchQuery,
-    hasServerPagination,
-    totalItems,
-    totalPages,
-    dataLength: tableData.length,
-    displayDataLength: displayData.length,
-    serverPagination: serverPagination
-  });
+  // Use server data directly since search is handled on server
+  const filteredData = tableData;
 
-  // Debounce search query
+  // Debounce search query for server-side search
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
@@ -96,12 +74,10 @@ const AllBrands = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Reset to first page when limit changes
   React.useEffect(() => {
-    setPage(1);
-  }, [limit]);
+    refetch();
+  }, [page, limit, debouncedSearchQuery, refetch]);
 
-  // Handle delete brand
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
@@ -115,39 +91,32 @@ const AllBrands = () => {
       });
 
       if (result.isConfirmed) {
-        await deleteBrand(id).unwrap();
-        await refetch();
-        Swal.fire('Deleted!', t('brandTable.deleteSuccessMessage'), 'success');
+        await deleteBrand(id).unwrap(); // Delete the brand
+        refetch(); // Refetch the data
+        Swal.fire(t('common.deleted'), t('brandTable.deleteSuccessMessage'), 'success');
       }
     } catch (error) {
       console.error('Failed to delete brand:', error);
-      Swal.fire('Error!', t('brandTable.deleteErrorMessage'), 'error');
+      Swal.fire(t('common.error'), t('brandTable.deleteErrorMessage'), 'error');
     }
   };
 
   // Transform API data into table data format
   const transformedData = React.useMemo(() => {
-    return displayData.map((brand, index) => ({
-      index: ((page - 1) * limit) + index + 1,
+    return filteredData.map((brand, index) => ({
+      index: index + 1,
       id: brand.id,
       en_name: brand.name,
-      ar_name: brand.translations?.find((t) => t.languageId === 'ar')?.name || 'N/A',
+      ar_name: brand.translations?.find((t) => t.languageId === 'ar')?.name || t('brandTable.notAvailable'),
       image: brand.imageKey,
     }));
-  }, [displayData, page, limit]);
+  }, [filteredData, t]);
 
   const columns = [
     columnHelper.accessor('index', {
       id: 'index',
       header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          {t('brandTable.id')}
-        </Text>
+        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">{t('common.id')}</Text>
       ),
       cell: (info) => (
         <Flex align="center">
@@ -158,42 +127,21 @@ const AllBrands = () => {
     columnHelper.accessor('en_name', {
       id: 'en_name',
       header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          {t('brandTable.enName')}
-        </Text>
+        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">{t('brandTable.enName')}</Text>
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('ar_name', {
       id: 'ar_name',
       header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          {t('brandTable.arName')}
-        </Text>
+        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">{t('brandTable.arName')}</Text>
       ),
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
     columnHelper.accessor('image', {
       id: 'image',
       header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          {t('brandTable.image')}
-        </Text>
+        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">{t('brandTable.image')}</Text>
       ),
       cell: (info) => (
         info.getValue() ? (
@@ -205,21 +153,14 @@ const AllBrands = () => {
             style={{ borderRadius: '8px' }}
           />
         ) : (
-          <Text color="gray.400" fontSize="sm">No Image</Text>
+          <Text color="gray.400" fontSize="sm">{t('brandTable.noImage')}</Text>
         )
       ),
     }),
-    columnHelper.accessor('row', {
+    columnHelper.accessor('id', {
       id: 'actions',
       header: () => (
-        <Text
-          justifyContent="space-between"
-          align="center"
-          fontSize={{ sm: '10px', lg: '12px' }}
-          color="gray.400"
-        >
-          {t('brandTable.actions')}
-        </Text>
+        <Text fontSize={{ sm: '10px', lg: '12px' }} color="gray.400">{t('common.actions')}</Text>
       ),
       cell: (info) => (
         <Flex align="center">
@@ -230,7 +171,9 @@ const AllBrands = () => {
             color="red.500"
             as={FaTrash}
             cursor="pointer"
-            onClick={() => handleDelete(info.row.original.id)}
+            onClick={() => handleDelete(info.getValue())}
+            title={t('common.delete')}
+            aria-label={t('common.delete')}
           />
           <Icon
             w="18px"
@@ -239,7 +182,9 @@ const AllBrands = () => {
             color="green.500"
             as={EditIcon}
             cursor="pointer"
-            onClick={() => navigate(`/admin/edit-brand/${info.row.original.id}`)}
+            onClick={() => navigate(`/admin/edit-brand/${info.getValue()}`)}
+            title={t('common.edit')}
+            aria-label={t('common.edit')}
           />
         </Flex>
       ),
@@ -247,7 +192,7 @@ const AllBrands = () => {
   ];
 
   const table = useReactTable({
-    data: transformedData,
+    data: transformedData, // Use transformed data
     columns,
     state: {
       sorting,
@@ -255,63 +200,26 @@ const AllBrands = () => {
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    debugTable: true,
   });
 
   // Pagination controls
   const handleNextPage = () => {
-    console.log('Next page clicked. Current page:', page, 'Total pages:', totalPages);
-    if (page < totalPages) {
+    if (page < pagination.totalPages) {
       setPage(page + 1);
     }
   };
 
   const handlePreviousPage = () => {
-    console.log('Previous page clicked. Current page:', page);
     if (page > 1) {
       setPage(page - 1);
     }
   };
 
   const handleLimitChange = (e) => {
-    const newLimit = Number(e.target.value);
-    console.log('Limit changed to:', newLimit);
-    setLimit(newLimit);
+    setLimit(Number(e.target.value));
+    setPage(1); // Reset to the first page when changing the limit
   };
-
-  // Early returns for loading and error states
-  if (isLoading) {
-    return (
-      <div className="container">
-        <Card flexDirection="column" w="100%" px="0px" overflowX={{ sm: 'scroll', lg: 'hidden' }}>
-          <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
-            <Text color={textColor} fontSize="22px" fontWeight="700">
-              {t('brandTable.allBrands')}
-            </Text>
-          </Flex>
-          <Box p="20px" textAlign="center">
-            <Text color={textColor}>{t('common.loading')}</Text>
-          </Box>
-        </Card>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="container">
-        <Card flexDirection="column" w="100%" px="0px" overflowX={{ sm: 'scroll', lg: 'hidden' }}>
-          <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
-            <Text color={textColor} fontSize="22px" fontWeight="700">
-              {t('brandTable.allBrands')}
-            </Text>
-          </Flex>
-          <Box p="20px" textAlign="center">
-            <Text color="red.500">{t('common.error')}</Text>
-          </Box>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="container">
@@ -326,28 +234,43 @@ const AllBrands = () => {
             color={textColor}
             fontSize="22px"
             fontWeight="700"
-            lineHeight="100%"
+            textAlign={isRTL ? 'right' : 'left'}
           >
             {t('brandTable.allBrands')}
           </Text>
-          <HStack spacing={4} align="center">
-            <Box width="300px">
-              <InputGroup>
-                <InputLeftElement pointerEvents="none">
-                  <Icon as={SearchIcon} color="gray.400" />
-                </InputLeftElement>
-                <Input
-                  type="text"
-                  placeholder={t('brandTable.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  bg={inputBg}
-                  borderRadius="10px"
-                  dir={t('direction.ltr')}
+          <div className="search-container d-flex align-items-center gap-2">
+            <InputGroup w={{ base: "100", md: "400px" }}>
+              <InputLeftElement>
+                <IconButton
+                  bg="inherit"
+                  borderRadius="inherit"
+                  _hover="none"
+                  _active={{
+                    bg: "inherit",
+                    transform: "none",
+                    borderColor: "transparent",
+                  }}
+                  _focus={{
+                    boxShadow: "none",
+                  }}
+                  icon={<SearchIcon w="15px" h="15px" />}
                 />
-              </InputGroup>
-            </Box>
-          </HStack>
+              </InputLeftElement>
+              <Input
+                variant="search"
+                fontSize="sm"
+                bg={useColorModeValue("secondaryGray.300", "gray.700")}
+                color={useColorModeValue("gray.700", "white")}
+                fontWeight="500"
+                _placeholder={{ color: "gray.400", fontSize: "14px" }}
+                borderRadius="30px"
+                placeholder={t('brandTable.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                dir={isRTL ? 'rtl' : 'ltr'}
+              />
+            </InputGroup>
+          </div>
           <Button
             variant="darkBrand"
             color="white"
@@ -389,8 +312,8 @@ const AllBrands = () => {
                             header.getContext(),
                           )}
                           {{
-                            asc: ' 🔼',
-                            desc: ' 🔽',
+                            asc: t('common.sortAsc'),
+                            desc: t('common.sortDesc'),
                           }[header.column.getIsSorted()] ?? null}
                         </Flex>
                       </Th>
@@ -400,75 +323,78 @@ const AllBrands = () => {
               ))}
             </Thead>
             <Tbody>
-              {table.getRowModel().rows.length > 0 ? (
-                table.getRowModel().rows.map((row) => {
-                  return (
-                    <Tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => {
-                        return (
-                          <Td
-                            key={cell.id}
-                            fontSize={{ sm: '14px' }}
-                            minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                            borderColor="transparent"
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext(),
-                            )}
-                          </Td>
-                        );
-                      })}
-                    </Tr>
-                  );
-                })
-              ) : (
-                <Tr>
-                  <Td colSpan={columns.length} textAlign="center" py="40px">
-                    <Text color={textColor}>{t('common.noData')}</Text>
-                  </Td>
-                </Tr>
-              )}
+              {table.getRowModel().rows.map((row) => {
+                return (
+                  <Tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => {
+                      return (
+                        <Td
+                          key={cell.id}
+                          fontSize={{ sm: '14px' }}
+                          minW={{ sm: '150px', md: '200px', lg: 'auto' }}
+                          borderColor="transparent"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </Td>
+                      );
+                    })}
+                  </Tr>
+                );
+              })}
             </Tbody>
           </Table>
         </Box>
 
         {/* Pagination Controls */}
-        <Flex justifyContent="space-between" alignItems="center" px="25px" pb="20px">
+        <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
           <Flex alignItems="center">
             <Text color={textColor} fontSize="sm" mr="10px">
-              {t('brandTable.rowsPerPage')}
+              {t('common.rowsPerPage')}
             </Text>
-            <select
+            <Select
               value={limit}
               onChange={handleLimitChange}
-              style={{ padding: '5px', borderRadius: '5px', border: '1px solid #ddd' }}
+              width="100px"
+              size="sm"
+              variant="outline"
+              borderRadius="md"
+              borderColor="gray.200"
+              _hover={{ borderColor: 'gray.300' }}
+              _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
+              dir="ltr"
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
               <option value={50}>50</option>
-            </select>
+            </Select>
           </Flex>
-                      <Text color={textColor}>
-              Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, totalItems)} of {totalItems} entries
-            </Text>
-            <HStack spacing={2}>
-              <Button
-                size="sm"
-                onClick={handlePreviousPage}
-                isDisabled={page === 1}
-              >
-                {t('common.previous')}
-              </Button>
-              <Text color={textColor}>Page {page} of {totalPages}</Text>
-              <Button
-                size="sm"
-                onClick={handleNextPage}
-                isDisabled={page === totalPages}
-              >
-                {t('common.next')}
-              </Button>
-            </HStack>
+          <Text color={textColor} fontSize="sm">
+            {t('common.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
+          </Text>
+          <Flex>
+            <Button
+              onClick={handlePreviousPage}
+              disabled={page === 1}
+              variant="outline"
+              size="sm"
+              mr="10px"
+            >
+              <Icon as={ChevronLeftIcon} mr="5px" />
+              {t('common.previous')}
+            </Button>
+            <Button
+              onClick={handleNextPage}
+              disabled={page === pagination.totalPages}
+              variant="outline"
+              size="sm"
+            >
+              {t('common.next')}
+              <Icon as={ChevronRightIcon} ml="5px" />
+            </Button>
+          </Flex>
         </Flex>
       </Card>
     </div>
