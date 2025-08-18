@@ -37,6 +37,7 @@ const EditUser = () => {
     name: '',
     email: '',
     phoneNumber: '',
+    password: '',
   });
 
     // Trigger refetch when component mounts (navigates to)
@@ -56,6 +57,7 @@ const EditUser = () => {
           name: userToEdit.name || '',
           email: userToEdit.email || '',
           phoneNumber: userToEdit.phoneNumber || '',
+          password: '',
         });
       } else {
         Swal.fire(t('common.error'), t('user.notFound'), 'error');
@@ -79,6 +81,7 @@ const EditUser = () => {
       name: formData.name,
       email: formData.email,
       phoneNumber: formData.phoneNumber,
+      ...(formData.password && { password: formData.password }),
       // Include other profile fields if needed and supported by the API
     };
 
@@ -174,6 +177,26 @@ const EditUser = () => {
                   name="phoneNumber"
                   placeholder={t('forms.enterPhone')}
                   value={formData.phoneNumber}
+                  onChange={handleInputChange}
+                  mt={'8px'}
+                  bg={inputBg}
+                  color={textColor}
+                  dir={isRTL ? 'rtl' : 'ltr'}
+                />
+              </FormControl>
+            </GridItem>
+
+            {/* Password Field */}
+            <GridItem>
+              <FormControl>
+                <FormLabel color={textColor} fontSize="sm" fontWeight="700" mb={1} textAlign={isRTL ? 'right' : 'left'}>
+                  {t('common.password')} <Text as="span" fontSize="xs" color="gray.500">({t('common.optional')})</Text>
+                </FormLabel>
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder={t('forms.enterPassword')}
+                  value={formData.password}
                   onChange={handleInputChange}
                   mt={'8px'}
                   bg={inputBg}

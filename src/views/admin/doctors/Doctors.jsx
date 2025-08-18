@@ -24,6 +24,11 @@ import {
   useToast,
   Badge,
   Select,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  HStack,
+  VStack,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -34,6 +39,7 @@ import {
 } from '@tanstack/react-table';
 import * as React from 'react';
 import { CgAssign } from 'react-icons/cg';
+import { SearchIcon } from '@chakra-ui/icons';
 import Card from 'components/card/Card';
 import { EditIcon } from '@chakra-ui/icons';
 import { FaEye, FaTrash } from 'react-icons/fa6';
@@ -49,7 +55,25 @@ const columnHelper = createColumnHelper();
 const Doctors = () => {
   const [page, setPage] = React.useState(1);
   const [limit, setLimit] = React.useState(10);
-  const { data: doctorsData, isLoading, isError, refetch } = useGetDoctorsQuery({ page, limit });
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [statusFilter, setStatusFilter] = React.useState('');
+  
+  // Create query parameters object
+  const queryParams = React.useMemo(() => {
+    const params = { page, limit };
+    
+    if (searchQuery.trim()) {
+      params.search = searchQuery.trim();
+    }
+    
+    if (statusFilter) {
+      params.isActive = statusFilter;
+    }
+    
+    return params;
+  }, [page, limit, searchQuery, statusFilter]);
+
+  const { data: doctorsData, isLoading, isError, refetch } = useGetDoctorsQuery(queryParams);
   const [deleteDoctor] = useDeleteDoctorMutation();
   const [assignDoctor] = useAssignDoctorMutation();
   const { data: clinicsResponse } = useGetClinicsQuery({});
@@ -69,10 +93,28 @@ const Doctors = () => {
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+  const inputBg = useColorModeValue('white', 'navy.800');
+  const searchBg = useColorModeValue('gray.100', 'navy.700');
+
+  // Debounce search query
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1); // Reset to first page when searching
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setPage(1);
+  }, [statusFilter]);
 
   React.useEffect(() => {
     refetch();
   }, []);
+
+
 
   const handleAssignClick = (doctorId) => {
     const doctor = doctors.find(doc => doc.id === doctorId);
@@ -162,6 +204,20 @@ const Doctors = () => {
     setPage(1); // Reset to first page when changing limit
   };
 
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleStatusFilterChange = (e) => {
+    setStatusFilter(e.target.value);
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('');
+    setPage(1);
+  };
+
   const columns = [
     columnHelper.accessor('firstName', {
       id: 'firstName',
@@ -239,6 +295,34 @@ const Doctors = () => {
           {info.getValue() ? t('doctors.active') : t('doctors.inactive')}
         </Badge>
       ),
+    }),
+    columnHelper.accessor('createdAt', {
+      id: 'createdAt',
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: '10px', lg: '12px' }}
+          color="gray.400"
+        >
+          {t('doctors.createdAt')}
+        </Text>
+      ),
+      cell: (info) => {
+        const date = new Date(info.getValue());
+        const formattedDate = date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        return (
+          <Text color={textColor} fontSize="sm">
+            {formattedDate}
+          </Text>
+        );
+      },
     }),
     columnHelper.accessor('row', {
       id: 'actions',
@@ -355,6 +439,59 @@ const Doctors = () => {
             {t('doctors.addNewDoctor')}
           </Button>
         </Flex>
+
+        {/* Search and Filter Section */}
+        <Box px="25px" mb="20px">
+          <HStack spacing={4} wrap="wrap" align="end">
+            {/* Search Bar */}
+            <Box flex="1" minW="200px">
+              <InputGroup>
+                <InputLeftElement pointerEvents="none">
+                  <SearchIcon color="gray.400" />
+                </InputLeftElement>
+                <Input
+                  placeholder={t('doctors.searchDoctors')}
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  bg={inputBg}
+                  color={textColor}
+                  borderColor={borderColor}
+                  _placeholder={{ color: 'gray.400' }}
+                />
+              </InputGroup>
+            </Box>
+
+            {/* Status Filter */}
+            <Box minW="150px">
+              <Text color={textColor} fontSize="sm" fontWeight="600" mb={2}>
+                {t('doctors.status')}
+              </Text>
+              <Select
+                value={statusFilter}
+                onChange={handleStatusFilterChange}
+                bg={inputBg}
+                color={textColor}
+                borderColor={borderColor}
+                placeholder={t('doctors.allStatuses')}
+              >
+                <option value="true">{t('doctors.active')}</option>
+                <option value="false">{t('doctors.inactive')}</option>
+              </Select>
+            </Box>
+
+            {/* Clear Filters Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearFilters}
+              color={textColor}
+              borderColor={borderColor}
+              _hover={{ bg: searchBg }}
+            >
+              {t('doctors.clearFilters')}
+            </Button>
+          </HStack>
+        </Box>
         <Box>
           <Table variant="simple" color="gray.500" mb="24px" mt="12px" dir="ltr">
             <Thead>

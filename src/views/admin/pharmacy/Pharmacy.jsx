@@ -16,6 +16,8 @@ import {
   InputLeftElement,
   IconButton,
   Select, // Import Select from Chakra UI
+  Switch, // Import Switch for toggle functionality
+  useToast, // Import useToast for notifications
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -32,7 +34,7 @@ import { useNavigate } from 'react-router-dom';
 import { CiSearch } from 'react-icons/ci';
 import { useState } from 'react';
 import { useGetPharmaciesQuery } from 'api/pharmacySlice'; // Replace with your actual API slice
-import { useDeletePharmacyMutation } from 'api/pharmacySlice';
+import { useDeletePharmacyMutation, useUpdatePharmacyMutation } from 'api/pharmacySlice';
 import Swal from 'sweetalert2';
 import { FaRegFolderClosed } from "react-icons/fa6";
 import { useTranslation } from 'react-i18next';
@@ -42,6 +44,7 @@ const columnHelper = createColumnHelper();
 const Pharmacy = () => {
   const { t } = useTranslation();
   const { language } = useLanguage();
+  const toast = useToast(); // Add toast for notifications
   const [page, setPage] = React.useState(1); // Current page
   const [limit, setLimit] = React.useState(10); // Items per page
   const [searchQuery, setSearchQuery] = React.useState(''); // Search query
@@ -70,6 +73,7 @@ const Pharmacy = () => {
     refetchOnMountOrArgChange: true,
   });
   const [deletePharmacy, { isError: isDeleteError, isLoading: isDeleteLoading }] = useDeletePharmacyMutation();
+  const [updatePharmacy, { isLoading: isUpdateLoading }] = useUpdatePharmacyMutation(); // Add update mutation
 
   const navigate = useNavigate();
   const [sorting, setSorting] = React.useState([]);
@@ -138,6 +142,35 @@ const Pharmacy = () => {
     }
   };
 
+  // Toggle active status function
+  const toggleActiveStatus = async (pharmacyId, currentStatus) => {
+    try {
+      await updatePharmacy({
+        id: pharmacyId,
+        pharmacy: { isActive: !currentStatus }
+      }).unwrap();
+      
+      toast({
+        title: t('pharmacy.statusUpdateSuccess'),
+        description: t('pharmacy.statusUpdateSuccessDesc'),
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      refetch(); // Refetch the data to update the UI
+    } catch (error) {
+      console.error('Failed to update pharmacy status:', error);
+      toast({
+        title: t('pharmacy.statusUpdateError'),
+        description: error.data?.message || t('pharmacy.statusUpdateErrorDesc'),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   const handleLimitChange = (e) => {
     setLimit(Number(e.target.value));
     setPage(1); // Reset to the first page when changing the limit
@@ -182,12 +215,31 @@ const Pharmacy = () => {
     }),
     columnHelper.accessor('isActive', {
       header: t('pharmacy.isActive'),
-      cell: (info) =>
-        info.getValue() ? (
-          <Text color="green.500">{t('pharmacy.active')}</Text>
-        ) : (
-          <Text color="red.500">{t('pharmacy.inactive')}</Text>
-        ),
+      cell: (info) => (
+        <Flex align="center" justify="center">
+          <Switch
+            isChecked={info.getValue()}
+            onChange={() => toggleActiveStatus(info.row.original.id, info.getValue())}
+            colorScheme="green"
+            size="md"
+            isDisabled={isUpdateLoading}
+          />
+        </Flex>
+      ),
+    }),
+    columnHelper.accessor('createdAt', {
+      header: t('pharmacy.createdAt') || 'Created At',
+      cell: (info) => {
+        const date = new Date(info.getValue());
+        const formattedDate = date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        return <Text color={textColor}>{formattedDate}</Text>;
+      },
     }),
     columnHelper.accessor('id', {
       header: t('pharmacy.actions'),

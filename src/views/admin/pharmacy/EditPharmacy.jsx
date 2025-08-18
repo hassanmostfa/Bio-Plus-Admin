@@ -62,6 +62,7 @@ const EditPharmacy = () => {
     workingHours: '',
     revenueShare: 0,
     fixedFees: 0,
+    otherFees: 0,
     feesStartDate: '',
     feesEndDate: '',
     isActive: true,
@@ -293,8 +294,9 @@ const EditPharmacy = () => {
         name: formData.translations.find((t) => t.languageId === 'en').name,
         description: formData.translations.find((t) => t.languageId === 'en')
           .description,
-        revenueShare: parseInt(formData.revenueShare),
-        fixedFees: formData.fixedFees ? parseInt(formData.fixedFees) : 0,
+        revenueShare: formData.revenueShareType === 'percentage' ? parseInt(formData.revenueShare) : 0,
+        fixedFees: formData.revenueShareType === 'fixed' ? parseInt(formData.fixedFees) : 0,
+        otherFees: formData.revenueShareType === 'other' ? parseInt(formData.otherFees) : 0,
         deliveryFee: formData.deliveryFee ? parseInt(formData.deliveryFee) : 0,
       };
 
@@ -479,6 +481,7 @@ const EditPharmacy = () => {
                 <Stack direction="row">
                   <Radio value="percentage">{t('pharmacy.percentage')}</Radio>
                   <Radio value="fixed">{t('pharmacy.fixedFees')}</Radio>
+                  <Radio value="other">{t('other')}</Radio>
                 </Stack>
               </RadioGroup>
             </GridItem>
@@ -501,7 +504,7 @@ const EditPharmacy = () => {
                 min={0}
               />
             </GridItem>
-          ) : (
+          ) : formData.revenueShareType === 'fixed' ? (
             <>
               <GridItem mt={2}>
                 <Text color={textColor} fontSize="sm" fontWeight="700">
@@ -551,7 +554,24 @@ const EditPharmacy = () => {
                 />
               </GridItem>
             </>
-          )}
+          ) : formData.revenueShareType === 'other' ? (
+            <GridItem colSpan={2} mt={2}>
+              <Text color={textColor} fontSize="sm" fontWeight="700">
+                {t('other')} <span className="text-danger">*</span>
+              </Text>
+              <Input
+                bg={inputBg}
+                color={textColor}
+                type="number"
+                name="otherFees"
+                value={formData.otherFees}
+                onChange={handleChange}
+                onKeyDown={handleNumberInputKeyDown}
+                mt={2}
+                min={0}
+              />
+            </GridItem>
+          ) : null}
 
           <Grid templateColumns="repeat(2, 1fr)" gap={4} mt={4}>
             <Box>

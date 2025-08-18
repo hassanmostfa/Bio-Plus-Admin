@@ -414,7 +414,7 @@ const EditProduct = () => {
         ...( !hasVariants && { lotNumber: lotNumber || undefined }),
         ...( !hasVariants && { expiryDate: expiryDate || undefined }),
         ...( !hasVariants && { discount: discount != null ? parseFloat(discount) : undefined }),
-        ...( !hasVariants && { discountType: discountType ? discountType.toUpperCase() : undefined }),
+        ...( !hasVariants && { discountType: (discount != null && discountType && discountType.trim() !== '') ? discountType.toUpperCase() : undefined }),
       };
 
       // Remove null values
@@ -833,8 +833,8 @@ const EditProduct = () => {
             </Box>
           </SimpleGrid>
 
-          {/* SKU, Lot Number, Expiry Date, Discount (only if no variants) */}
-          <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
+          {/* SKU, Lot Number, Expiry Date (only if no variants) */}
+          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} mb={4}>
               <Box>
                 <FormControl>
                   <FormLabel>{t('product.sku')}</FormLabel>
@@ -870,25 +870,46 @@ const EditProduct = () => {
                   />
                 </FormControl>
               </Box>
-               <Box>
-                <FormControl>
-                  <FormLabel>{t('product.discount')}</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder={t('product.enterDiscountValue')}
-                    value={discount != null ? discount : ''}
-                    onChange={(e) => setDiscount(e.target.value)}
-                    color={textColor}
-                    min="0"
-                    onKeyDown={(e) => {
-                      if (e.key === '-') {
-                        e.preventDefault();
-                      }
-                    }}
-                  />
-                </FormControl>
-              </Box>
             </SimpleGrid>
+
+            {/* Discount Fields (only if no variants) */}
+            {!hasVariants && (
+              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
+                <Box>
+                  <FormControl>
+                    <FormLabel>{t('product.discount')}</FormLabel>
+                    <Input
+                      type="number"
+                      placeholder={t('product.enterDiscountValue')}
+                      value={discount != null ? discount : ''}
+                      onChange={(e) => setDiscount(e.target.value)}
+                      color={textColor}
+                      min="0"
+                      onKeyDown={(e) => {
+                        if (e.key === '-') {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
+                  </FormControl>
+                </Box>
+                <Box>
+                  <FormControl>
+                    <FormLabel>{t('product.discountType')}</FormLabel>
+                    <Select
+                      placeholder={t('forms.selectDiscountType')}
+                      value={discountType || ''}
+                      onChange={(e) => setDiscountType(e.target.value)}
+                      color={textColor}
+                      style={{ direction: 'ltr' }}
+                    >
+                      <option value="PERCENTAGE">{t('forms.percentage')}</option>
+                      <option value="FIXED">{t('forms.fixed')}</option>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </SimpleGrid>
+            )}
             
           {/* Offer Type */}
           <Box mb={4}>
@@ -903,9 +924,10 @@ const EditProduct = () => {
               }}
             >
               <Stack direction="row">
-                <Radio value="MONTHLY_OFFER">Monthly Offer</Radio>
-                <Radio value="NEW_ARRIVAL">New Arrival</Radio>
-                <Radio value="">None</Radio>
+                <Radio value="MONTHLY_OFFER">{t('forms.monthlyOffer')}</Radio>
+                <Radio value="NEW_ARRIVAL">{t('forms.newArrival')}</Radio>
+                <Radio value="BEST_SELLER">{t('forms.bestSeller')}</Radio>
+                <Radio value="">{t('forms.none')}</Radio>
               </Stack>
             </RadioGroup>
             {offerType === 'MONTHLY_OFFER' && (

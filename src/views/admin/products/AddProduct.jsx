@@ -324,7 +324,7 @@ const AddProduct = () => {
         price: parseFloat(price),
         quantity: quantity ? parseInt(quantity) : undefined,
         discount: discount != null ? parseFloat(discount) : undefined,
-        discountType: discountType,
+        discountType: (discount != null && discountType && discountType.trim() !== '') ? discountType : undefined,
         lotNumber: lotNumber,
         expiryDate: expiryDate,
         hasVariants,
@@ -803,6 +803,7 @@ const AddProduct = () => {
                 <Stack direction={currentLanguage === 'ar' ? 'row-reverse' : 'row'} justifyContent={currentLanguage === 'ar' ? 'flex-start' : 'flex-end'}>
                   <Radio value="MONTHLY_OFFER">{t('forms.monthlyOffer')}</Radio>
                   <Radio value="NEW_ARRIVAL">{t('forms.newArrival')}</Radio>
+                  <Radio value="BEST_SELLER">{t('forms.bestSeller')}</Radio>
                   <Radio value="NONE">{t('forms.none')}</Radio>
                 </Stack>
               </RadioGroup>

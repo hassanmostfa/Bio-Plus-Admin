@@ -37,6 +37,7 @@ const AddPharmacy = () => {
     workingHours: '',
     revenueShare: 0, // Percentage
     fixedFees: 0, // Fixed amount
+    otherFees: 0, // Other amount
     feesStartDate: '',
     feesEndDate: '',
     isActive: true,
@@ -103,6 +104,7 @@ const AddPharmacy = () => {
       revenueShareType: value,
       revenueShare: value === 'percentage' ? prevData.revenueShare : 0,
       fixedFees: value === 'fixed' ? prevData.fixedFees : 0,
+      otherFees: value === 'other' ? prevData.otherFees : 0,
     }));
   };
 
@@ -231,6 +233,7 @@ const AddPharmacy = () => {
         description: formData.translations.find((t) => t.languageId === 'en').description,
         revenueShare: formData.revenueShareType === 'percentage' ? parseInt(formData.revenueShare) : 0,
         fixedFees: formData.revenueShareType === 'fixed' ? parseInt(formData.fixedFees) : 0,
+        otherFees: formData.revenueShareType === 'other' ? parseInt(formData.otherFees) : 0,
 
       };
       delete payload.revenueShareType;
@@ -395,6 +398,7 @@ const AddPharmacy = () => {
                 <Stack direction="row">
                   <Radio value="percentage">{t('pharmacy.percentage')}</Radio>
                   <Radio value="fixed">{t('pharmacy.fixedFees')}</Radio>
+                  <Radio value="other">{t('other')}</Radio>
                 </Stack>
               </RadioGroup>
             </GridItem>
@@ -417,7 +421,7 @@ const AddPharmacy = () => {
                   min={0}
                 />
               </GridItem>
-            ) : (
+            ) : formData.revenueShareType === 'fixed' ? (
               <>
                 <GridItem>
                   <Text color={textColor} fontSize="sm" fontWeight="700">
@@ -464,7 +468,24 @@ const AddPharmacy = () => {
                   />
                 </GridItem>
               </>
-            )}
+            ) : formData.revenueShareType === 'other' ? (
+              <GridItem colSpan={2}>
+                <Text color={textColor} fontSize="sm" fontWeight="700">
+                  {t('other')} <span className="text-danger">*</span>
+                </Text>
+                <Input
+                  type="number"
+                  name="otherFees"
+                  value={formData.otherFees}
+                  onChange={handleChange}
+                  onKeyDown={handleNumberInputKeyDown}
+                  mt={2}
+                  bg={inputBg}
+                  color={textColor}
+                  min={0}
+                />
+              </GridItem>
+            ) : null}
           </Grid>
 
           {/* Row 6: Description En and Description Ar */}

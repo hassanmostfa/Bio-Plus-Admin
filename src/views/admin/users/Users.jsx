@@ -222,6 +222,25 @@ const Users = () => {
         </Text>
       ),
     }),
+    columnHelper.accessor("createdAt", {
+      id: "createdAt",
+      header: () => <Text color="gray.400">{t('common.createdAt')}</Text>,
+      cell: (info) => {
+        const date = new Date(info.getValue());
+        const formattedDate = date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        return (
+          <Text color={textColor} fontSize="sm">
+            {formattedDate}
+          </Text>
+        );
+      },
+    }),
     columnHelper.accessor("row", {
       id: "actions",
       header: () => <Text color="gray.400">{t('common.actions')}</Text>,

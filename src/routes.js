@@ -275,21 +275,21 @@ const getRoutes = (t) => {
     },
 
     /* Start Clinics Routes */
-    {
-      name: t('sidebar.clinicManagement'),
-      layout: '/admin',
-      path: '/clinics',
-      icon: (
-        <Icon
-          as={LiaClinicMedicalSolid}
-          width="20px"
-          height="20px"
-          color="inherit"
-        />
-      ),
-      component: <Clinics />,
-      showInSidebar: true,
-    },
+    // {
+    //   name: t('sidebar.clinicManagement'),
+    //   layout: '/admin',
+    //   path: '/clinics',
+    //   icon: (
+    //     <Icon
+    //       as={LiaClinicMedicalSolid}
+    //       width="20px"
+    //       height="20px"
+    //       color="inherit"
+    //     />
+    //   ),
+    //   component: <Clinics />,
+    //   showInSidebar: true,
+    // },
     {
       name: t('sidebar.clinicManagement'),
       layout: '/admin',
