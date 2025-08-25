@@ -2,7 +2,6 @@ import {
     Box,
     Button,
     Flex,
-    Icon,
     Table,
     Tbody,
     Td,
@@ -11,6 +10,10 @@ import {
     Thead,
     Tr,
     useColorModeValue,
+    Select,
+    Spinner,
+    Badge,
+    Icon,
   } from '@chakra-ui/react';
   import {
     createColumnHelper,
@@ -21,56 +24,36 @@ import {
   } from '@tanstack/react-table';
   import * as React from 'react';
   import Card from 'components/card/Card';
-  import { EditIcon, PlusSquareIcon } from '@chakra-ui/icons';
-  import { FaEye, FaTrash  } from 'react-icons/fa6';
-  import { IoIosSend } from "react-icons/io";
+  import { PlusSquareIcon, ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
   import { useNavigate } from 'react-router-dom';
+  import { useGetNotificationsQuery } from 'api/notificationsSlice';
+  import { useTranslation } from 'react-i18next';
   
   const columnHelper = createColumnHelper();
   
   const AllNotification = () => {
-    const [data, setData] = React.useState([
-      {
-        id: 1,
-        image:'https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fnotification&psig=AOvVaw0QAHPv4Zb3oMgEgVjvpcKm&ust=1738692903658000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCJCHtPmNqIsDFQAAAAAdAAAAABAE',
-        ar_title:' مرحبا مستخدم جديد',
-        en_title: 'New user registered',
-        ar_description: 'مرحبا مستخدم جديد',
-        en_description: 'New user registered',
-        date: '2023-10-01',
-        status: 'Unread',
-      },
-      {
-        id: 2,
-        image:'https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fnotification&psig=AOvVaw0QAHPv4Zb3oMgEgVjvpcKm&ust=1738692903658000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCJCHtPmNqIsDFQAAAAAdAAAAABAE',
-        ar_title:' مرحبا مستخدم جديد',
-        en_title: 'New user registered',
-        ar_description: 'مرحبا مستخدم جديد',
-        en_description: 'New user registered',
-        date: '2023-10-01',
-        status: 'reed',
-      },
-      {
-        id: 3,
-        image:'https://www.google.com/url?sa=i&url=https%3A%2F%2Funsplash.com%2Fs%2Fphotos%2Fnotification&psig=AOvVaw0QAHPv4Zb3oMgEgVjvpcKm&ust=1738692903658000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCJCHtPmNqIsDFQAAAAAdAAAAABAE',
-        ar_title:' مرحبا مستخدم جديد',
-        en_title: 'New user registered',
-        ar_description: 'مرحبا مستخدم جديد',
-        en_description: 'New user registered',
-        date: '2023-10-01',
-        status: 'Unread',
-      },
-    ]);
-  
     const navigate = useNavigate();
     const [sorting, setSorting] = React.useState([]);
-  
+    const [currentPage, setCurrentPage] = React.useState(1);
+    const [pageSize, setPageSize] = React.useState(10);
+    const { t, i18n } = useTranslation();
+    const isRTL = i18n.language === 'ar';
+
     const textColor = useColorModeValue('secondaryGray.900', 'white');
     const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
+
+    // Fetch notifications with pagination
+    const { data: notificationsData, isLoading, error } = useGetNotificationsQuery({
+      page: currentPage,
+      limit: pageSize,
+    });
+
+    const notifications = notificationsData?.data?.items || [];
+    const pagination = notificationsData?.data?.pagination || {};
   
     const columns = [
-      columnHelper.accessor('id', {
-        id: 'id',
+      columnHelper.accessor('title', {
+        id: 'title',
         header: () => (
           <Text
             justifyContent="space-between"
@@ -78,27 +61,7 @@ import {
             fontSize={{ sm: '10px', lg: '12px' }}
             color="gray.400"
           >
-            ID
-          </Text>
-        ),
-        cell: (info) => (
-          <Flex align="center">
-            <Text color={textColor}>
-              {info.getValue()}
-            </Text>
-          </Flex>
-        ),
-      }),
-      columnHelper.accessor('en_title', {
-        id: 'en_title',
-        header: () => (
-          <Text
-            justifyContent="space-between"
-            align="center"
-            fontSize={{ sm: '10px', lg: '12px' }}
-            color="gray.400"
-          >
-            EN Title
+            {t('notificationTable.title')}
           </Text>
         ),
         cell: (info) => (
@@ -107,8 +70,8 @@ import {
           </Text>
         ),
       }),
-      columnHelper.accessor('en_description', {
-        id: 'en_description',
+      columnHelper.accessor('body', {
+        id: 'body',
         header: () => (
           <Text
             justifyContent="space-between"
@@ -116,17 +79,17 @@ import {
             fontSize={{ sm: '10px', lg: '12px' }}
             color="gray.400"
           >
-            EN Description
+            {t('notificationTable.description')}
           </Text>
         ),
         cell: (info) => (
           <Text color={textColor}>
-            {info.getValue().slice(0, 20) + '...'}
+            {info.getValue().slice(0, 30) + '...'}
           </Text>
         ),
       }),
-      columnHelper.accessor('ar_title', {
-        id: 'ar_title',
+      columnHelper.accessor('type', {
+        id: 'type',
         header: () => (
           <Text
             justifyContent="space-between"
@@ -134,17 +97,21 @@ import {
             fontSize={{ sm: '10px', lg: '12px' }}
             color="gray.400"
           >
-            AR Title
+            {t('notificationTable.type')}
           </Text>
         ),
         cell: (info) => (
-          <Text color={textColor}>
-            {info.getValue()}
-          </Text>
+          <Badge
+            colorScheme={info.getValue() === 'SYSTEM_NOTIFICATION' ? 'blue' : 'green'}
+            variant="subtle"
+            fontSize="xs"
+          >
+            {info.getValue() === 'SYSTEM_NOTIFICATION' ? t('notificationTable.systemNotification') : info.getValue()}
+          </Badge>
         ),
       }),
-      columnHelper.accessor('ar_description', {
-        id: 'ar_description',
+      columnHelper.accessor('isRead', {
+        id: 'isRead',
         header: () => (
           <Text
             justifyContent="space-between"
@@ -152,17 +119,21 @@ import {
             fontSize={{ sm: '10px', lg: '12px' }}
             color="gray.400"
           >
-            AR Description
+            {t('notificationTable.status')}
           </Text>
         ),
         cell: (info) => (
-          <Text color={textColor}>
-            {info.getValue().slice(0, 15) + '...'}
-          </Text>
+          <Badge
+            colorScheme={info.getValue() ? 'green' : 'red'}
+            variant="subtle"
+            fontSize="xs"
+          >
+            {info.getValue() ? t('notificationTable.read') : t('notificationTable.unread')}
+          </Badge>
         ),
       }),
-      columnHelper.accessor('actions', {
-        id: 'actions',
+      columnHelper.accessor('createdAt', {
+        id: 'createdAt',
         header: () => (
           <Text
             justifyContent="space-between"
@@ -170,43 +141,19 @@ import {
             fontSize={{ sm: '10px', lg: '12px' }}
             color="gray.400"
           >
-            Actions
+            {t('notificationTable.createdAt')}
           </Text>
         ),
         cell: (info) => (
-          <Flex align="center">
-            <Icon
-              w="18px"
-              h="18px"
-              me="10px"
-              color="red.500"
-              as={FaTrash}
-              cursor="pointer"
-            />
-            <Icon
-              w="18px"
-              h="18px"
-              me="10px"
-              color="green.500"
-              as={EditIcon}
-              cursor="pointer"
-            />
-            <Icon
-              w="18px"
-              h="18px"
-              me="10px"
-              color="blue.500"
-              as={IoIosSend}
-              cursor="pointer"
-              title = "Send Notification"
-            />
-          </Flex>
+          <Text color={textColor} fontSize="sm">
+            {new Date(info.getValue()).toLocaleDateString()}
+          </Text>
         ),
       }),
     ];
   
     const table = useReactTable({
-      data,
+      data: notifications,
       columns,
       state: {
         sorting,
@@ -216,6 +163,24 @@ import {
       getSortedRowModel: getSortedRowModel(),
       debugTable: true,
     });
+
+    // Pagination handlers
+    const handleNextPage = () => {
+      if (currentPage < pagination.totalPages) {
+        setCurrentPage(currentPage + 1);
+      }
+    };
+
+    const handlePreviousPage = () => {
+      if (currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
+    };
+
+    const handlePageSizeChange = (e) => {
+      setPageSize(Number(e.target.value));
+      setCurrentPage(1); // Reset to the first page when changing the limit
+    };
   
     return (
       <div className="container">
@@ -226,14 +191,15 @@ import {
           overflowX={{ sm: 'scroll', lg: 'hidden' }}
         >
           <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
-            <Text
-              color={textColor}
-              fontSize="22px"
-              fontWeight="700"
-              lineHeight="100%"
-            >
-              Notifications
-            </Text>
+                         <Text
+               color={textColor}
+               fontSize="22px"
+               fontWeight="700"
+               lineHeight="100%"
+               textAlign={isRTL ? 'right' : 'left'}
+             >
+               {t('notificationTable.allNotifications')}
+             </Text>
             <Button
               variant='darkBrand'
               color='white'
@@ -242,76 +208,136 @@ import {
               borderRadius='70px'
               px='24px'
               py='5px'
-              onClick={() => navigate('/admin/add-notifications')}
+              onClick={() => navigate('/admin/add-notification')}
               width={'200px'}
             >
-              <PlusSquareIcon me="10px" />
-              Add Notification
+                             <PlusSquareIcon me="10px" />
+               {t('notificationTable.sendNotification')}
             </Button>
           </Flex>
+
+
           <Box>
-            <Table variant="simple" color="gray.500" mb="24px" mt="12px">
-              <Thead>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <Tr key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <Th
-                          key={header.id}
-                          colSpan={header.colSpan}
-                          pe="10px"
-                          borderColor={borderColor}
-                          cursor="pointer"
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          <Flex
-                            justifyContent="space-between"
-                            align="center"
-                            fontSize={{ sm: '10px', lg: '12px' }}
-                            color="gray.400"
-                          >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                            {{
-                              asc: ' 🔼',
-                              desc: ' 🔽',
-                            }[header.column.getIsSorted()] ?? null}
-                          </Flex>
-                        </Th>
-                      );
-                    })}
-                  </Tr>
-                ))}
-              </Thead>
-              <Tbody>
-                {table
-                  .getRowModel()
-                  .rows.slice(0, 11)
-                  .map((row) => {
-                    return (
-                      <Tr key={row.id}>
-                        {row.getVisibleCells().map((cell) => {
+            {isLoading ? (
+              <Flex justify="center" align="center" py="50px">
+                <Spinner size="lg" />
+              </Flex>
+                         ) : error ? (
+               <Flex justify="center" align="center" py="50px">
+                 <Text color="red.500">{t('notificationTable.errorLoadingNotifications')}</Text>
+               </Flex>
+            ) : (
+              <>
+                <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+                  <Thead>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <Tr key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => {
                           return (
-                            <Td
-                              key={cell.id}
-                              fontSize={{ sm: '14px' }}
-                              minW={{ sm: '150px', md: '200px', lg: 'auto' }}
-                              borderColor="transparent"
+                            <Th
+                              key={header.id}
+                              colSpan={header.colSpan}
+                              pe="10px"
+                              borderColor={borderColor}
+                              cursor="pointer"
+                              onClick={header.column.getToggleSortingHandler()}
                             >
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext(),
-                              )}
-                            </Td>
+                              <Flex
+                                justifyContent="space-between"
+                                align="center"
+                                fontSize={{ sm: '10px', lg: '12px' }}
+                                color="gray.400"
+                              >
+                                {flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                                {{
+                                  asc: ' 🔼',
+                                  desc: ' 🔽',
+                                }[header.column.getIsSorted()] ?? null}
+                              </Flex>
+                            </Th>
                           );
                         })}
                       </Tr>
-                    );
-                  })}
-              </Tbody>
-            </Table>
+                    ))}
+                  </Thead>
+                  <Tbody>
+                    {table.getRowModel().rows.map((row) => {
+                      return (
+                        <Tr key={row.id}>
+                          {row.getVisibleCells().map((cell) => {
+                            return (
+                              <Td
+                                key={cell.id}
+                                fontSize={{ sm: '14px' }}
+                                minW={{ sm: '150px', md: '200px', lg: 'auto' }}
+                                borderColor="transparent"
+                              >
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext(),
+                                )}
+                              </Td>
+                            );
+                          })}
+                        </Tr>
+                      );
+                    })}
+                  </Tbody>
+                </Table>
+
+                                 {/* Pagination Controls */}
+                 <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
+                   <Flex alignItems="center">
+                     <Text color={textColor} fontSize="sm" mr="10px">
+                       {t('notificationTable.rowsPerPage')}
+                     </Text>
+                     <Select
+                       value={pageSize}
+                       onChange={handlePageSizeChange}
+                       width="100px"
+                       size="sm"
+                       variant="outline"
+                       borderRadius="md"
+                       borderColor="gray.200"
+                       _hover={{ borderColor: 'gray.300' }}
+                       _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
+                       dir="ltr"
+                     >
+                       <option value={10}>10</option>
+                       <option value={20}>20</option>
+                       <option value={50}>50</option>
+                     </Select>
+                   </Flex>
+                   <Text color={textColor} fontSize="sm">
+                     {t('notificationTable.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
+                   </Text>
+                   <Flex>
+                     <Button
+                       onClick={handlePreviousPage}
+                       disabled={currentPage === 1}
+                       variant="outline"
+                       size="sm"
+                       mr="10px"
+                     >
+                       <Icon as={ChevronLeftIcon} mr="5px" />
+                       {t('notificationTable.previous')}
+                     </Button>
+                     <Button
+                       onClick={handleNextPage}
+                       disabled={currentPage === pagination.totalPages}
+                       variant="outline"
+                       size="sm"
+                     >
+                       {t('notificationTable.next')}
+                       <Icon as={ChevronRightIcon} ml="5px" />
+                     </Button>
+                   </Flex>
+                 </Flex>
+              </>
+            )}
           </Box>
         </Card>
       </div>

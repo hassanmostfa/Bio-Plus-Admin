@@ -3,6 +3,7 @@ import {
   Button,
   Flex,
   Icon,
+  Image,
   Table,
   Tbody,
   Td,
@@ -59,6 +60,7 @@ const AllTypes = () => {
       id: type.id,
       product_en_type: type.name, // English name is directly from the type object
       product_ar_type: type.translations.find((t) => t.languageId === 'ar')?.name || 'N/A', // Arabic name from translations
+      imageKey: type.imageKey || 'N/A', // Image link from the type object
     }));
   }, [typesResponse]);
 
@@ -138,6 +140,37 @@ const AllTypes = () => {
       cell: (info) => (
         <Flex align="center">
           <Text color={textColor}>{info.getValue()}</Text>
+        </Flex>
+      ),
+    }),
+    columnHelper.accessor('imageKey', {
+      id: 'imageKey',
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: '10px', lg: '12px' }}
+          color="gray.400"
+        >
+          {t('productTypeTable.imageKeyHeader')}
+        </Text>
+      ),
+      cell: (info) => (
+        <Flex align="center">
+          {info.getValue() && info.getValue() !== 'N/A' ? (
+            <Image
+              src={info.getValue()}
+              alt="Product Type Image"
+              boxSize="50px"
+              objectFit="cover"
+              borderRadius="md"
+              fallbackSrc="https://via.placeholder.com/50x50?text=No+Image"
+            />
+          ) : (
+            <Text color={textColor} fontSize="sm">
+              {t('common.noImage')}
+            </Text>
+          )}
         </Flex>
       ),
     }),

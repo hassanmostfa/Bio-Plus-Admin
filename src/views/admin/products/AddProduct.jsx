@@ -24,7 +24,7 @@ import {
   FormControl,
   FormLabel,
 } from '@chakra-ui/react';
-import { FaUpload, FaTrash } from 'react-icons/fa6';
+import { FaUpload, FaTrash, FaGripVertical } from 'react-icons/fa6';
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate } from 'react-router-dom';
 import { useGetVarientsQuery } from 'api/varientSlice';
@@ -38,6 +38,7 @@ import { useGetTypesQuery } from 'api/typeSlice';
 import { useTranslation } from 'react-i18next';
 import FormWrapper from 'components/FormWrapper';
 import { useLanguage } from 'contexts/LanguageContext';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const AddProduct = () => {
   const [nameEn, setNameEn] = useState('');
@@ -57,7 +58,6 @@ const AddProduct = () => {
   const [isActive, setIsActive] = useState(true);
   const [isPublished, setIsPublished] = useState(false);
   const [images, setImages] = useState([]);
-  const [mainImageIndex, setMainImageIndex] = useState(0);
   const [selectedAttributes, setSelectedAttributes] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -129,15 +129,12 @@ const AddProduct = () => {
           return {
             file,
             preview: URL.createObjectURL(file),
-            isMain: images.length === 0,
+            id: `new-${Date.now()}-${Math.random()}`, // Unique ID for drag and drop
           };
         })
         .filter((img) => img !== null);
 
       setImages([...images, ...newImages]);
-      if (images.length === 0 && newImages.length > 0) {
-        setMainImageIndex(0);
-      }
     }
   };
 
@@ -145,15 +142,16 @@ const AddProduct = () => {
     URL.revokeObjectURL(images[index].preview);
     const newImages = images.filter((_, i) => i !== index);
     setImages(newImages);
-    if (mainImageIndex === index) {
-      setMainImageIndex(0);
-    } else if (mainImageIndex > index) {
-      setMainImageIndex(mainImageIndex - 1);
-    }
   };
 
-  const handleSetMainImage = (index) => {
-    setMainImageIndex(index);
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const items = Array.from(images);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setImages(items);
   };
 
   const handleDragOver = (e) => {
@@ -225,7 +223,7 @@ const AddProduct = () => {
             return {
               imageKey: uploadResponse.data.uploadedFiles[0].url,
               order: index,
-              isMain: index === mainImageIndex,
+              isMain: index === 0, // Assuming the first image is main
             };
           }
           return null;
@@ -412,20 +410,20 @@ const AddProduct = () => {
           </Button>
         </div>
         <FormWrapper>
-          <form onSubmit={handleSubmit} dir="rtl">
+                     <form onSubmit={handleSubmit} dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'} style={{ direction: currentLanguage === 'ar' ? 'rtl' : 'ltr', textAlign: currentLanguage === 'ar' ? 'right' : 'left' }}>
             {/* Basic Information */}
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
               <Box>
                 <FormControl isRequired>
                   <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.productName')} (English)</FormLabel>
-                  <Input
-                    placeholder={t('forms.enterProductName')}
-                    value={nameEn}
-                    onChange={(e) => setNameEn(e.target.value)}
-                    color={textColor}
-                    dir="ltr"
-                    textAlign="left"
-                  />
+                                     <Input
+                     placeholder={t('forms.enterProductName')}
+                     value={nameEn}
+                     onChange={(e) => setNameEn(e.target.value)}
+                     color={textColor}
+                     dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                     textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                   />
                 </FormControl>
               </Box>
               <Box>
@@ -448,15 +446,15 @@ const AddProduct = () => {
               <Box>
                 <FormControl isRequired>
                   <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.descriptionEn')}</FormLabel>
-                  <Textarea
-                    placeholder={t('forms.enterDescription')}
-                    value={descriptionEn}
-                    onChange={(e) => setDescriptionEn(e.target.value)}
-                    color={textColor}
-                    dir="ltr"
-                    textAlign="left"
-                    maxLength={500}
-                  />
+                                     <Textarea
+                     placeholder={t('forms.enterDescription')}
+                     value={descriptionEn}
+                     onChange={(e) => setDescriptionEn(e.target.value)}
+                     color={textColor}
+                     dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                     textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                     maxLength={500}
+                   />
                   <Text fontSize="sm" color="gray.500" mt={1}>
                     {descriptionEn.length}/500 {t('common.characters')}
                   </Text>
@@ -507,15 +505,15 @@ const AddProduct = () => {
               <Box>
                 <FormControl>
                   <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.howToUseEn')}</FormLabel>
-                  <Textarea
-                    placeholder={t('forms.enterHowToUse')}
-                    value={howToUseEn}
-                    onChange={(e) => setHowToUseEn(e.target.value)}
-                    color={textColor}
-                    dir="ltr"
-                    textAlign="left"
-                    maxLength={500}
-                  />
+                                     <Textarea
+                     placeholder={t('forms.enterHowToUse')}
+                     value={howToUseEn}
+                     onChange={(e) => setHowToUseEn(e.target.value)}
+                     color={textColor}
+                     dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                     textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                     maxLength={500}
+                   />
                   <Text fontSize="sm" color="gray.500" mt={1}>
                     {howToUseEn.length}/500 {t('common.characters')}
                   </Text>
@@ -543,15 +541,15 @@ const AddProduct = () => {
               <Box>
                 <FormControl>
                   <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.treatmentEn')}</FormLabel>
-                  <Textarea
-                    placeholder={t('forms.enterTreatmentInformation')}
-                    value={treatmentEn}
-                    onChange={(e) => setTreatmentEn(e.target.value)}
-                    color={textColor}
-                    dir="ltr"
-                    textAlign="left"
-                    maxLength={500}
-                  />
+                                     <Textarea
+                     placeholder={t('forms.enterTreatmentInformation')}
+                     value={treatmentEn}
+                     onChange={(e) => setTreatmentEn(e.target.value)}
+                     color={textColor}
+                     dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                     textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                     maxLength={500}
+                   />
                   <Text fontSize="sm" color="gray.500" mt={1}>
                     {treatmentEn.length}/500 {t('common.characters')}
                   </Text>
@@ -579,15 +577,15 @@ const AddProduct = () => {
               <Box>
                 <FormControl>
                   <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.ingredientsEn')}</FormLabel>
-                  <Textarea
-                    placeholder={t('forms.enterIngredients')}
-                    value={ingredientsEn}
-                    onChange={(e) => setIngredientsEn(e.target.value)}
-                    color={textColor}
-                    dir="ltr"
-                    textAlign="left"
-                    maxLength={500}
-                  />
+                                     <Textarea
+                     placeholder={t('forms.enterIngredients')}
+                     value={ingredientsEn}
+                     onChange={(e) => setIngredientsEn(e.target.value)}
+                     color={textColor}
+                     dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                     textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                     maxLength={500}
+                   />
                   <Text fontSize="sm" color="gray.500" mt={1}>
                     {ingredientsEn.length}/500 {t('common.characters')}
                   </Text>
@@ -618,39 +616,42 @@ const AddProduct = () => {
                 <Box>
                   <FormControl>
                     <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.sku')}</FormLabel>
-                    <Input
-                      type="text"
-                      placeholder={t('forms.enterSku')}
-                      value={sku}
-                      onChange={(e) => setSku(e.target.value)}
-                      color={textColor}
-                      textAlign="left"
-                    />
+                                         <Input
+                       type="text"
+                       placeholder={t('forms.enterSku')}
+                       value={sku}
+                       onChange={(e) => setSku(e.target.value)}
+                       color={textColor}
+                       dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                       textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                     />
                   </FormControl>
                 </Box>
                 <Box>
                   <FormControl>
                     <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.lotNumber')}</FormLabel>
-                    <Input
-                      type="text"
-                      placeholder={t('forms.enterLotNumber')}
-                      value={lotNumber}
-                      onChange={(e) => setLotNumber(e.target.value)}
-                      color={textColor}
-                      textAlign="left"
-                    />
+                                         <Input
+                       type="text"
+                       placeholder={t('forms.enterLotNumber')}
+                       value={lotNumber}
+                       onChange={(e) => setLotNumber(e.target.value)}
+                       color={textColor}
+                       dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                       textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                     />
                   </FormControl>
                 </Box>
                 <Box>
                   <FormControl>
                     <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.expiryDate')}</FormLabel>
-                    <Input
-                      type="date"
-                      value={expiryDate}
-                      onChange={(e) => setExpiryDate(e.target.value)}
-                      color={textColor}
-                      textAlign="left"
-                    />
+                                         <Input
+                       type="date"
+                       value={expiryDate}
+                       onChange={(e) => setExpiryDate(e.target.value)}
+                       color={textColor}
+                       dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                       textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                     />
                   </FormControl>
                 </Box>
               </SimpleGrid>
@@ -737,60 +738,63 @@ const AddProduct = () => {
               <Box>
                 <FormControl isRequired>
                   <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.cost')}</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder={t('forms.enterCost')}
-                    value={cost}
-                    onChange={(e) => setCost(e.target.value)}
-                    color={textColor}
-                    textAlign="left"
-                    min="0"
-                    step="0.01"
-                  />
+                                     <Input
+                     type="number"
+                     placeholder={t('forms.enterCost')}
+                     value={cost}
+                     onChange={(e) => setCost(e.target.value)}
+                     color={textColor}
+                     dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                     textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                     min="0"
+                     step="0.01"
+                   />
                 </FormControl>
               </Box>
               <Box>
                 <FormControl isRequired>
                   <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.price')}</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder={t('forms.enterPrice')}
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    color={textColor}
-                    textAlign="left"
-                    min="0"
-                    onKeyDown={(e) => {
-                      if (e.key === '-') {
-                        e.preventDefault();
-                      }
-                    }}
-                  />
+                                     <Input
+                     type="number"
+                     placeholder={t('forms.enterPrice')}
+                     value={price}
+                     onChange={(e) => setPrice(e.target.value)}
+                     color={textColor}
+                     dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                     textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                     min="0"
+                     onKeyDown={(e) => {
+                       if (e.key === '-') {
+                         e.preventDefault();
+                       }
+                     }}
+                   />
                 </FormControl>
               </Box>
               <Box>
                 <FormControl isRequired>
                   <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.quantity')}</FormLabel>
-                  <Input
-                    type="number"
-                    placeholder={t('forms.enterQuantity')}
-                    value={quantity}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.length <= 5) {
-                        setQuantity(value);
-                      }
-                    }}
-                    color={textColor}
-                    textAlign="left"
-                    min="0"
-                    max="99999"
-                    onKeyDown={(e) => {
-                      if (e.key === '-') {
-                        e.preventDefault();
-                      }
-                    }}
-                  />
+                                     <Input
+                     type="number"
+                     placeholder={t('forms.enterQuantity')}
+                     value={quantity}
+                     onChange={(e) => {
+                       const value = e.target.value;
+                       if (value.length <= 5) {
+                         setQuantity(value);
+                       }
+                     }}
+                     color={textColor}
+                     dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                     textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                     min="0"
+                     max="99999"
+                     onKeyDown={(e) => {
+                       if (e.key === '-') {
+                         e.preventDefault();
+                       }
+                     }}
+                   />
                 </FormControl>
               </Box>
               
@@ -811,14 +815,15 @@ const AddProduct = () => {
                 <Box mt={2}>
                   <FormControl>
                     <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('forms.offerPercentage')}</FormLabel>
-                    <Input
-                      type="number"
-                      placeholder={t('forms.enterOfferPercentage')}
-                      value={offerPercentage}
-                      onChange={(e) => setOfferPercentage(e.target.value)}
-                      color={textColor}
-                      textAlign="left"
-                    />
+                                         <Input
+                       type="number"
+                       placeholder={t('forms.enterOfferPercentage')}
+                       value={offerPercentage}
+                       onChange={(e) => setOfferPercentage(e.target.value)}
+                       color={textColor}
+                       dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                       textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                     />
                   </FormControl>
                 </Box>
               )}
@@ -830,20 +835,21 @@ const AddProduct = () => {
                 <Box>
                   <FormControl>
                     <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.discount')}</FormLabel>
-                    <Input
-                      type="number"
-                      placeholder={t('forms.enterDiscountValue')}
-                      value={discount != null ? discount : ''}
-                      onChange={(e) => setDiscount(e.target.value)}
-                      color={textColor}
-                      textAlign="left"
-                      min="0"
-                      onKeyDown={(e) => {
-                        if (e.key === '-') {
-                          e.preventDefault();
-                        }
-                      }}
-                    />
+                                         <Input
+                       type="number"
+                       placeholder={t('forms.enterDiscountValue')}
+                       value={discount != null ? discount : ''}
+                       onChange={(e) => setDiscount(e.target.value)}
+                       color={textColor}
+                       dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                       textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                       min="0"
+                       onKeyDown={(e) => {
+                         if (e.key === '-') {
+                           e.preventDefault();
+                         }
+                       }}
+                     />
                   </FormControl>
                 </Box>
                 <Box>
@@ -1084,37 +1090,73 @@ const AddProduct = () => {
                   mb={4}
                 >
                   {images.length > 0 ? (
-                    <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
-                      {images.map((img, index) => (
-                        <Box key={index} position="relative" display="flex" flexDirection="column" alignItems="center">
-                          <Image
-                            src={img.preview}
-                            alt={t('product.productImage', { index: index + 1 })}
-                            borderRadius="md"
-                            maxH="150px"
-                            border={mainImageIndex === index ? '2px solid' : '1px solid'}
-                            borderColor={mainImageIndex === index ? 'brand.500' : 'gray.300'}
-                            cursor="pointer"
-                            onClick={() => handleSetMainImage(index)}
-                          />
-                          {mainImageIndex === index && (
-                            <Badge position="absolute" top={2} left={2} colorScheme="brand">
-                              {t('product.main')}
-                            </Badge>
-                          )}
-                          <IconButton
-                            icon={<FaTrash />}
-                            aria-label={t('common.removeImage')}
-                            size="sm"
-                            colorScheme="red"
-                            position="absolute"
-                            top={2}
-                            right={2}
-                            onClick={() => handleRemoveImage(index)}
-                          />
-                        </Box>
-                      ))}
-                    </SimpleGrid>
+                    <DragDropContext onDragEnd={handleDragEnd}>
+                      <Droppable droppableId="images" direction="horizontal">
+                        {(provided) => (
+                          <SimpleGrid 
+                            columns={{ base: 2, md: 4 }} 
+                            spacing={4}
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                          >
+                            {images.map((img, index) => (
+                              <Draggable key={img.id} draggableId={img.id} index={index}>
+                                {(provided, snapshot) => (
+                                  <Box
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    position="relative"
+                                    display="flex"
+                                    flexDirection="column"
+                                    alignItems="center"
+                                    opacity={snapshot.isDragging ? 0.8 : 1}
+                                  >
+                                    <Box
+                                      {...provided.dragHandleProps}
+                                      position="absolute"
+                                      top={2}
+                                      left={2}
+                                      zIndex={2}
+                                      cursor="grab"
+                                      _hover={{ cursor: 'grabbing' }}
+                                    >
+                                      <Icon as={FaGripVertical} color="white" bg="blackAlpha.600" borderRadius="sm" p={1} />
+                                    </Box>
+                                    <Image
+                                      src={img.preview}
+                                      alt={t('product.productImage', { index: index + 1 })}
+                                      borderRadius="md"
+                                      maxH="150px"
+                                      border={index === 0 ? '2px solid' : '1px solid'}
+                                      borderColor={index === 0 ? 'brand.500' : 'gray.300'}
+                                    />
+                                    {index === 0 && (
+                                      <Badge position="absolute" top={2} right={2} colorScheme="brand">
+                                        {t('product.main')}
+                                      </Badge>
+                                    )}
+                                    <Badge position="absolute" bottom={2} left={2} colorScheme="gray">
+                                      {index + 1}
+                                    </Badge>
+                                    <IconButton
+                                      icon={<FaTrash />}
+                                      aria-label={t('common.removeImage')}
+                                      size="sm"
+                                      colorScheme="red"
+                                      position="absolute"
+                                      top={2}
+                                      right={2}
+                                      onClick={() => handleRemoveImage(index)}
+                                    />
+                                  </Box>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </SimpleGrid>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
                   ) : (
                     <>
                       <Icon as={FaUpload} w={8} h={8} color="#422afb" mb={2} />
@@ -1143,6 +1185,11 @@ const AddProduct = () => {
                     </>
                   )}
                 </Box>
+                {images.length > 0 && (
+                  <Text fontSize="sm" color="gray.500" textAlign="center">
+                    {t('product.dragToReorder')} • {t('product.firstImageMain')}
+                  </Text>
+                )}
               </FormControl>
             </Box>
             {/* Submit Buttons */}

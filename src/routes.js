@@ -639,8 +639,23 @@ const getRoutes = (t) => {
           color="inherit"
         />
       ),
-      component: <AddNotification />,
+      component: <AllNotification />,
       showInSidebar: true,
+    },
+    {
+      name: t('sidebar.notifications'),
+      layout: '/admin',
+      path: '/add-notification',
+      icon: (
+        <Icon
+          as={IoNotificationsOutline}
+          width="20px"
+          height="20px"
+          color="inherit"
+        />
+      ),
+      component: <AddNotification />,
+      showInSidebar: false,
     },
     {
       name: t('sidebar.promoCodes'),

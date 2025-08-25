@@ -25,7 +25,7 @@ import {
   FormLabel,
   Spinner,
 } from '@chakra-ui/react';
-import { FaUpload, FaTrash } from 'react-icons/fa6';
+import { FaUpload, FaTrash, FaGripVertical } from 'react-icons/fa6';
 import { IoMdArrowBack } from 'react-icons/io';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useGetVarientsQuery } from 'api/varientSlice';
@@ -38,6 +38,7 @@ import { useAddFileMutation } from 'api/filesSlice';
 import { useGetTypesQuery } from 'api/typeSlice';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from 'contexts/LanguageContext';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -65,7 +66,6 @@ const EditProduct = () => {
   const [isPublished, setIsPublished] = useState(false);
   const [images, setImages] = useState([]); // Newly uploaded images
   const [existingImages, setExistingImages] = useState([]); // Existing images from server
-  const [mainImageIndex, setMainImageIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
   // New states for additional fields
@@ -155,8 +155,6 @@ const EditProduct = () => {
       // Set existing images
       if (product.images?.length > 0) {
         setExistingImages(product.images);
-        const mainIndex = product.images.findIndex((img) => img.isMain);
-        setMainImageIndex(mainIndex >= 0 ? mainIndex : 0);
       }
 
       // Set variants if they exist
@@ -214,60 +212,40 @@ const EditProduct = () => {
           return {
             file,
             preview: URL.createObjectURL(file),
-            isMain: images.length === 0 && existingImages.length === 0, // First image is main if no others exist
+            id: `new-${Date.now()}-${Math.random()}`, // Unique ID for drag and drop
           };
         })
         .filter((img) => img !== null);
 
       setImages([...images, ...newImages]);
-
-      // Set first uploaded image as main if no main exists
-      if (
-        existingImages.length === 0 &&
-        images.length === 0 &&
-        newImages.length > 0
-      ) {
-        setMainImageIndex(0);
-      }
     }
   };
 
-  const handleSetMainImage = (index, isExisting) => {
-    if (isExisting) {
-      setMainImageIndex(index);
-      // Update isMain flags for existing images
-      setExistingImages(
-        existingImages.map((img, i) => ({
-          ...img,
-          isMain: i === index,
-        })),
-      );
-    } else {
-      // For new images, the index is offset by existing images count
-      setMainImageIndex(index + existingImages.length);
-    }
-  };
   const handleRemoveImage = (index, isExisting) => {
     if (isExisting) {
       setExistingImages(existingImages.filter((_, i) => i !== index));
-      if (mainImageIndex === index) {
-        setMainImageIndex(0); // Reset to first image if main was removed
-      } else if (mainImageIndex > index) {
-        setMainImageIndex(mainImageIndex - 1); // Adjust index if needed
-      }
     } else {
       const newIndex = index - existingImages.length;
       URL.revokeObjectURL(images[newIndex].preview); // Clean up memory
 
       const newImages = images.filter((_, i) => i !== newIndex);
       setImages(newImages);
-
-      if (mainImageIndex === index) {
-        setMainImageIndex(0);
-      } else if (mainImageIndex > index) {
-        setMainImageIndex(mainImageIndex - 1);
-      }
     }
+  };
+
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const allImages = [...existingImages, ...images];
+    const [reorderedItem] = allImages.splice(result.source.index, 1);
+    allImages.splice(result.destination.index, 0, reorderedItem);
+
+    // Separate existing and new images
+    const newExistingImages = allImages.filter(img => !img.file); // Existing images don't have file property
+    const newImages = allImages.filter(img => img.file); // New images have file property
+
+    setExistingImages(newExistingImages);
+    setImages(newImages);
   };
 
   const handleDragOver = (e) => {
@@ -334,11 +312,11 @@ const EditProduct = () => {
             uploadResponse.success &&
             uploadResponse.data.uploadedFiles.length > 0
           ) {
-            return {
-              imageKey: uploadResponse.data.uploadedFiles[0].url,
-              order: existingImages.length + index,
-              isMain: existingImages.length + index === mainImageIndex,
-            };
+                         return {
+               imageKey: uploadResponse.data.uploadedFiles[0].url,
+               order: existingImages.length + index,
+               isMain: existingImages.length === 0 && index === 0, // Main only if no existing images and this is the first new image
+             };
           }
           return null;
         });
@@ -347,12 +325,18 @@ const EditProduct = () => {
         uploadedImages.push(...results.filter((img) => img !== null));
       }
 
+      // Update order for uploaded images to continue from existing images
+      uploadedImages.forEach((img, index) => {
+        img.order = existingImages.length + index;
+        img.isMain = existingImages.length === 0 && index === 0; // Main only if no existing images and this is the first new image
+      });
+
       // Prepare existing images data
       const existingImagesData = existingImages.map((img, index) => ({
         id: img.id,
         imageKey: img.imageKey,
         order: index,
-        isMain: index === mainImageIndex,
+        isMain: index === 0, // First image (index 0) is always main
       }));
 
       // Prepare translations
@@ -503,7 +487,7 @@ const EditProduct = () => {
             {t('common.back')}
           </Button>
         </div>
-        <form onSubmit={handleSubmit} dir="rtl">
+        <form onSubmit={handleSubmit} dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'} style={{ direction: currentLanguage === 'ar' ? 'rtl' : 'ltr', textAlign: currentLanguage === 'ar' ? 'right' : 'left' }}>
           {/* Basic Information */}
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={4}>
             <Box>
@@ -514,6 +498,8 @@ const EditProduct = () => {
                   value={nameEn}
                   onChange={(e) => setNameEn(e.target.value)}
                   color={textColor}
+                  dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                  textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                 />
               </FormControl>
             </Box>
@@ -541,6 +527,8 @@ const EditProduct = () => {
                   onChange={(e) => setDescriptionEn(e.target.value)}
                   color={textColor}
                   maxLength={500}
+                  dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                  textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                 />
                 <Text fontSize="sm" color="gray.500" mt={1}>
                   {descriptionEn.length}/500 {t('common.characters')}
@@ -601,6 +589,8 @@ const EditProduct = () => {
                   onChange={(e) => setHowToUseEn(e.target.value)}
                   color={textColor}
                   maxLength={500}
+                  dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                  textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                 />
                 <Text fontSize="sm" color="gray.500" mt={1}>
                   {howToUseEn.length}/500 {t('common.characters')}
@@ -636,6 +626,8 @@ const EditProduct = () => {
                   onChange={(e) => setTreatmentEn(e.target.value)}
                   color={textColor}
                   maxLength={500}
+                  dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                  textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                 />
                 <Text fontSize="sm" color="gray.500" mt={1}>
                   {treatmentEn.length}/500 {t('common.characters')}
@@ -671,6 +663,8 @@ const EditProduct = () => {
                   onChange={(e) => setIngredientsEn(e.target.value)}
                   color={textColor}
                   maxLength={500}
+                  dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                  textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                 />
                 <Text fontSize="sm" color="gray.500" mt={1}>
                   {ingredientsEn.length}/500 {t('common.characters')}
@@ -786,6 +780,8 @@ const EditProduct = () => {
                   color={textColor}
                   min="0"
                   step="0.01"
+                  dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                  textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                 />
               </FormControl>
             </Box>
@@ -799,6 +795,8 @@ const EditProduct = () => {
                   onChange={(e) => setPrice(e.target.value)}
                   color={textColor}
                   min="0"
+                  dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                  textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                   onKeyDown={(e) => {
                     if (e.key === '-') {
                       e.preventDefault();
@@ -823,6 +821,8 @@ const EditProduct = () => {
                   color={textColor}
                   min="0"
                   max="99999"
+                  dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                  textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                   onKeyDown={(e) => {
                     if (e.key === '-') {
                       e.preventDefault();
@@ -844,6 +844,8 @@ const EditProduct = () => {
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
                     color={textColor}
+                    dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                    textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                   />
                 </FormControl>
               </Box>
@@ -856,6 +858,8 @@ const EditProduct = () => {
                     value={lotNumber}
                     onChange={(e) => setLotNumber(e.target.value)}
                     color={textColor}
+                    dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                    textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                   />
                 </FormControl>
               </Box>
@@ -867,6 +871,8 @@ const EditProduct = () => {
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
                     color={textColor}
+                    dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                    textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                   />
                 </FormControl>
               </Box>
@@ -885,6 +891,8 @@ const EditProduct = () => {
                       onChange={(e) => setDiscount(e.target.value)}
                       color={textColor}
                       min="0"
+                      dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                      textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                       onKeyDown={(e) => {
                         if (e.key === '-') {
                           e.preventDefault();
@@ -940,6 +948,8 @@ const EditProduct = () => {
                     value={offerPercentage}
                     onChange={(e) => setOfferPercentage(e.target.value)}
                     color={textColor}
+                    dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                    textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
                   />
                 </FormControl>
               </Box>
@@ -1015,66 +1025,72 @@ const EditProduct = () => {
                         <SimpleGrid columns={2} spacing={2}>
                           <FormControl>
                             <FormLabel>{t('product.cost')}</FormLabel>
-                            <Input
-                              type="number"
-                              value={attr.cost}
-                              onChange={(e) =>
-                                handleAttributeChange(
-                                  index,
-                                  'cost',
-                                  e.target.value,
-                                )
-                              }
-                              color={textColor}
-                              min="0"
-                              step="0.01"
-                            />
+                                                                                                                   <Input
+                                type="number"
+                                value={attr.cost}
+                                onChange={(e) =>
+                                  handleAttributeChange(
+                                    index,
+                                    'cost',
+                                    e.target.value,
+                                  )
+                                }
+                                color={textColor}
+                                min="0"
+                                step="0.01"
+                                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                                textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                              />
                           </FormControl>
                           <FormControl isRequired>
                             <FormLabel>{t('product.price')}</FormLabel>
-                            <Input
-                              type="number"
-                              value={attr.price}
-                              onChange={(e) =>
-                                handleAttributeChange(
-                                  index,
-                                  'price',
-                                  e.target.value,
-                                )
-                              }
-                              color={textColor}
-                              min="0"
-                              onKeyDown={(e) => {
-                                if (e.key === '-') {
-                                  e.preventDefault();
+                                                                                                                   <Input
+                                type="number"
+                                value={attr.price}
+                                onChange={(e) =>
+                                  handleAttributeChange(
+                                    index,
+                                    'price',
+                                    e.target.value,
+                                  )
                                 }
-                              }}
-                            />
+                                color={textColor}
+                                min="0"
+                                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                                textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                                onKeyDown={(e) => {
+                                  if (e.key === '-') {
+                                    e.preventDefault();
+                                  }
+                                }}
+                              />
                           </FormControl>
                           <FormControl>
                             <FormLabel>{t('product.quantity')}</FormLabel>
-                            <Input
-                              type="number"
-                              value={attr.quantity}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                if (value.length <= 5) {
-                                  handleAttributeChange(
-                                    index,
-                                    'quantity',
-                                    value,
-                                  );
-                                }
-                              }}
-                              color={textColor}
-                              min="0"
-                              max="99999"
-                              onKeyDown={(e) => {
-                                if (e.key === '-') {
-                                  e.preventDefault();
-                                }
-                              }}
-                            />
+                                                                                                                   <Input
+                                type="number"
+                                value={attr.quantity}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  if (value.length <= 5) {
+                                    handleAttributeChange(
+                                      index,
+                                      'quantity',
+                                      value,
+                                    );
+                                  }
+                                }}
+                                color={textColor}
+                                min="0"
+                                max="99999"
+                                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                                textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                                onKeyDown={(e) => {
+                                  if (e.key === '-') {
+                                    e.preventDefault();
+                                  }
+                                }}
+                              />
                           </FormControl>
                           <FormControl>
                             <FormLabel>{t('product.variantImage')}</FormLabel>
@@ -1106,14 +1122,16 @@ const EditProduct = () => {
                           {/* Variant Expiry Date */}
                           <FormControl>
                             <FormLabel>{t('product.expiryDate')}</FormLabel>
-                            <Input
-                              type="date"
-                              value={attr.expiryDate}
-                              onChange={(e) =>
-                                handleAttributeChange(index, 'expiryDate', e.target.value)
-                              }
-                              color={textColor}
-                            />
+                                                                                                                   <Input
+                                type="date"
+                                value={attr.expiryDate}
+                                onChange={(e) =>
+                                  handleAttributeChange(index, 'expiryDate', e.target.value)
+                                }
+                                color={textColor}
+                                dir={currentLanguage === 'ar' ? 'rtl' : 'ltr'}
+                                textAlign={currentLanguage === 'ar' ? 'right' : 'left'}
+                              />
                           </FormControl>
 
                         </SimpleGrid>
@@ -1144,69 +1162,130 @@ const EditProduct = () => {
               >
                 {(existingImages.length > 0 || images.length > 0) ? (
                   <>
-                    <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} mb={4}>
-                      {existingImages.map((img, index) => (
-                        <Box key={`existing-${index}`} position="relative" display="flex" flexDirection="column" alignItems="center">
-                          <Image
-                            src={img.imageKey}
-                            alt={`Product image ${index + 1}`}
-                            borderRadius="md"
-                            maxH="150px"
-                            border={index === mainImageIndex ? '2px solid' : '1px solid'}
-                            borderColor={index === mainImageIndex ? 'brand.500' : 'gray.300'}
-                            cursor="pointer"
-                            onClick={() => handleSetMainImage(index, true)}
-                          />
-                          {index === mainImageIndex && (
-                            <Badge position="absolute" top={2} left={2} colorScheme="brand">
-                              Main
-                            </Badge>
-                          )}
-                          <IconButton
-                            icon={<FaTrash />}
-                            aria-label="Remove image"
-                            size="sm"
-                            colorScheme="red"
-                            position="absolute"
-                            top={2}
-                            right={2}
-                            onClick={() => handleRemoveImage(index, true)}
-                          />
-                        </Box>
-                      ))}
-                      {images.map((img, index) => {
-                        const globalIndex = existingImages.length + index;
-                        return (
-                          <Box key={`new-${index}`} position="relative" display="flex" flexDirection="column" alignItems="center">
-                            <Image
-                              src={img.preview}
-                              alt={`New image ${index + 1}`}
-                              borderRadius="md"
-                              maxH="150px"
-                              border={globalIndex === mainImageIndex ? '2px solid' : '1px solid'}
-                              borderColor={globalIndex === mainImageIndex ? 'brand.500' : 'gray.300'}
-                              cursor="pointer"
-                              onClick={() => handleSetMainImage(globalIndex, false)}
-                            />
-                            {globalIndex === mainImageIndex && (
-                              <Badge position="absolute" top={2} left={2} colorScheme="brand">
-                                Main
-                              </Badge>
-                            )}
-                            <IconButton
-                              icon={<FaTrash />}
-                              aria-label="Remove image"
-                              size="sm"
-                              colorScheme="red"
-                              position="absolute"
-                              top={2}
-                              right={2}
-                              onClick={() => handleRemoveImage(globalIndex, false)}
-                            />
-                          </Box>
-                        );
-                      })}
-                    </SimpleGrid>
+                    <DragDropContext onDragEnd={handleDragEnd}>
+                      <Droppable droppableId="images" direction="horizontal">
+                        {(provided) => (
+                          <SimpleGrid 
+                            columns={{ base: 2, md: 4 }} 
+                            spacing={4} 
+                            mb={4}
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                          >
+                            {existingImages.map((img, index) => (
+                              <Draggable key={`existing-${img.id}`} draggableId={`existing-${img.id}`} index={index}>
+                                {(provided, snapshot) => (
+                                  <Box
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    position="relative"
+                                    display="flex"
+                                    flexDirection="column"
+                                    alignItems="center"
+                                    opacity={snapshot.isDragging ? 0.8 : 1}
+                                  >
+                                    <Box
+                                      {...provided.dragHandleProps}
+                                      position="absolute"
+                                      top={2}
+                                      left={2}
+                                      zIndex={2}
+                                      cursor="grab"
+                                      _hover={{ cursor: 'grabbing' }}
+                                    >
+                                      <Icon as={FaGripVertical} color="white" bg="blackAlpha.600" borderRadius="sm" p={1} />
+                                    </Box>
+                                    <Image
+                                      src={img.imageKey}
+                                      alt={`Product image ${index + 1}`}
+                                      borderRadius="md"
+                                      maxH="150px"
+                                      border={index === 0 ? '2px solid' : '1px solid'}
+                                      borderColor={index === 0 ? 'brand.500' : 'gray.300'}
+                                    />
+                                    {index === 0 && (
+                                      <Badge position="absolute" top={2} right={2} colorScheme="brand">
+                                        Main
+                                      </Badge>
+                                    )}
+                                    <Badge position="absolute" bottom={2} left={2} colorScheme="gray">
+                                      {index + 1}
+                                    </Badge>
+                                    <IconButton
+                                      icon={<FaTrash />}
+                                      aria-label="Remove image"
+                                      size="sm"
+                                      colorScheme="red"
+                                      position="absolute"
+                                      top={2}
+                                      right={2}
+                                      onClick={() => handleRemoveImage(index, true)}
+                                    />
+                                  </Box>
+                                )}
+                              </Draggable>
+                            ))}
+                            {images.map((img, index) => {
+                              const globalIndex = existingImages.length + index;
+                              return (
+                                <Draggable key={`new-${img.id}`} draggableId={`new-${img.id}`} index={globalIndex}>
+                                  {(provided, snapshot) => (
+                                    <Box
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      position="relative"
+                                      display="flex"
+                                      flexDirection="column"
+                                      alignItems="center"
+                                      opacity={snapshot.isDragging ? 0.8 : 1}
+                                    >
+                                      <Box
+                                        {...provided.dragHandleProps}
+                                        position="absolute"
+                                        top={2}
+                                        left={2}
+                                        zIndex={2}
+                                        cursor="grab"
+                                        _hover={{ cursor: 'grabbing' }}
+                                      >
+                                        <Icon as={FaGripVertical} color="white" bg="blackAlpha.600" borderRadius="sm" p={1} />
+                                      </Box>
+                                      <Image
+                                        src={img.preview}
+                                        alt={`New image ${index + 1}`}
+                                        borderRadius="md"
+                                        maxH="150px"
+                                        border={globalIndex === 0 ? '2px solid' : '1px solid'}
+                                        borderColor={globalIndex === 0 ? 'brand.500' : 'gray.300'}
+                                      />
+                                      {globalIndex === 0 && (
+                                        <Badge position="absolute" top={2} right={2} colorScheme="brand">
+                                          Main
+                                        </Badge>
+                                      )}
+                                      <Badge position="absolute" bottom={2} left={2} colorScheme="gray">
+                                        {globalIndex + 1}
+                                      </Badge>
+                                      <IconButton
+                                        icon={<FaTrash />}
+                                        aria-label="Remove image"
+                                        size="sm"
+                                        colorScheme="red"
+                                        position="absolute"
+                                        top={2}
+                                        right={2}
+                                        onClick={() => handleRemoveImage(globalIndex, false)}
+                                      />
+                                    </Box>
+                                  )}
+                                </Draggable>
+                              );
+                            })}
+                            {provided.placeholder}
+                          </SimpleGrid>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
                     
                     {/* Add More Images Section */}
                     <Box 
@@ -1265,6 +1344,11 @@ const EditProduct = () => {
                   </>
                 )}
               </Box>
+              {(existingImages.length > 0 || images.length > 0) && (
+                <Text fontSize="sm" color="gray.500" textAlign="center">
+                  {t('product.dragToReorder')} • {t('product.firstImageMain')}
+                </Text>
+              )}
             </FormControl>
           </Box>
 

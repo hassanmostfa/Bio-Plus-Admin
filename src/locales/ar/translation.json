@@ -129,7 +129,8 @@
     "arabicTreatment": "العلاج بالعربية",
     "arabicIngredients": "المكونات بالعربية",
     "password": "كلمة المرور",
-    "optional": "اختياري"
+    "optional": "اختياري",
+    "noImage": "لا توجد صورة"
   },
   "auth": {
     "signIn": "تسجيل الدخول",
@@ -247,6 +248,11 @@
     "age": "العمر",
     "relationship": "العلاقة"
   },
+  "userTable": {
+    "createdBy": "أنشئ بواسطة",
+    "system": "النظام",
+    "unknown": "مجهول"
+  },
   "product": {
     "title": "المنتجات",
     "productName": "اسم المنتج",
@@ -321,6 +327,8 @@
     "enterTreatmentInformationArabic": "أدخل معلومات العلاج (عربي)",
     "enterIngredients": "أدخل المكونات",
     "enterIngredientsArabic": "أدخل المكونات (عربي)",
+    "dragToReorder": "اسحب لإعادة ترتيب الصور",
+    "firstImageMain": "الصورة الأولى ستكون الصورة الرئيسية",
     "category": "الفئة",
     "selectCategory": "اختر الفئة",
     "brand": "العلامة التجارية",
@@ -516,6 +524,25 @@
     "notificationSentSuccessfully": "تم إرسال الإشعار بنجاح",
     "error": "خطأ",
     "failedToSendNotification": "فشل في إرسال الإشعار"
+  },
+  "notificationTable": {
+    "title": "العنوان",
+    "description": "الوصف",
+    "type": "النوع",
+    "status": "الحالة",
+    "createdBy": "أنشئ بواسطة",
+    "createdAt": "تاريخ الإنشاء",
+    "allNotifications": "جميع الإشعارات",
+    "sendNotification": "إرسال إشعار",
+    "rowsPerPage": "الصفوف في الصفحة",
+    "pageOf": "الصفحة {{page}} من {{totalPages}}",
+    "previous": "السابق",
+    "next": "التالي",
+    "read": "مقروء",
+    "unread": "غير مقروء",
+    "systemNotification": "إشعار النظام",
+    "system": "النظام",
+    "errorLoadingNotifications": "خطأ في تحميل الإشعارات"
   },
   "table": {
     "showing": "عرض",
@@ -796,7 +823,8 @@
     "statusUpdateSuccess": "تم تحديث الحالة",
     "statusUpdateSuccessDesc": "تم تحديث حالة الصيدلية بنجاح",
     "statusUpdateError": "فشل التحديث",
-    "statusUpdateErrorDesc": "فشل في تحديث حالة الصيدلية"
+    "statusUpdateErrorDesc": "فشل في تحديث حالة الصيدلية",
+    "save": "حفظ"
   },
   "pharmacyRequests": {
     "title": "طلبات الصيدلية",
@@ -1209,6 +1237,7 @@
     "idHeader": "المعرف",
     "productEnTypeHeader": "نوع المنتج بالإنجليزية",
     "productArTypeHeader": "نوع المنتج بالعربية",
+    "imageKeyHeader": "رابط الصورة",
     "actionsHeader": "الإجراءات",
     "loadingText": "جاري التحميل...",
     "errorLoadingProductTypes": "حدث خطأ أثناء تحميل أنواع المنتجات.",
@@ -1227,6 +1256,10 @@
     "productArType": "نوع المنتج بالعربية",
     "enterProductEnType": "أدخل نوع المنتج بالإنجليزية",
     "enterProductArType": "أدخل نوع المنتج بالعربية",
+    "productTypeImage": "صورة نوع المنتج",
+    "dragDropImageHere": "اسحب الصورة هنا",
+    "uploadImage": "تحميل الصورة",
+    "removeImage": "إزالة الصورة",
     "save": "حفظ",
     "errorRequiredFields": "يرجى ملء جميع الحقول المطلوبة.",
     "successAdd": "تمت إضافة نوع المنتج بنجاح.",
@@ -1239,6 +1272,11 @@
     "ProductArType": "نوع المنتج بالعربية",
     "EnterProductEnType": "أدخل نوع المنتج بالإنجليزية",
     "EnterProductArType": "أدخل نوع المنتج بالعربية",
+    "ProductTypeImage": "صورة نوع المنتج",
+    "DragDropImageHere": "اسحب الصورة هنا",
+    "UploadImage": "تحميل الصورة",
+    "RemoveImage": "إزالة الصورة",
+    "CurrentImage": "الصورة الحالية",
     "ActiveStatus": "الحالة النشطة",
     "SaveChanges": "حفظ التغييرات",
     "ErrorRequiredFields": "يرجى ملء جميع الحقول المطلوبة.",

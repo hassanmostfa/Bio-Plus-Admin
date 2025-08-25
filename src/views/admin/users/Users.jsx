@@ -31,6 +31,7 @@ import {
   ModalCloseButton,
   useDisclosure,
   Textarea,
+  Spinner,
 } from "@chakra-ui/react";
 import {
   createColumnHelper,
@@ -40,7 +41,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { FaEye, FaTrash, FaSearch } from "react-icons/fa";
-import { EditIcon, ChevronDownIcon } from "@chakra-ui/icons";
+import { EditIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import Card from "components/card/Card";
 import { useNavigate } from "react-router-dom";
 import { useGetUsersQuery, useUpdateUserMutation } from "api/clientSlice";
@@ -53,9 +54,10 @@ const columnHelper = createColumnHelper();
 const Users = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
+  const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -63,17 +65,22 @@ const Users = () => {
   const [blockedReason, setBlockedReason] = useState("");
   const [selectedUserId, setSelectedUserId] = useState(null);
 
-  const { data: usersData, isLoading, refetch } = useGetUsersQuery({
+  const { data: usersData, isLoading, isError, refetch } = useGetUsersQuery({
     page,
     limit,
     search: debouncedSearchTerm,
     status: statusFilter,
+  }, {
+    refetchOnMountOrArgChange: true,
   });
   const [updateStatus] = useUpdateUserMutation();
 
+  // Extract table data and pagination info
   const users = usersData?.data || [];
-  const totalItems = usersData?.totalItems || 0;
-  const totalPages = usersData?.totalPages || 1;
+  
+  // Check if API returned pagination data, if not implement client-side pagination
+  const hasServerPagination = usersData?.pagination;
+  const pagination = usersData?.pagination || { page: 1, limit: 10, totalItems: users.length, totalPages: Math.ceil(users.length / limit) };
 
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -82,7 +89,6 @@ const Users = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-      setPage(1); // Reset to first page on new search
     }, 500);
 
     return () => clearTimeout(timer);
@@ -90,18 +96,29 @@ const Users = () => {
 
   useEffect(() => {
     refetch();
-  }, [refetch]);
+  }, [page, limit, debouncedSearchTerm, statusFilter, refetch]);
 
-  // Reset to first page when status filter changes
+  // Reset to first page when status filter, limit, or search changes
   useEffect(() => {
     setPage(1);
-  }, [statusFilter]);
+  }, [statusFilter, limit, debouncedSearchTerm]);
 
-  
-  // Reset to first page when status filter changes
-  useEffect(() => {
-    setPage(1);
-  }, [statusFilter]);
+  // Pagination handlers
+  const handleNextPage = () => {
+    if (page < pagination.totalPages) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+
+  const handleLimitChange = (e) => {
+    setLimit(Number(e.target.value));
+  };
 
   const handleStatusUpdate = async (userId, newStatus) => {
     try {
@@ -208,6 +225,15 @@ const Users = () => {
       header: () => <Text color="gray.400">{t('common.phone')}</Text>,
       cell: (info) => <Text color={textColor}>{info.getValue()}</Text>,
     }),
+    columnHelper.accessor("createdBy", {
+      id: "createdBy",
+      header: () => <Text color="gray.400">{t('userTable.createdBy')}</Text>,
+      cell: (info) => (
+        <Text color={textColor} fontSize="sm">
+          {info.getValue() || t('userTable.unknown')}
+        </Text>
+      ),
+    }),
     columnHelper.accessor("status", {
       id: "status",
       header: () => <Text color="gray.400">{t('common.status')}</Text>,
@@ -289,7 +315,14 @@ const Users = () => {
     <div className="container">
       <Card flexDirection="column" w="100%" px="0px" overflowX="auto">
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
-          <Text color={textColor} fontSize="22px" fontWeight="700">{t('common.users')}</Text>
+          <Text 
+            color={textColor} 
+            fontSize="22px" 
+            fontWeight="700"
+            textAlign={isRTL ? 'right' : 'left'}
+          >
+            {t('common.users')}
+          </Text>
           <HStack spacing={4} align="center">
             <Box width="300px">
               <InputGroup>
@@ -339,7 +372,16 @@ const Users = () => {
         </Flex>
 
         <Box>
-          <Table variant="simple" color="gray.500" mb="24px" mt="12px">
+          {isLoading ? (
+            <Flex justify="center" align="center" py="50px">
+              <Spinner size="lg" />
+            </Flex>
+          ) : isError ? (
+            <Flex justify="center" align="center" py="50px">
+              <Text color="red.500">{t('common.errorLoadingData')}</Text>
+            </Flex>
+          ) : (
+            <Table variant="simple" color="gray.500" mb="24px" mt="12px">
             <Thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <Tr key={headerGroup.id}>
@@ -371,33 +413,55 @@ const Users = () => {
               )}
             </Tbody>
           </Table>
+          )}
 
           {/* Pagination Controls */}
-          <Flex justifyContent="space-between" alignItems="center" px="25px" pb="20px">
-            <Text color={textColor}>
-              {totalItems > 0 ? (
-                `Showing ${((page - 1) * limit) + 1} to ${Math.min(page * limit, totalItems)} of ${totalItems} entries`
-              ) : (
-                'No entries to show'
-              )}
-            </Text>
-            <HStack spacing={2}>
-              <Button
+          <Flex justifyContent="space-between" alignItems="center" px="25px" py="10px">
+            <Flex alignItems="center">
+              <Text color={textColor} fontSize="sm" mr="10px">
+                {t('common.rowsPerPage')}
+              </Text>
+              <Select
+                value={limit}
+                onChange={handleLimitChange}
+                width="100px"
                 size="sm"
-                onClick={() => setPage(page - 1)}
-                isDisabled={page === 1}
+                variant="outline"
+                borderRadius="md"
+                borderColor="gray.200"
+                _hover={{ borderColor: 'gray.300' }}
+                _focus={{ borderColor: 'blue.500', boxShadow: 'outline' }}
+                dir="ltr"
               >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </Select>
+            </Flex>
+            <Text color={textColor} fontSize="sm">
+              {t('common.pageOf', { page: pagination.page, totalPages: pagination.totalPages })}
+            </Text>
+            <Flex>
+              <Button
+                onClick={handlePreviousPage}
+                disabled={page === 1}
+                variant="outline"
+                size="sm"
+                mr="10px"
+              >
+                <Icon as={ChevronLeftIcon} mr="5px" />
                 {t('common.previous')}
               </Button>
-              <Text color={textColor}>Page {page} of {totalPages}</Text>
-              <Button
-                size="sm"
-                onClick={() => setPage(page + 1)}
-                isDisabled={page === totalPages}
-              >
+                             <Button
+                 onClick={handleNextPage}
+                 disabled={page === pagination.totalPages}
+                 variant="outline"
+                 size="sm"
+               >
                 {t('common.next')}
+                <Icon as={ChevronRightIcon} ml="5px" />
               </Button>
-            </HStack>
+            </Flex>
           </Flex>
         </Box>
       </Card>
