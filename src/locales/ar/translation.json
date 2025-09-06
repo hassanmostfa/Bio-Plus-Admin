@@ -795,7 +795,7 @@
     "deliveryAcrossYourZone": "التوصيل في منطقتك",
     "usuallyDispatchesOrdersOnTheSameDay": "عادةً ما يتم شحن الطلبات في نفس اليوم",
     "deliveryFeeWillApply": "سيتم تطبيق رسوم التوصيل",
-    "allOrdersWillBeDeliveredByHealthyPharmacy": "سيتم توصيل جميع الطلبات بواسطة صيدلية هيلثي",
+    "allOrdersWillBeDeliveredByHealthyPharmacy": "سيتم توصيل جميع الطلبات بواسطة صيدليتنا",
     "validationFailed": "فشل التحقق",
     "currentPharmacy": "الصيدلية الحالية",
     "updatedSuccessfully": "تم تحديث الصيدلية بنجاح",
@@ -1401,7 +1401,8 @@
     "status": "الحالة",
     "assignedTo": "مُسند إلى",
     "actions": "الإجراءات",
-    "notAssigned": "غير مُسند"
+    "notAssigned": "غير مُسند",
+    "searchPharmacies": "البحث في الصيدليات..."
   },
   "addPrescription": {
     "addNewPrescription": "إضافة وصفة طبية جديدة",

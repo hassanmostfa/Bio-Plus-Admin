@@ -96,9 +96,11 @@ const Prescriptions = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
+  const [pharmacySearch, setPharmacySearch] = useState('');
   const { t } = useTranslation();
   const { currentLanguage } = useLanguage();
   const timeoutRef = useRef(null);
+  const pharmacySearchTimeoutRef = useRef(null);
 
   // Pagination state
   const [pagination, setPagination] = useState({
@@ -118,10 +120,11 @@ const Prescriptions = () => {
     ...filters
   });
 
-  // Fetch pharmacies using RTK Query
+  // Fetch pharmacies using RTK Query with search
   const { data: pharmaciesResponse, isLoading: pharmaciesLoading, error: pharmaciesError, refetch: refetchPharmacies } = useGetPharmaciesQuery({
     page: 1,
-    limit: 1000, // Get all pharmacies for the modal
+    limit: 100, // Reduced limit for better performance
+    search: pharmacySearch, // Add search parameter
   });
 
   const [assignDocument] = useAssignDocumentMutation();
@@ -136,22 +139,28 @@ const Prescriptions = () => {
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
-  // Cleanup timeout on unmount
+  // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      if (pharmacySearchTimeoutRef.current) {
+        clearTimeout(pharmacySearchTimeoutRef.current);
+      }
     };
   }, []);
 
-  // Format date for display
+  // Format date and time for display
   const formatDate = useCallback((dateString) => {
     try {
-      return new Date(dateString).toLocaleDateString('en-US', {
+      return new Date(dateString).toLocaleString('en-US', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
       });
     } catch (error) {
       return 'Invalid Date';
@@ -181,12 +190,31 @@ const Prescriptions = () => {
     setSelectedPharmacy(pharmacy);
   }, []);
 
+  // Handle pharmacy search with debouncing
+  const handlePharmacySearch = useCallback((value) => {
+    // Clear existing timeout
+    if (pharmacySearchTimeoutRef.current) {
+      clearTimeout(pharmacySearchTimeoutRef.current);
+    }
+
+    // Set new timeout for debouncing
+    pharmacySearchTimeoutRef.current = setTimeout(() => {
+      setPharmacySearch(value);
+    }, 300); // 300ms debounce
+  }, []);
+
+  // Handle modal close with cleanup
+  const handleModalClose = useCallback(() => {
+    setPharmacySearch('');
+    setSelectedPharmacy(null);
+    onClose();
+  }, [onClose]);
+
   // Handle assign pharmacy
   const handleAssignPharmacy = useCallback(async () => {
     if (!selectedDocument || !selectedPharmacy) return;
 
     try {
-      onClose();
       const result = await Swal.fire({
         title: t('prescriptionsTable.areYouSure'),
         text: t('prescriptionsTable.assignPrescriptionTo', { pharmacy: selectedPharmacy.name }),
@@ -198,6 +226,7 @@ const Prescriptions = () => {
       });
 
       if (result.isConfirmed) {
+        handleModalClose();
         await assignDocument({id:selectedDocument.id,data:{
           documentId: selectedDocument.id,
           pharmacyId: selectedPharmacy.id
@@ -218,7 +247,7 @@ const Prescriptions = () => {
         'error'
       );
     }
-  }, [selectedDocument, selectedPharmacy, onClose, t, assignDocument, refetch]);
+  }, [selectedDocument, selectedPharmacy, handleModalClose, t, assignDocument, refetch]);
 
   // Handle reject document
   const handleRejectDocument = useCallback(async (documentId) => {
@@ -533,7 +562,7 @@ const Prescriptions = () => {
       </Card>
 
       {/* Assign Pharmacy Modal */}
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={handleModalClose}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{t('prescriptionsTable.assignPrescriptionToPharmacy')}</ModalHeader>
@@ -542,6 +571,23 @@ const Prescriptions = () => {
             {selectedDocument && (
               <>
                 <Text mb="4">{t('prescriptionsTable.assignPrescriptionFrom')} {selectedDocument.userName} {t('prescriptionsTable.to')}:</Text>
+                
+                {/* Search Input for Pharmacies */}
+                <InputGroup mb="4">
+                  <InputLeftElement pointerEvents="none">
+                    <CiSearch color="gray.400" />
+                  </InputLeftElement>
+                  <Input
+                    placeholder={t('prescriptionsTable.searchPharmacies')}
+                    value={pharmacySearch}
+                    onChange={(e) => handlePharmacySearch(e.target.value)}
+                    border="1px solid"
+                    borderColor="gray.200"
+                    _hover={{ borderColor: "gray.400" }}
+                    borderRadius="15px"
+                  />
+                </InputGroup>
+                
                 <Box maxH="400px" overflowY="auto">
                   {pharmaciesLoading ? (
                     <Flex justify="center" align="center" py="20px">
@@ -566,7 +612,7 @@ const Prescriptions = () => {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose}>
+            <Button variant="ghost" mr={3} onClick={handleModalClose}>
               {t('prescriptionsTable.cancel')}
             </Button>
             <Button

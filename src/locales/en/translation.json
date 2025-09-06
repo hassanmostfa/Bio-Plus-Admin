@@ -797,7 +797,7 @@
     "deliveryAcrossYourZone": "Delivery across your zone",
     "usuallyDispatchesOrdersOnTheSameDay": "Usually dispatches orders on the same day",
     "deliveryFeeWillApply": "Delivery fee will apply",
-    "allOrdersWillBeDeliveredByHealthyPharmacy": "All orders will be delivered by Healthy Pharmacy",
+    "allOrdersWillBeDeliveredByHealthyPharmacy": "All orders will be delivered by Our Pharmacy",
     "validationFailed": "Validation failed",
     "currentPharmacy": "Current pharmacy",
     "updatedSuccessfully": "Pharmacy updated successfully",
@@ -1412,7 +1412,8 @@
     "status": "Status",
     "assignedTo": "Assigned To",
     "actions": "Actions",
-    "notAssigned": "Not assigned"
+    "notAssigned": "Not assigned",
+    "searchPharmacies": "Search pharmacies..."
   },
   "addPrescription": {
     "addNewPrescription": "Add New Prescription",

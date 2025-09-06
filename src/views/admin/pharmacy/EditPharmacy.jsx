@@ -902,7 +902,7 @@ const EditPharmacy = () => {
               onClick={handleSubmit}
               isLoading={isUpdating}
             >
-              {t('pharmacy.saveChanges')}
+              {t('pharmacy.save')}
             </Button>
           </Flex>
         </form>
