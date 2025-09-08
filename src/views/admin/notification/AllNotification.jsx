@@ -211,8 +211,8 @@ import {
               onClick={() => navigate('/admin/add-notification')}
               width={'200px'}
             >
-                             <PlusSquareIcon me="10px" />
-               {t('notificationTable.sendNotification')}
+              <PlusSquareIcon me="10px" />
+              {t('notificationTable.sendNotification')}
             </Button>
           </Flex>
 

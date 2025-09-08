@@ -35,9 +35,10 @@ const AddPharmacy = () => {
     email: '',
     password: '',
     workingHours: '',
+    revenueShareType: 'percentage',
     revenueShare: 0, // Percentage
     fixedFees: 0, // Fixed amount
-    otherFees: 0, // Other amount
+    revenueShareOther: 0, // Other amount
     feesStartDate: '',
     feesEndDate: '',
     isActive: true,
@@ -104,7 +105,7 @@ const AddPharmacy = () => {
       revenueShareType: value,
       revenueShare: value === 'percentage' ? prevData.revenueShare : 0,
       fixedFees: value === 'fixed' ? prevData.fixedFees : 0,
-      otherFees: value === 'other' ? prevData.otherFees : 0,
+      revenueShareOther: value === 'other' ? prevData.revenueShareOther : 0,
     }));
   };
 
@@ -233,7 +234,7 @@ const AddPharmacy = () => {
         description: formData.translations.find((t) => t.languageId === 'en').description,
         revenueShare: formData.revenueShareType === 'percentage' ? parseInt(formData.revenueShare) : 0,
         fixedFees: formData.revenueShareType === 'fixed' ? parseInt(formData.fixedFees) : 0,
-        otherFees: formData.revenueShareType === 'other' ? parseInt(formData.otherFees) : 0,
+        revenueShareOther: formData.revenueShareType === 'other' ? parseInt(formData.revenueShareOther) : 0,
 
       };
       delete payload.revenueShareType;
@@ -475,8 +476,8 @@ const AddPharmacy = () => {
                 </Text>
                 <Input
                   type="number"
-                  name="otherFees"
-                  value={formData.otherFees}
+                  name="revenueShareOther"
+                  value={formData.revenueShareOther}
                   onChange={handleChange}
                   onKeyDown={handleNumberInputKeyDown}
                   mt={2}

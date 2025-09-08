@@ -227,6 +227,27 @@ const Pharmacy = () => {
         </Flex>
       ),
     }),
+    columnHelper.accessor('creator', {
+      id: 'creator',
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: '10px', lg: '12px' }}
+          color="gray.400"
+        >
+          {t('pharmacy.createdBy')}
+        </Text>
+      ),
+      cell: (info) => {
+        const creator = info.row.original.creator;
+        return (
+          <Text color={textColor} fontSize="sm">
+            {creator?.name || t('pharmacy.notAvailable')}
+          </Text>
+        );
+      },
+    }),
     columnHelper.accessor('createdAt', {
       header: t('pharmacy.createdAt') || 'Created At',
       cell: (info) => {

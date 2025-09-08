@@ -60,9 +60,10 @@ const EditPharmacy = () => {
     email: '',
     password: '',
     workingHours: '',
+    revenueShareType: 'percentage',
     revenueShare: 0,
     fixedFees: 0,
-    otherFees: 0,
+    revenueShareOther: 0,
     feesStartDate: '',
     feesEndDate: '',
     isActive: true,
@@ -105,10 +106,20 @@ const EditPharmacy = () => {
         ? pharmacy.feesEndDate.split('T')[0] 
         : '';
       
+      // Determine revenue share type based on existing data
+      let revenueShareType = 'percentage';
+      if (pharmacy.fixedFees && pharmacy.fixedFees > 0) {
+        revenueShareType = 'fixed';
+      } else if (pharmacy.revenueShareOther && pharmacy.revenueShareOther > 0) {
+        revenueShareType = 'other';
+      }
+
       setFormData({
         ...pharmacy,
         feesStartDate,
         feesEndDate,
+        revenueShareType,
+        revenueShareOther: pharmacy.revenueShareOther || 0,
         hasZoneDelivery: pharmacy.hasZoneDelivery || false,
         hasSameDayDispatch: pharmacy.hasSameDayDispatch || false,
         hasDeliveryFee: pharmacy.hasDeliveryFee || false,
@@ -296,13 +307,14 @@ const EditPharmacy = () => {
           .description,
         revenueShare: formData.revenueShareType === 'percentage' ? parseInt(formData.revenueShare) : 0,
         fixedFees: formData.revenueShareType === 'fixed' ? parseInt(formData.fixedFees) : 0,
-        otherFees: formData.revenueShareType === 'other' ? parseInt(formData.otherFees) : 0,
+        revenueShareOther: formData.revenueShareType === 'other' ? parseInt(formData.revenueShareOther) : 0,
         deliveryFee: formData.deliveryFee ? parseInt(formData.deliveryFee) : 0,
       };
 
       delete payload.revenueShareType;
       delete payload.createdAt;
       delete payload.updatedAt;
+      delete payload.createdBy;
       delete payload.id;
 
       const response = await updatePharmacy({ id, pharmacy: payload }).unwrap();
@@ -563,8 +575,8 @@ const EditPharmacy = () => {
                 bg={inputBg}
                 color={textColor}
                 type="number"
-                name="otherFees"
-                value={formData.otherFees}
+                name="revenueShareOther"
+                value={formData.revenueShareOther}
                 onChange={handleChange}
                 onKeyDown={handleNumberInputKeyDown}
                 mt={2}

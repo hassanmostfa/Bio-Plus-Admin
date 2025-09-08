@@ -296,6 +296,27 @@ const Doctors = () => {
         </Badge>
       ),
     }),
+    columnHelper.accessor('creator', {
+      id: 'creator',
+      header: () => (
+        <Text
+          justifyContent="space-between"
+          align="center"
+          fontSize={{ sm: '10px', lg: '12px' }}
+          color="gray.400"
+        >
+          {t('doctors.createdBy')}
+        </Text>
+      ),
+      cell: (info) => {
+        const creator = info.getValue();
+        return (
+          <Text color={textColor} fontSize="sm">
+            {creator?.name || t('doctors.notAvailable')}
+          </Text>
+        );
+      },
+    }),
     columnHelper.accessor('createdAt', {
       id: 'createdAt',
       header: () => (
