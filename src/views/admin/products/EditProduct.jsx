@@ -39,6 +39,7 @@ import { useGetTypesQuery } from 'api/typeSlice';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from 'contexts/LanguageContext';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import SearchableSelect from 'components/SearchableSelect';
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -86,6 +87,12 @@ const EditProduct = () => {
   // State for variants
   const [selectedAttributes, setSelectedAttributes] = useState([]);
 
+  // Search states for dropdowns
+  const [categorySearch, setCategorySearch] = useState('');
+  const [brandSearch, setBrandSearch] = useState('');
+  const [pharmacySearch, setPharmacySearch] = useState('');
+  const [variantSearch, setVariantSearch] = useState('');
+
   // API queries
   const { data: productResponse, isLoading: isProductLoading , refetch } =
     useGetProductQuery(id);
@@ -99,18 +106,25 @@ const EditProduct = () => {
   }, [refetch, isProductLoading]); // Dependency array to ensure it only runs on mount
 
   
-  const { data: categoriesResponse } = useGetCategoriesQuery({
+  const { data: categoriesResponse, isLoading: isCategoriesLoading } = useGetCategoriesQuery({
     page: 1,
-    limit: 1000,
+    limit: 50,
+    ...(categorySearch && { search: categorySearch }),
   });
-  const { data: variantsResponse } = useGetVarientsQuery({
+  const { data: variantsResponse, isLoading: isVariantsLoading } = useGetVarientsQuery({
     page: 1,
-    limit: 1000,
+    limit: 50,
+    ...(variantSearch && { search: variantSearch }),
   });
-  const { data: brandsResponse } = useGetBrandsQuery({ page: 1, limit: 1000 });
-  const { data: pharmaciesResponse } = useGetPharmaciesQuery({
+  const { data: brandsResponse, isLoading: isBrandsLoading } = useGetBrandsQuery({ 
+    page: 1, 
+    limit: 50,
+    ...(brandSearch && { search: brandSearch }),
+  });
+  const { data: pharmaciesResponse, isLoading: isPharmaciesLoading } = useGetPharmaciesQuery({
     page: 1,
-    limit: 1000,
+    limit: 50,
+    ...(pharmacySearch && { search: pharmacySearch }),
   });
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
 
@@ -691,61 +705,44 @@ const EditProduct = () => {
 
           {/* Category, Brand, and Pharmacy */}
           <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
-            <Box>
-              <FormControl isRequired>
-                <FormLabel>{t('product.category')}</FormLabel>
-                <Select
-                  placeholder={t('product.selectCategory')}
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  color={textColor}
-                  style={{ direction: 'ltr' }}
-                >
-                  {categories?.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.translations?.find((t) => t.languageId === 'en')
-                        ?.name || cat.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl isRequired>
-                <FormLabel>{t('product.brand')}</FormLabel>
-                <Select
-                  placeholder={t('product.selectBrand')}
-                  value={brandId}
-                  onChange={(e) => setBrandId(e.target.value)}
-                  color={textColor}
-                  style={{ direction: 'ltr' }}
-                >
-                  {brands.map((brand) => (
-                    <option key={brand.id} value={brand.id}>
-                      {brand.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-            <Box>
-              <FormControl isRequired>
-                <FormLabel>{t('product.pharmacy')}</FormLabel>
-                <Select
-                  placeholder={t('product.selectPharmacy')}
-                  value={pharmacyId}
-                  onChange={(e) => setPharmacyId(e.target.value)}
-                  color={textColor}
-                  style={{ direction: 'ltr' }}
-                >
-                  {pharmacies.map((pharmacy) => (
-                    <option key={pharmacy.id} value={pharmacy.id}>
-                      {pharmacy.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
+            <SearchableSelect
+              label={t('product.category')}
+              placeholder={t('product.selectCategory')}
+              value={categoryId}
+              onChange={setCategoryId}
+              options={categories}
+              isLoading={isCategoriesLoading}
+              onSearch={setCategorySearch}
+              displayKey="translations.name"
+              isRequired
+              noOptionsText={t('forms.noCategoriesFound')}
+            />
+            
+            <SearchableSelect
+              label={t('product.brand')}
+              placeholder={t('product.selectBrand')}
+              value={brandId}
+              onChange={setBrandId}
+              options={brands}
+              isLoading={isBrandsLoading}
+              onSearch={setBrandSearch}
+              displayKey="name"
+              isRequired
+              noOptionsText={t('forms.noBrandsFound')}
+            />
+            
+            <SearchableSelect
+              label={t('product.pharmacy')}
+              placeholder={t('product.selectPharmacy')}
+              value={pharmacyId}
+              onChange={setPharmacyId}
+              options={pharmacies}
+              isLoading={isPharmaciesLoading}
+              onSearch={setPharmacySearch}
+              displayKey="name"
+              isRequired
+              noOptionsText={t('forms.noPharmaciesFound')}
+            />
 
             <Box>
                 <FormControl>
@@ -987,21 +984,22 @@ const EditProduct = () => {
           {/* Variants Section */}
           {hasVariants && (
             <Box mb={4}>
-              <FormControl mb={4}>
-                <FormLabel>{t('product.selectVariant')}</FormLabel>
-                <Select
+              <Box mb={4}>
+                <SearchableSelect
+                  label={t('product.selectVariant')}
                   placeholder={t('product.selectVariant')}
-                  onChange={handleVariantSelect}
-                  color={textColor}
-                  style={{ direction: 'ltr' }}
-                >
-                  {variants.map((variant) => (
-                    <option key={variant.id} value={variant.id}>
-                      {variant.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
+                  value=""
+                  onChange={(variantId) => {
+                    const event = { target: { value: variantId } };
+                    handleVariantSelect(event);
+                  }}
+                  options={variants}
+                  isLoading={isVariantsLoading}
+                  onSearch={setVariantSearch}
+                  displayKey="name"
+                  noOptionsText={t('forms.noVariantsFound')}
+                />
+              </Box>
 
               {selectedAttributes.length > 0 && (
                 <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>

@@ -28,7 +28,50 @@ export function SidebarLinks(props) {
 
   // verifies if routeName is the one active (in browser input)
   const activeRoute = (routeName) => {
-    return routeName && location.pathname.includes(routeName);
+    if (!routeName) return false;
+    
+    // Check if current path includes the route name
+    const currentPath = location.pathname;
+    
+    // Direct match
+    if (currentPath.includes(routeName)) {
+      return true;
+    }
+    
+    // Handle parent-child relationships for add/edit pages
+    const routeMappings = {
+      '/pharmacy': ['/add-pharmacy', '/edit-pharmacy', '/show/pharmacy', '/pharmacy-branches', '/add-branch'],
+      '/doctors': ['/add/doctor', '/edit/doctor', '/doctor/'],
+      '/users': ['/add-user', '/users/edit'],
+      '/categories': ['/add-category', '/edit-category'],
+      '/products': ['/add-product', '/edit-product', '/products/'],
+      '/variants': ['/add-variant', '/edit-variant', '/variant-attributes', '/add-attribute'],
+      '/product-types': ['/add-product-types', '/edit-product-type'],
+      '/brands': ['/add-brand', '/edit-brand'],
+      '/prescription': ['/add-prescription'],
+      '/orders': ['/add-order'],
+      '/notifications': ['/add-notification'],
+      '/promo-codes': ['/add-promo-code', '/edit-promo-code'],
+      '/specializations': ['/add-specialization', '/edit-specialization'],
+      '/tags': ['/add-tag', '/edit-tag'],
+      '/blogs': ['/add-blogs', '/edit-blogs'],
+      '/cms/banners': ['/cms/add-banner', '/cms/edit-banner'],
+      '/cms/home-banners': ['/home-banner/edit', '/home-banner/add'],
+      '/cms/ads': ['/cms/add-ads', '/cms/edit-ads'],
+      '/cms/about-us': ['/cms/add-about'],
+      '/cms/privacy-and-policy': ['/cms/add-privcy'],
+      '/cms/returned': ['/cms/add-return', '/cms/edit-return', '/cms/show-return'],
+      '/admins': ['/add-admin', '/edit-admin', '/admin/details'],
+      '/roles': ['/add-New-Role', '/edit/role']
+    };
+    
+    // Check if current path matches any child routes of the parent route
+    const childRoutes = routeMappings[routeName];
+    if (childRoutes) {
+      return childRoutes.some(childRoute => currentPath.includes(childRoute));
+    }
+    
+    return false;
   };
 
   // DropdownMenu component for subRoutes

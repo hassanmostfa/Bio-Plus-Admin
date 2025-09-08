@@ -14,7 +14,7 @@ import Card from "components/card/Card.js";
 import React from "react";
 
 export default function Default(props) {
-  const { startContent, endContent, name, growth, value } = props;
+  const { startContent, endContent, name, growth, value, nameColor, valueColor } = props;
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const textColorSecondary = "secondaryGray.600";
 
@@ -30,17 +30,23 @@ export default function Default(props) {
         <Stat my='auto' ms={startContent ? "18px" : "0px"}>
           <StatLabel
             lineHeight='100%'
-            color={textColorSecondary}
+            color={nameColor || textColorSecondary}
             fontSize={{
               base: "sm",
-            }}>
+            }}
+            sx={nameColor && nameColor.includes('!important') ? {
+              color: `${nameColor.replace(' !important', '')} !important`
+            } : {}}>
             {name}
           </StatLabel>
           <StatNumber
-            color={textColor}
+            color={valueColor || textColor}
             fontSize={{
               base: "2xl",
-            }}>
+            }}
+            sx={valueColor && valueColor.includes('!important') ? {
+              color: `${valueColor.replace(' !important', '')} !important`
+            } : {}}>
             {value}
           </StatNumber>
           {growth ? (

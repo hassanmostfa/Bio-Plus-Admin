@@ -207,6 +207,32 @@ const Orders = () => {
     }
   };
 
+  // Handle select all checkbox
+  const handleSelectAll = () => {
+    if (orders.length === 0) return; // No orders to select
+    
+    if (selectedOrders.length === orders.length) {
+      // If all are selected, deselect all
+      console.log('Deselecting all orders');
+      setSelectedOrders([]);
+    } else {
+      // If not all are selected, select all
+      const allOrderIds = orders.map(order => order.id);
+      console.log('Selecting all orders:', allOrderIds);
+      setSelectedOrders(allOrderIds);
+    }
+  };
+
+  // Check if all orders are selected
+  const isAllSelected = orders.length > 0 && selectedOrders.length === orders.length;
+  const isIndeterminate = selectedOrders.length > 0 && selectedOrders.length < orders.length;
+
+  // Debug information
+  console.log('Orders count:', orders.length);
+  console.log('Selected orders count:', selectedOrders.length);
+  console.log('Is all selected:', isAllSelected);
+  console.log('Is indeterminate:', isIndeterminate);
+
   // Handle print selected orders
   const handlePrintSelectedOrders = () => {
     if (selectedOrders.length === 0) {
@@ -526,37 +552,54 @@ const Orders = () => {
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
 
   const columns = [
-    columnHelper.accessor('id', {
-      header: '',
-      cell: (info) => (
-        <Checkbox
-          isChecked={selectedOrders.includes(info.getValue())}
-          onChange={() => handleCheckboxChange(info.getValue())}
-          colorScheme={'brandScheme'}
-        />
+    columnHelper.accessor('select', {
+      id: 'select',
+      header: () => (
+        <Box bg="gray.50" p={2} borderRadius="md" border="1px solid" borderColor="gray.200">
+          <Flex justify="center" align="center">
+            <Checkbox
+              isChecked={isAllSelected}
+              isIndeterminate={isIndeterminate}
+              onChange={handleSelectAll}
+              colorScheme={'blue'}
+              size="lg"
+              cursor="pointer"
+              title="Select/Deselect All Orders"
+              borderColor="blue.500"
+              _hover={{
+                borderColor: "blue.600",
+                transform: "scale(1.1)"
+              }}
+            />
+          </Flex>
+        </Box>
       ),
-    }),
-    columnHelper.accessor('orderNumber', {
-      header: t('orders.orderNumber'),
-      cell: (info) => <Text color={textColor} fontWeight="bold">{info.getValue()}</Text>,
-    }),
-    columnHelper.accessor('createdAt', {
-      header: t('orders.date'),
-      cell: (info) => <Text color={textColor}>{formatDate(info.getValue())}</Text>,
-      enableSorting: true, // Enable sorting for Date column
+      cell: (info) => (
+        <Box bg="gray.25" p={2} borderRadius="md">
+          <Flex justify="center" align="center">
+            <Checkbox
+              isChecked={selectedOrders.includes(info.row.original.id)}
+              onChange={() => handleCheckboxChange(info.row.original.id)}
+              colorScheme={'blue'}
+              size="md"
+              cursor="pointer"
+            />
+          </Flex>
+        </Box>
+      ),
+      size: 80,
+      enableSorting: false,
     }),
     columnHelper.accessor('user.name', {
       header: t('orders.customer'),
       cell: (info) => <Text color={textColor}>{info.getValue() || 'N/A'}</Text>,
       enableSorting: true, // Enable sorting for Customer column
-    }),
-    columnHelper.accessor('user.phoneNumber', {
-      header: t('orders.phone'),
-      cell: (info) => <Text color={textColor}>{info.getValue() || 'N/A'}</Text>,
+      size: 180,
     }),
     columnHelper.accessor('pharmacy.name', {
       header: t('orders.pharmacy'),
       cell: (info) => <Text color={textColor}>{info.getValue() || 'N/A'}</Text>,
+      size: 180,
     }),
     columnHelper.accessor('status', {
       header: t('orders.status'),
@@ -576,6 +619,7 @@ const Orders = () => {
           {info.getValue()}
         </Badge>
       ),
+      size: 120,
     }),
     columnHelper.accessor('paymentStatus', {
       header: t('orders.paymentStatus'),
@@ -594,20 +638,21 @@ const Orders = () => {
           {info.getValue()}
         </Badge>
       ),
+      size: 120,
     }),
     columnHelper.accessor('total', {
       header: t('orders.total'),
       cell: (info) => <Text color={textColor} fontWeight="bold">{info.getValue()}</Text>,
       enableSorting: true, // Enable sorting for Total column
+      size: 120,
     }),
     columnHelper.accessor('actions', {
       header: t('orders.actions'),
       cell: (info) => (
-        <Flex>
+        <Flex gap="5px">
           <Icon
             w="18px"
             h="18px"
-            me="10px"
             color="blue.500"
             as={FaEye}
             cursor="pointer"
@@ -640,6 +685,7 @@ const Orders = () => {
           </Menu>
         </Flex>
       ),
+      size: 220,
     }),
   ];
 
@@ -680,7 +726,7 @@ const Orders = () => {
 
   return (
     <div className="container">
-      <Card flexDirection="column" w="100%" px="0px" overflowX={{ sm: 'scroll', lg: 'hidden' }}>
+      <Card flexDirection="column" w="100%" px="0px" overflowX="auto">
         <Flex px="25px" mb="8px" justifyContent="space-between" align="center">
           <Text color={textColor} fontSize="22px" fontWeight="700">{t('orders.allOrders')}</Text>
           <Box display="flex" gap="10px">
@@ -878,7 +924,7 @@ const Orders = () => {
 
         {/* Table */}
         <Box overflowX="auto">
-          <Table variant="simple" color="gray.500" mb="24px" mt="12px" minWidth="1000px" id="orders-table">
+          <Table variant="simple" color="gray.500" mb="24px" mt="12px" minWidth="1280px" id="orders-table">
             <Thead>
               {table.getHeaderGroups().map((headerGroup) => (
                 <Tr key={headerGroup.id}>

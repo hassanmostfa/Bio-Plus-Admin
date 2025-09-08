@@ -77,6 +77,8 @@ export default function UserReports() {
               }
               name={card.name}
               value={card.value}
+              nameColor="black !important"
+              valueColor="black !important"
             />
           </Box>
         ))}

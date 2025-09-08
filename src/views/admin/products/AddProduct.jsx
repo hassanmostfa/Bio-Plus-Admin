@@ -39,6 +39,7 @@ import { useTranslation } from 'react-i18next';
 import FormWrapper from 'components/FormWrapper';
 import { useLanguage } from 'contexts/LanguageContext';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import SearchableSelect from 'components/SearchableSelect';
 
 const AddProduct = () => {
   const [nameEn, setNameEn] = useState('');
@@ -78,25 +79,38 @@ const AddProduct = () => {
   const [discount, setDiscount] = useState(null);
   const [discountType, setDiscountType] = useState(null);
 
+  // Search states for dropdowns
+  const [categorySearch, setCategorySearch] = useState('');
+  const [brandSearch, setBrandSearch] = useState('');
+  const [pharmacySearch, setPharmacySearch] = useState('');
+  const [variantSearch, setVariantSearch] = useState('');
+
   const [addProduct, { isLoading }] = useAddProductMutation();
   const toast = useToast();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { currentLanguage } = useLanguage();
 
-  // Fetch data
-  const { data: categoriesResponse } = useGetCategoriesQuery({
+  // Fetch data with search parameters
+  const { data: categoriesResponse, isLoading: isCategoriesLoading } = useGetCategoriesQuery({
     page: 1,
-    limit: 1000,
+    limit: 50,
+    ...(categorySearch && { search: categorySearch }),
   });
-  const { data: variantsResponse } = useGetVarientsQuery({
+  const { data: variantsResponse, isLoading: isVariantsLoading } = useGetVarientsQuery({
     page: 1,
-    limit: 1000,
+    limit: 50,
+    ...(variantSearch && { search: variantSearch }),
   });
-  const { data: brandsResponse } = useGetBrandsQuery({ page: 1, limit: 1000 });
-  const { data: PharmacyResponse } = useGetPharmaciesQuery({
+  const { data: brandsResponse, isLoading: isBrandsLoading } = useGetBrandsQuery({ 
     page: 1,
-    limit: 1000,
+    limit: 50,
+    ...(brandSearch && { search: brandSearch }),
+  });
+  const { data: PharmacyResponse, isLoading: isPharmaciesLoading } = useGetPharmaciesQuery({
+    page: 1,
+    limit: 50,
+    ...(pharmacySearch && { search: pharmacySearch }),
   });
   const { data: productTypesResponse } = useGetTypesQuery({ page: 1, limit: 1000 }); // Fetch product types
   
@@ -659,61 +673,44 @@ const AddProduct = () => {
 
             {/* Category, Brand, Pharmacy and Product Type */}
             <SimpleGrid columns={{ base: 1, md: 4 }} spacing={4} mb={4}>
-              <Box>
-                <FormControl isRequired>
-                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.category')}</FormLabel>
-                  <Select
+              <SearchableSelect
+                label={t('product.category')}
                     placeholder={t('forms.selectCategory')}
                     value={categoryId}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                    color={textColor}
-                    style={{ direction: 'ltr' }}
-                  >
-                    {categories?.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.translations?.find((t) => t.languageId === 'en')
-                          ?.name || cat.name}
-                      </option>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-              <Box>
-                <FormControl isRequired>
-                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.brand')}</FormLabel>
-                  <Select
+                onChange={setCategoryId}
+                options={categories}
+                isLoading={isCategoriesLoading}
+                onSearch={setCategorySearch}
+                displayKey="translations.name"
+                isRequired
+                noOptionsText={t('forms.noCategoriesFound')}
+              />
+              
+              <SearchableSelect
+                label={t('product.brand')}
                     placeholder={t('forms.selectBrand')}
                     value={brandId}
-                    onChange={(e) => setBrandId(e.target.value)}
-                    color={textColor}
-                    style={{ direction: 'ltr' }}
-                  >
-                    {brands.map((brand) => (
-                      <option key={brand.id} value={brand.id}>
-                        {brand.name}
-                      </option>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-              <Box>
-                <FormControl>
-                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.pharmacy')}</FormLabel>
-                  <Select
+                onChange={setBrandId}
+                options={brands}
+                isLoading={isBrandsLoading}
+                onSearch={setBrandSearch}
+                displayKey="name"
+                isRequired
+                noOptionsText={t('forms.noBrandsFound')}
+              />
+              
+              <SearchableSelect
+                label={t('product.pharmacy')}
                     placeholder={t('forms.selectPharmacy')}
                     value={pharmacyId}
-                    onChange={(e) => setPharmacyId(e.target.value)}
-                    color={textColor}
-                    style={{ direction: 'ltr' }}
-                  >
-                    {pharmacies?.map((pharmacy) => (
-                      <option key={pharmacy.id} value={pharmacy.id}>
-                        {pharmacy.name}
-                      </option>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
+                onChange={setPharmacyId}
+                options={pharmacies}
+                isLoading={isPharmaciesLoading}
+                onSearch={setPharmacySearch}
+                displayKey="name"
+                noOptionsText={t('forms.noPharmaciesFound')}
+              />
+              
               <Box>
                 <FormControl>
                   <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.productType')}</FormLabel>
@@ -903,21 +900,22 @@ const AddProduct = () => {
             {/* Variants Section */}
             {hasVariants && (
               <Box mb={4}>
-                <FormControl mb={4}>
-                  <FormLabel textAlign={currentLanguage === 'ar' ? 'right' : 'left'}>{t('product.selectVariant')}</FormLabel>
-                  <Select
+                <Box mb={4}>
+                  <SearchableSelect
+                    label={t('product.selectVariant')}
                     placeholder={t('forms.selectVariant')}
-                    onChange={handleVariantSelect}
-                    color={textColor}
-                    style={{ direction: 'ltr' }}
-                  >
-                    {variants.map((variant) => (
-                      <option key={variant.id} value={variant.id}>
-                        {variant.name}
-                      </option>
-                    ))}
-                  </Select>
-                </FormControl>
+                    value=""
+                    onChange={(variantId) => {
+                      const event = { target: { value: variantId } };
+                      handleVariantSelect(event);
+                    }}
+                    options={variants}
+                    isLoading={isVariantsLoading}
+                    onSearch={setVariantSearch}
+                    displayKey="name"
+                    noOptionsText={t('forms.noVariantsFound')}
+                  />
+                </Box>
 
                 {selectedAttributes.length > 0 && (
                   <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
