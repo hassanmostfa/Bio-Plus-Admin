@@ -38,7 +38,7 @@ export default function UserReports() {
   }, [refetch , isLoading]);
 
   const cardData = [
-    { name: t('dashboard.totalAdmins'), value: stats?.totalAdmins || 0, icon: MdOutlineGroup, route: '/admin/admins' },
+    { name: t('dashboard.totalAdmins'), value: stats?.totalAdmins || 0, icon: MdOutlineGroup, route: '/admin/undefined/admins' },
     { name: t('dashboard.totalPharmacies'), value: stats?.totalPharmacies || 0, icon: MdOutlineLocalPharmacy, route: '/admin/pharmacy' },
     { name: t('dashboard.totalDoctors'), value: stats?.totalDoctors || 0, icon: MdOutlineMedicalServices, route: '/admin/doctors' },
     { name: t('dashboard.totalClinics'), value: stats?.totalClinics || 0, icon: MdOutlineStore, route: '/admin/clinics' },
