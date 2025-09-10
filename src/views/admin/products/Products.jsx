@@ -36,7 +36,7 @@ import { FaEye, FaTrash, FaFileExport, FaFileImport, FaDownload, FaUpload } from
 import { EditIcon, PlusSquareIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import {FaSearch} from 'react-icons/fa';
 import { useNavigate } from "react-router-dom";
-import { useGetProductsQuery, useDeleteProductMutation, useUpdateProductMutation } from "api/productSlice";
+import { useGetProductsQuery, useDeleteProductMutation, useUpdateProductMutation, useExportAllProductsQuery } from "api/productSlice";
 import Swal from "sweetalert2";
 import Pagination from "theme/components/Pagination";
 import * as XLSX from 'xlsx';
@@ -52,6 +52,7 @@ const Products = () => {
   const [limit, setLimit] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [shouldExport, setShouldExport] = useState(false);
   const { data: productsResponse, isLoading, isFetching, refetch } = useGetProductsQuery({ 
     page, 
     limit, 
@@ -61,6 +62,9 @@ const Products = () => {
   const [updateProduct] = useUpdateProductMutation();
   const { data: templateData, isLoading: isTemplateLoading } = useDownloadTemplateQuery();
   const [uploadProducts] = useUploadProductsMutation();
+  const { data: exportData, isLoading: isExportLoading, error: exportError } = useExportAllProductsQuery(undefined, {
+    skip: !shouldExport,
+  });
   const navigate = useNavigate();
   const toast = useToast();
   const { t } = useTranslation();
@@ -98,6 +102,46 @@ const Products = () => {
       refetch();
     }
   }, [refetch, isLoading]);
+
+  // Handle export data when received
+  React.useEffect(() => {
+    if (exportData && shouldExport) {
+      // Create download link for the blob data
+      const url = window.URL.createObjectURL(exportData);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Products_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast({
+        title: t('product.exportSuccessTitle'),
+        description: t('product.exportSuccessText'),
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      // Reset export state
+      setShouldExport(false);
+    }
+  }, [exportData, shouldExport, toast, t]);
+
+  // Handle export error
+  React.useEffect(() => {
+    if (exportError && shouldExport) {
+      toast({
+        title: t('product.exportErrorTitle'),
+        description: t('product.exportErrorText'),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      setShouldExport(false);
+    }
+  }, [exportError, shouldExport, toast, t]);
 
   const toggleStatus = async (productId, currentStatus) => {
     try {
@@ -184,101 +228,18 @@ const Products = () => {
   };
 
   // Export to Excel function
-  const exportToExcel = async () => {
-    try {
-      // Show loading toast
-      toast({
-        title: t('product.exportingTitle'),
-        description: t('product.exportingText'),
-        status: 'info',
-        duration: 2000,
-        isClosable: true,
-      });
+  const exportToExcel = () => {
+    // Show loading toast
+    toast({
+      title: t('product.exportingTitle'),
+      description: t('product.exportingText'),
+      status: 'info',
+      duration: 2000,
+      isClosable: true,
+    });
 
-      // Fetch all products for export (with a large limit to get all products)
-      const allProductsResponse = await fetch(`${process.env.REACT_APP_API_URL || 'https://back.biopluskw.com/api/v1'}/admin/products?page=1&limit=10000&search=${debouncedSearchTerm}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!allProductsResponse.ok) {
-        throw new Error('Failed to fetch all products');
-      }
-
-      const allProductsData = await allProductsResponse.json();
-      const allProducts = allProductsData.data || [];
-
-      // Debug: Log the first product to see actual field names
-      if (allProducts.length > 0) {
-        console.log('Sample product data structure:', allProducts[0]);
-      }
-
-      if (allProducts.length === 0) {
-        toast({
-          title: t('product.noDataToExport'),
-          description: t('product.noProductsFound'),
-          status: 'warning',
-          duration: 3000,
-          isClosable: true,
-        });
-        return;
-      }
-
-      const data = allProducts.map(product => ({
-        'Product ID': product.id,
-        'Name (English)': product.name,
-        'Description (English)': product.description || product.descriptionEn || '',
-        'Description (Arabic)': product.descriptionAr || product.arabicDescription || '',
-        'Category': product.categoryName || product.category?.name || '',
-        'Product Type': product.productTypeName || product.productType?.name || '',
-        'Brand': product.brandName || product.brand?.name || '',
-        'SKU': product.sku || '',
-        'Price': product.price || 0,
-        'Discount': product.discount || 0,
-        'Discount Type': product.discountType || '',
-        'Stock Quantity': product.quantity || product.stockQuantity || 0,
-        'Lot Number': product.lotNumber || '',
-        'Expiry Date': product.expiryDate || '',
-        'How To Use (English)': product.howToUse || product.howToUseEn || '',
-        'How To Use (Arabic)': product.howToUseAr || product.arabicHowToUse || '',
-        'Treatment (English)': product.treatment || product.treatmentEn || '',
-        'Treatment (Arabic)': product.treatmentAr || product.arabicTreatment || '',
-        'Ingredients (English)': product.ingredients || product.ingredientsEn || '',
-        'Ingredients (Arabic)': product.ingredientsAr || product.arabicIngredients || '',
-        'Status': product.isActive ? 'Active' : 'Inactive',
-        'Published': product.isPublished ? 'Yes' : 'No',
-        'Created At': product.createdAt || '',
-        'Updated At': product.updatedAt || '',
-      }));
-
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
-
-      // Generate filename with current date
-      const date = new Date().toISOString().slice(0, 10);
-      const fileName = `Products_${date}.xlsx`;
-      XLSX.writeFile(workbook, fileName);
-      
-      toast({
-        title: t('product.exportSuccessTitle'),
-        description: `${t('product.exportSuccessText')} (${allProducts.length} products)`,
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      console.error('Export error:', error);
-      toast({
-        title: t('product.exportErrorTitle'),
-        description: t('product.exportErrorText'),
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    }
+    // Trigger the export API call
+    setShouldExport(true);
   };
 
   // Import from Excel function
@@ -437,8 +398,13 @@ const Products = () => {
                 {t('product.export')}
               </MenuButton>
               <MenuList>
-                <MenuItem icon={<FaDownload />} onClick={exportToExcel}>
-                  {t('product.exportToExcel')}
+                <MenuItem 
+                  icon={<FaDownload />} 
+                  onClick={exportToExcel}
+                  isLoading={isExportLoading}
+                  disabled={isExportLoading}
+                >
+                  {isExportLoading ? t('product.exporting') : t('product.exportToExcel')}
                 </MenuItem>
               </MenuList>
             </Menu>

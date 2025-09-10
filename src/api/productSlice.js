@@ -66,6 +66,13 @@ export const ProductApi = createApi({
         body: data,
       }),
     }),
+    exportAllProducts: builder.query({
+      query: () => ({
+        url: "/admin/products/export/all",
+        method: "GET",
+        responseHandler: async (response) => response.blob()
+      }),
+    }),
   }),
 });
 
@@ -78,5 +85,6 @@ export const {
   useDeleteProductMutation,
   useDownloadTemplateQuery,
   useUploadProductsMutation,
+  useExportAllProductsQuery,
 } = ProductApi;
 

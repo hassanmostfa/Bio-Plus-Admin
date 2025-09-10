@@ -41,7 +41,7 @@ export default function UserReports() {
     { name: t('dashboard.totalAdmins'), value: stats?.totalAdmins || 0, icon: MdOutlineGroup, route: '/admin/undefined/admins' },
     { name: t('dashboard.totalPharmacies'), value: stats?.totalPharmacies || 0, icon: MdOutlineLocalPharmacy, route: '/admin/pharmacy' },
     { name: t('dashboard.totalDoctors'), value: stats?.totalDoctors || 0, icon: MdOutlineMedicalServices, route: '/admin/doctors' },
-    { name: t('dashboard.totalClinics'), value: stats?.totalClinics || 0, icon: MdOutlineStore, route: '/admin/clinics' },
+    // { name: t('dashboard.totalClinics'), value: stats?.totalClinics || 0, icon: MdOutlineStore, route: '/admin/clinics' },
     { name: t('dashboard.totalOrders'), value: stats?.totalOrders || 0, icon: MdOutlineShoppingCart, route: '/admin/orders' },
     { name: t('dashboard.totalAppointments'), value: stats?.totalAppointments || 0, icon: MdOutlineEventNote, route: '/admin/appointments' },
     { name: t('dashboard.totalUsers'), value: stats?.totalUsers || 0, icon: MdOutlinePerson, route: '/admin/users' },

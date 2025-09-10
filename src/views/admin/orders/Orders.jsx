@@ -1120,6 +1120,159 @@ const Orders = () => {
             )}
           </ModalBody>
           <ModalFooter>
+            <Button 
+              leftIcon={<IoMdPrint />}
+              colorScheme="blue"
+              variant="outline"
+              mr={3}
+              onClick={() => {
+                if (selectedOrder) {
+                  const printWindow = window.open('', '', 'width=600,height=800');
+                  printWindow.document.write(`
+                    <html>
+                      <head>
+                        <title>Order Details - ${selectedOrder?.orderNumber}</title>
+                        <style>
+                          @page { size: A4 portrait; margin: 1cm; }
+                          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+                          .header { text-align: center; margin-bottom: 25px; }
+                          .header h1 { margin: 0 0 10px 0; font-size: 24px; }
+                          .header p { margin: 5px 0; font-size: 14px; }
+                          .section { margin-bottom: 20px; }
+                          .section h3 { color: #333; border-bottom: 2px solid #333; padding-bottom: 5px; margin-bottom: 15px; font-size: 16px; }
+                          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+                          .info-item { margin-bottom: 8px; }
+                          .info-label { font-weight: bold; color: #666; font-size: 12px; }
+                          .items-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+                          .items-table th, .items-table td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+                          .items-table th { background-color: #f2f2f2; font-weight: bold; }
+                          .total-section { text-align: right; margin-top: 15px; font-size: 14px; }
+                          .badge { padding: 3px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+                          .badge-pending { background-color: #fbd38d; color: #744210; }
+                          .badge-completed { background-color: #9ae6b4; color: #22543d; }
+                          .badge-paid { background-color: #9ae6b4; color: #22543d; }
+                          .badge-unpaid { background-color: #fed7d7; color: #742a2a; }
+                          .badge-cancelled { background-color: #feb2b2; color: #742a2a; }
+                          .badge-processing { background-color: #90cdf4; color: #2c5282; }
+                          .badge-shipped { background-color: #90cdf4; color: #2c5282; }
+                          .badge-delivered { background-color: #90cdf4; color: #2c5282; }
+                          .badge-refunded { background-color: #feb2b2; color: #742a2a; }
+                        </style>
+                      </head>
+                      <body>
+                        <div class="header">
+                          <h1>Order Details</h1>
+                          <p>Order #${selectedOrder?.orderNumber}</p>
+                          <p>Date: ${formatDate(selectedOrder?.createdAt)}</p>
+                        </div>
+                        
+                        <div class="section">
+                          <h3>Order Information</h3>
+                          <div class="info-grid">
+                            <div>
+                              <div class="info-item">
+                                <span class="info-label">Order Number:</span><br>
+                                ${selectedOrder?.orderNumber}
+                              </div>
+                              <div class="info-item">
+                                <span class="info-label">Date:</span><br>
+                                ${formatDate(selectedOrder?.createdAt)}
+                              </div>
+                              <div class="info-item">
+                                <span class="info-label">Status:</span><br>
+                                <span class="badge badge-${selectedOrder?.status?.toLowerCase()}">${selectedOrder?.status}</span>
+                              </div>
+                            </div>
+                            <div>
+                              <div class="info-item">
+                                <span class="info-label">Payment Method:</span><br>
+                                ${selectedOrder?.paymentMethod}
+                              </div>
+                              <div class="info-item">
+                                <span class="info-label">Payment Status:</span><br>
+                                <span class="badge badge-${selectedOrder?.paymentStatus?.toLowerCase()}">${selectedOrder?.paymentStatus}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="section">
+                          <h3>Customer Information</h3>
+                          <div class="info-grid">
+                            <div>
+                              <div class="info-item">
+                                <span class="info-label">Name:</span><br>
+                                ${selectedOrder?.user?.name || 'N/A'}
+                              </div>
+                              <div class="info-item">
+                                <span class="info-label">Phone:</span><br>
+                                ${selectedOrder?.user?.phoneNumber || 'N/A'}
+                              </div>
+                            </div>
+                            <div>
+                              <div class="info-item">
+                                <span class="info-label">Pharmacy:</span><br>
+                                ${selectedOrder?.pharmacy?.name || 'N/A'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="section">
+                          <h3>Delivery Address</h3>
+                          <div class="info-item">
+                            ${selectedOrder?.address ? 
+                              `${selectedOrder.address.buildingNo} ${selectedOrder.address.street}, ${selectedOrder.address.city}` : 
+                              'N/A'
+                            }
+                          </div>
+                        </div>
+
+                        <div class="section">
+                          <h3>Order Items</h3>
+                          <table class="items-table">
+                            <thead>
+                              <tr>
+                                <th>Item</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Subtotal</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              ${selectedOrder?.items?.map(item => `
+                                <tr>
+                                  <td>${item.name}</td>
+                                  <td>${item.quantity}</td>
+                                  <td>kwd ${item.price}</td>
+                                  <td>kwd ${item.subtotal}</td>
+                                </tr>
+                              `).join('') || '<tr><td colspan="4">No items</td></tr>'}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div class="total-section">
+                          <div class="info-item">
+                            <span class="info-label">Subtotal:</span> kwd ${selectedOrder?.subtotal || '0'}
+                          </div>
+                          <div class="info-item">
+                            <span class="info-label">Delivery Fee:</span> kwd ${selectedOrder?.deliveryFee || '0'}
+                          </div>
+                          <div class="info-item" style="font-weight: bold; font-size: 20px;">
+                            <span class="info-label">Total:</span> kwd ${selectedOrder?.total || '0'}
+                          </div>
+                        </div>
+                      </body>
+                    </html>
+                  `);
+                  printWindow.document.close();
+                  printWindow.print();
+                }
+              }}
+            >
+              {t('orders.print')}
+            </Button>
             <Button onClick={onClose}>{t('orders.close')}</Button>
           </ModalFooter>
         </ModalContent>

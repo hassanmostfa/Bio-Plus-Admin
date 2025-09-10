@@ -525,7 +525,8 @@
     "statusUpdated": "Status Updated",
     "orderStatusUpdatedTo": "Order status updated to {{status}}.",
     "errorUpdatingStatus": "Error Updating Status",
-    "failedToUpdateOrderStatus": "Failed to update order status."
+    "failedToUpdateOrderStatus": "Failed to update order status.",
+    "print": "Print"
   },
   "addNotification": {
     "sendNotification": "Send Notification",

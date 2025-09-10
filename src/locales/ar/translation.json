@@ -510,7 +510,8 @@
     "statusUpdated": "تم تحديث الحالة",
     "orderStatusUpdatedTo": "تم تحديث حالة الطلب إلى {{status}}.",
     "errorUpdatingStatus": "خطأ في تحديث الحالة",
-    "failedToUpdateOrderStatus": "فشل في تحديث حالة الطلب."
+    "failedToUpdateOrderStatus": "فشل في تحديث حالة الطلب.",
+    "print": "طباعة"
   },
   "addNotification": {
     "sendNotification": "إرسال إشعار",
