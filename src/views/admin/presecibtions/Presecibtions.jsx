@@ -25,7 +25,8 @@ import {
   useDisclosure,
   Badge,
   Image,
-  useToast,
+  Link,
+  VStack,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -36,9 +37,7 @@ import {
 } from '@tanstack/react-table';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Card from 'components/card/Card';
-import { EditIcon, SearchIcon } from '@chakra-ui/icons';
-import { FaEye, FaTrash, FaX } from 'react-icons/fa6';
-import { useNavigate } from 'react-router-dom';
+import { FaX, FaCircleInfo } from 'react-icons/fa6';
 import { CgAssign } from 'react-icons/cg';
 import { CiSearch } from "react-icons/ci";
 
@@ -48,7 +47,6 @@ import { useGetPharmaciesQuery } from 'api/pharmacySlice';
 import Swal from 'sweetalert2';
 import { useGetDocumentsQuery } from 'api/documentSlice';
 import { useTranslation } from 'react-i18next';
-import { useLanguage } from 'contexts/LanguageContext';
 
 const columnHelper = createColumnHelper();
 
@@ -91,14 +89,13 @@ const PharmacyItem = React.memo(({ pharmacy, isSelected, onSelect }) => {
 PharmacyItem.displayName = 'PharmacyItem';
 
 const Prescriptions = () => {
-  const navigate = useNavigate();
-  const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isRejectionModalOpen, onOpen: onRejectionModalOpen, onClose: onRejectionModalClose } = useDisclosure();
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [selectedPharmacy, setSelectedPharmacy] = useState(null);
   const [pharmacySearch, setPharmacySearch] = useState('');
+  const [selectedRejectionReason, setSelectedRejectionReason] = useState('');
   const { t } = useTranslation();
-  const { currentLanguage } = useLanguage();
   const timeoutRef = useRef(null);
   const pharmacySearchTimeoutRef = useRef(null);
 
@@ -134,7 +131,7 @@ const Prescriptions = () => {
   const documents = documentsResponse?.data?.items || [];
   const totalItems = documentsResponse?.data?.total || 0;
   const totalPages = documentsResponse?.data?.totalPages || 1;
-  const pharmacies = pharmaciesResponse?.data?.items || [];
+  const pharmacies = useMemo(() => pharmaciesResponse?.data?.items || [], [pharmaciesResponse?.data?.items]);
 
   const textColor = useColorModeValue('secondaryGray.900', 'white');
   const borderColor = useColorModeValue('gray.200', 'whiteAlpha.100');
@@ -209,6 +206,17 @@ const Prescriptions = () => {
     setSelectedPharmacy(null);
     onClose();
   }, [onClose]);
+
+  // Handle rejection reason modal
+  const handleRejectionReasonClick = useCallback((rejectionReason) => {
+    setSelectedRejectionReason(rejectionReason);
+    onRejectionModalOpen();
+  }, [onRejectionModalOpen]);
+
+  const handleRejectionModalClose = useCallback(() => {
+    setSelectedRejectionReason('');
+    onRejectionModalClose();
+  }, [onRejectionModalClose]);
 
   // Handle assign pharmacy
   const handleAssignPharmacy = useCallback(async () => {
@@ -343,6 +351,29 @@ const Prescriptions = () => {
       cell: (info) => (
         <Text color={textColor}>{info.getValue() || t('prescriptionsTable.notAssigned')}</Text>
       ),
+    }),
+    columnHelper.accessor('rejectionReason', {
+      header: t('prescriptionsTable.rejectionReason'),
+      cell: (info) => {
+        const rejectionReason = info.getValue();
+        return rejectionReason ? (
+          <Link
+            color="red.500"
+            textDecoration="underline"
+            cursor="pointer"
+            onClick={() => handleRejectionReasonClick(rejectionReason)}
+            _hover={{ color: 'red.600' }}
+            fontSize="sm"
+          >
+            <Flex align="center" gap="5px">
+              <Icon as={FaCircleInfo} w="12px" h="12px" />
+              {t('prescriptionsTable.viewReason')}
+            </Flex>
+          </Link>
+        ) : (
+          <Text color="gray.400" fontSize="sm">-</Text>
+        );
+      },
     }),
     columnHelper.accessor('actions', {
       header: t('prescriptionsTable.actions'),
@@ -621,6 +652,43 @@ const Prescriptions = () => {
               isDisabled={!selectedPharmacy || pharmaciesLoading}
             >
               {t('prescriptionsTable.assignTo')} {selectedPharmacy?.name || t('prescriptionsTable.pharmacy')}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Rejection Reason Modal */}
+      <Modal isOpen={isRejectionModalOpen} onClose={handleRejectionModalClose} size="md">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            <Flex align="center" gap="10px">
+              <Icon as={FaCircleInfo} color="red.500" w="20px" h="20px" />
+              {t('prescriptionsTable.rejectionReason')}
+            </Flex>
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing="4" align="stretch">
+              <Box
+                p="4"
+                bg="red.50"
+                border="1px solid"
+                borderColor="red.200"
+                borderRadius="md"
+              >
+                <Text fontSize="sm" color="red.600" fontWeight="medium" mb="2">
+                  {t('prescriptionsTable.reasonForRejection')}:
+                </Text>
+                <Text color="gray.700" lineHeight="1.6">
+                  {selectedRejectionReason}
+                </Text>
+              </Box>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme="red" variant="outline" onClick={handleRejectionModalClose}>
+              {t('prescriptionsTable.close')}
             </Button>
           </ModalFooter>
         </ModalContent>

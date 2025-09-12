@@ -1413,6 +1413,9 @@
     "uploadDate": "تاريخ الرفع",
     "status": "الحالة",
     "assignedTo": "مُسند إلى",
+    "rejectionReason": "سبب الرفض",
+    "viewReason": "عرض السبب",
+    "close": "إغلاق",
     "actions": "الإجراءات",
     "notAssigned": "غير مُسند",
     "searchPharmacies": "البحث في الصيدليات..."

@@ -1424,6 +1424,9 @@
     "uploadDate": "Upload Date",
     "status": "Status",
     "assignedTo": "Assigned To",
+    "rejectionReason": "Rejection Reason",
+    "viewReason": "View Reason",
+    "close": "Close",
     "actions": "Actions",
     "notAssigned": "Not assigned",
     "searchPharmacies": "Search pharmacies..."
